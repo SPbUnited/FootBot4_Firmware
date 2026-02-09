@@ -2,8 +2,6 @@
 
 #include "stm32f4xx_hal.h"
 
-#define LED_GPIO_CLK_ENABLE() __HAL_RCC_GPIOG_CLK_ENABLE()
-
 namespace LEDMGR
 {
 
@@ -39,7 +37,6 @@ namespace LEDMGR
 
     void init_led(LedDescriptor led)
     {
-        LED_GPIO_CLK_ENABLE(); // Скорее всего надо сделать switch case для всех GPIO
         GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = led.GPIO_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -50,6 +47,8 @@ namespace LEDMGR
 
     void init_leds()
     {
+        __HAL_RCC_GPIOG_CLK_ENABLE();
+        __HAL_RCC_GPIOD_CLK_ENABLE();
         for (auto &led : leds)
         {
             init_led(led);
@@ -64,6 +63,14 @@ namespace LEDMGR
     void toggle_led(Leds led)
     {
         HAL_GPIO_TogglePin(leds[led].GPIOx, leds[led].GPIO_Pin);
+    }
+
+    void display_number(uint8_t value)
+    {
+        for (size_t i = 0; i < 4; i++)
+        {
+            write_led(Leds(4 - i), (value & (1 << i)) != 0);
+        }
     }
 
 } // namespace LEDMGR
