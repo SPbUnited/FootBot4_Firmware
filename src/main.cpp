@@ -4,7 +4,7 @@
 // #include ""
 #include "Error.h"
 #include "stm32f4xx_hal.h"
-
+#include "Usart4.h"
 #include "LedManager.h"
 // #include "ScreenManager.h"
 
@@ -93,6 +93,7 @@ int main(void)
     HAL_Delay(200);
 
     LEDMGR::init_leds();
+    initUsart4();
     // SCREENMGR::init_screen();
     __HAL_RCC_GPIOF_CLK_ENABLE();
     __HAL_RCC_I2C2_CLK_ENABLE();
@@ -134,7 +135,12 @@ int main(void)
         for (size_t i = 0; i < LEDMGR::NUM_LEDS; i++)
         {
             LEDMGR::toggle_led(LEDMGR::Leds(i));
+            Uart4OutputChar('S');
+            Uart4OutputChar('S');
+            Uart4OutputChar('L');
+            Uart4OutputChar('\n');
             HAL_Delay(100);
+            
         }
 
         // buzz();
