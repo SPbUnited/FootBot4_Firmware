@@ -2,7 +2,7 @@
 
 #include "drivers/driver_manager.hpp"
 
-namespace drivers::oled
+namespace devices::oled
 {
 
 OledDriver::OledDriver(oled_lib::OledConfig cfg, I2C_HandleTypeDef* hi2c)
@@ -17,12 +17,12 @@ void OledDriver::init()
         while (1)
         {
             // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-            uart4.printf("OLED init error\n");
+            drivers::uart4.printf("OLED init error\n");
             HAL_Delay(100);
         }
     }
-    uart4.printf("OLED init ok\n");
+    drivers::uart4.printf("OLED init ok\n");
     display.clear();
 }
 
-}  // namespace drivers::oled
+}  // namespace devices::oled
