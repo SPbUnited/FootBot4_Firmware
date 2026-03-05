@@ -1,7 +1,7 @@
 #include "i2c.hpp"
 
-#include "Error.h"
-#include "drivers/device_manager.hpp"
+#include "drivers/driver_manager.hpp"
+#include "kernel/kernel.hpp"
 
 namespace drivers::i2c
 {
@@ -41,8 +41,7 @@ void I2cDriver::init()
     HAL_StatusTypeDef status = HAL_I2C_Init(&handle);
     if (status != HAL_OK)
     {
-        uart4.printf("I2C init error: %d %d\n", 42, int(status));
-        Error_Handler();
+        kernel::error("I2C init error: %d %d\n", 42, int(status));
     }
 }
 

@@ -87,6 +87,13 @@ class UartDriver : public UartConfig
         va_end(args);
         HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 1000);
     }
+
+    void vprintf(const char *fmt, va_list args)
+    {
+        char buffer[128];
+        vsnprintf(buffer, sizeof(buffer), fmt, args);
+        HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 1000);
+    }
 };
 
 }  // namespace drivers::uart

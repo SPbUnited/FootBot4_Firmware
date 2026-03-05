@@ -1,6 +1,6 @@
 #include "oled.hpp"
 
-#include "drivers/device_manager.hpp"
+#include "drivers/driver_manager.hpp"
 
 namespace drivers::oled
 {
