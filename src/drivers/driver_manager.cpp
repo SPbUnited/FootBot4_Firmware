@@ -1,4 +1,4 @@
-#include "device_manager.hpp"
+#include "driver_manager.hpp"
 
 namespace drivers
 {
@@ -94,5 +94,10 @@ oled_lib::OledConfig oled_config = {
 };
 
 oled::OledDriver oled_drv(oled_config, &i2c2.handle);
+
+buzzer::Buzzer buzzer_drv;
+
+bootstrap::Bootstrap bootstrap_drv;
+system_clock::SystemClock system_clock_drv;
 
 }  // namespace drivers
