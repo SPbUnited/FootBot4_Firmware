@@ -6,3 +6,7 @@
 ## Стек: 
 1. Platformio
 2. HAL
+
+## Дерево технологий
+
+![](docs/tech_tree.excalidraw.png)
