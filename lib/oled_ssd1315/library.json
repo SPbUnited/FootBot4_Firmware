@@ -1,0 +1,61 @@
+{
+    "name": "oled_ssd1315",
+    "version": "3.0.1",
+    "description": "Platform-agnostic OLED SSD1315/SSD1306 library. Supports Arduino Wire and STM32 HAL I2C. Framebuffer, graphics, UTF-8 text with Cyrillic support.",
+    "keywords": [
+        "oled",
+        "ssd1315",
+        "ssd1306",
+        "i2c",
+        "display",
+        "graphics",
+        "framebuffer",
+        "embedded",
+        "esp32",
+        "stm32",
+        "stm32hal",
+        "arduino",
+        "platform-agnostic",
+        "cyrillic",
+        "utf8"
+    ],
+    "authors": [
+        {
+            "name": "SK",
+            "maintainer": true
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Call-me-Boris-The-Razor/oled-ssd1315.git"
+    },
+    "homepage": "https://github.com/Call-me-Boris-The-Razor/oled-ssd1315",
+    "license": "MIT",
+    "frameworks": ["arduino", "stm32cube"],
+    "platforms": [
+        "espressif32",
+        "espressif8266",
+        "ststm32",
+        "atmelavr",
+        "atmelsam"
+    ],
+    "headers": "oled/OledSsd1315.hpp",
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include",
+        "flags": [],
+        "extraScript": "scripts/platformio_build.py"
+    },
+    "export": {
+        "include": [
+            "include/*",
+            "src/*",
+            "scripts/*",
+            "examples/*",
+            "docs/*",
+            "README.md",
+            "CHANGELOG.md",
+            "LICENSE"
+        ]
+    }
+}
