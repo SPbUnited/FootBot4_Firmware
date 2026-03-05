@@ -83,18 +83,6 @@ i2c::I2cDriver i2c2(i2c2_config);
 
 led::LedDriver leds;
 
-oled_lib::OledConfig oled_config = {
-    .i2cAddr7 = 0x3C,  // 7-битный адрес
-    .width = 128,
-    .height = 32,
-    .i2cFreq = 100000,
-    .vccMode = oled_lib::VccMode::InternalChargePump,
-    .flip180 = false,
-    // .resetCallback = &oledResetCallback, // Если есть RST пин
-};
-
-oled::OledDriver oled_drv(oled_config, &i2c2.handle);
-
 buzzer::Buzzer buzzer_drv;
 
 bootstrap::Bootstrap bootstrap_drv;

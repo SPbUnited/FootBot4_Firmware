@@ -1,9 +1,10 @@
 #include <oled/OledSsd1315.hpp>
 
+#include "devices/device_manager.hpp"
 #include "drivers/driver_manager.hpp"
 #include "stm32f4xx_hal.h"
 
-#define display drivers::oled_drv.display
+#define display devices::oled_drv.display
 
 int main(void)
 {
@@ -16,7 +17,7 @@ int main(void)
     drivers::uart4.init();
     drivers::i2c2.init();
     drivers::leds.init();
-    drivers::oled_drv.init();
+    devices::oled_drv.init();
 
     HAL_Delay(200);
 
