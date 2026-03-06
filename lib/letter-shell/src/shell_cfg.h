@@ -22,7 +22,7 @@
  *        使能此宏，则`shellTask()`函数会一直循环读取输入，一般使用操作系统建立shell
  *        任务时使能此宏，关闭此宏的情况下，一般适用于无操作系统，在主循环中调用`shellTask()`
  */
-#define SHELL_TASK_WHILE 1
+#define SHELL_TASK_WHILE 0
 #endif /** SHELL_TASK_WHILE */
 
 #ifndef SHELL_USING_CMD_EXPORT
@@ -31,7 +31,7 @@
  *        使能此宏后，可以使用`SHELL_EXPORT_CMD()`等导出命令
  *        定义shell命令，关闭此宏的情况下，需要使用命令表的方式
  */
-#define SHELL_USING_CMD_EXPORT 0
+#define SHELL_USING_CMD_EXPORT 1
 #endif /** SHELL_USING_CMD_EXPORT */
 
 #ifndef SHELL_USING_COMPANION
@@ -39,14 +39,14 @@
  * @brief 是否使用shell伴生对象
  *        一些扩展的组件(文件系统支持，日志工具等)需要使用伴生对象
  */
-#define SHELL_USING_COMPANION 0
+#define SHELL_USING_COMPANION 1
 #endif /** SHELL_USING_COMPANION */
 
 #ifndef SHELL_SUPPORT_END_LINE
 /**
  * @brief 支持shell尾行模式
  */
-#define SHELL_SUPPORT_END_LINE 0
+#define SHELL_SUPPORT_END_LINE 1
 #endif /** SHELL_SUPPORT_END_LINE */
 
 #ifndef SHELL_HELP_LIST_USER

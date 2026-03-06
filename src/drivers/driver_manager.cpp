@@ -88,4 +88,16 @@ buzzer::Buzzer buzzer_drv;
 bootstrap::Bootstrap bootstrap_drv;
 system_clock::SystemClock system_clock_drv;
 
+void init()
+{
+    drivers::system_clock_drv.init();
+    drivers::bootstrap_drv.init();
+
+    HAL_Delay(200);
+
+    drivers::uart4.init();
+    drivers::i2c2.init();
+    drivers::leds.init();
+}
+
 }  // namespace drivers
