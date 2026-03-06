@@ -19,4 +19,6 @@ extern i2c::I2cDriver i2c2;
 extern led::LedDriver leds;
 extern buzzer::Buzzer buzzer_drv;
 
+void init();
+
 }  // namespace drivers

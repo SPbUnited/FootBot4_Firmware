@@ -9,19 +9,11 @@
 int main(void)
 {
     HAL_Init();
-    drivers::system_clock_drv.init();
-    drivers::bootstrap_drv.init();
+    drivers::init();
+
+    devices::init();
 
     HAL_Delay(200);
-
-    drivers::uart4.init();
-    drivers::i2c2.init();
-    drivers::leds.init();
-    devices::oled_drv.init();
-
-    HAL_Delay(200);
-
-    drivers::uart4.printf("OLED init ok\n");
 
     display.clear();
     display.setCursor(0, 0);
@@ -41,27 +33,28 @@ int main(void)
     // Отправляем на дисплей
     display.flush();
 
-    devices::shell::my_shellInit();
-
     // Главный цикл
     uint32_t counter = 0;
+    UNUSED(counter);
+
     while (1)
     {
         // char c;
         // drivers::uart4.getc(&c);
         // drivers::uart4.putc(c);
-        // HAL_Delay(1000);
+        logInfo("Uptime: %lu sec", counter);
+        HAL_Delay(1000);
 
         // // Обновляем счётчик
-        // display.rectFill(1, 24, 126, 7, false);  // Очищаем область
-        // display.setCursor(4, 24);
-        // display.setTextSize(1);
-        // display.printf("Uptime: %lu sec", counter);
-        // display.flush();
-        // drivers::leds.display_number(counter);
+        display.rectFill(1, 24, 126, 7, false);  // Очищаем область
+        display.setCursor(4, 24);
+        display.setTextSize(1);
+        display.printf("Uptime: %lu sec", counter);
+        display.flush();
+        drivers::leds.display_number(counter);
         // drivers::uart4.printf("Uptime: %lu sec\n", counter);
 
-        // counter++;
+        counter++;
         devices::shell::my_shellLoop();
     }
 }

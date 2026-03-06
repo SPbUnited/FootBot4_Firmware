@@ -78,6 +78,11 @@ class UartDriver : public UartConfig
         HAL_UART_Transmit(&handle, (uint8_t *)(&c), 1, 1000);
     }
 
+    void write(const char *data, uint16_t size)
+    {
+        HAL_UART_Transmit(&handle, (uint8_t *)data, size, 1000);
+    }
+
     void printf(const char *fmt, ...)
     {
         va_list args;
@@ -97,7 +102,7 @@ class UartDriver : public UartConfig
 
     void getc(char *c)
     {
-        HAL_UART_Receive(&handle, (uint8_t *)c, 1, HAL_MAX_DELAY);
+        HAL_UART_Receive(&handle, (uint8_t *)c, 1, 1);
     }
 };
 

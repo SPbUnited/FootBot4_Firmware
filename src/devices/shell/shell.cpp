@@ -1,10 +1,5 @@
 #include "shell.hpp"
 
-extern "C"
-{
-#include "shell.h"
-}
-
 namespace devices::shell
 {
 
@@ -45,3 +40,15 @@ void my_shellLoop()
 }
 
 }  // namespace devices::shell
+
+int func(int argc, char *argv[])
+{
+    drivers::uart4.printf("%dparameter(s)\r\n", argc);
+    for (int i = 1; i < argc; i++)
+    {
+        drivers::uart4.printf("%s\r\n", argv[i]);
+    }
+
+    return 0;
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), func, func, test);

@@ -17,4 +17,16 @@ oled_lib::OledConfig oled_config = {
 
 oled::OledDriver oled_drv(oled_config, &drivers::i2c2.handle);
 
+void init()
+{
+    shell::my_shellInit();
+    logInfo("Shell initialized");
+    logger::init();
+    logInfo("Logger initialized");
+    oled_drv.init();
+    logInfo("OLED initialized");
+
+    logInfo("Devices initialized");
+}
+
 }  // namespace devices

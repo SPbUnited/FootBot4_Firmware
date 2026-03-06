@@ -4,21 +4,21 @@
  * @brief log
  * @version 1.0.0
  * @date 2020-07-30
- * 
+ *
  * @copyright (c) 2020 Letter
- * 
+ *
  */
 #include "log.h"
-#include "stdio.h"
-#include "stdarg.h"
+
 #include "shell.h"
+#include "stdarg.h"
+#include "stdio.h"
 
 #if LOG_USING_COLOR == 1
-#define memPrintHead CSI(31) \
-    "    Offset: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" \
-    CSI(39) \
-    "\r\n"
-#define memPrintAddr CSI(31)"0x%08x: "CSI(39)
+#define memPrintHead \
+    CSI(31)          \
+    "    Offset: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" CSI(39) "\r\n"
+#define memPrintAddr CSI(31) "0x%08x: " CSI(39)
 #else
 #define memPrintHead "    Offset: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F\r\n"
 #define memPrintAddr "0x%08x: "
@@ -81,7 +81,7 @@ static void logUnlock(Log *log)
 
 /**
  * @brief 注册log对象
- * 
+ *
  * @param log log对象
  */
 void logRegister(Log *log, Shell *shell)
@@ -89,9 +89,9 @@ void logRegister(Log *log, Shell *shell)
     if (shell)
     {
         log->shell = shell;
-    #if SHELL_USING_COMPANION == 1
+#if SHELL_USING_COMPANION == 1
         shellCompanionAdd(shell, SHELL_COMPANION_ID_LOG, log);
-    #endif
+#endif
     }
     for (short i = 0; i < LOG_MAX_NUMBER; i++)
     {
@@ -103,10 +103,9 @@ void logRegister(Log *log, Shell *shell)
     }
 }
 
-
 /**
  * @brief 注销log对象
- * 
+ *
  * @param log log对象
  */
 void logUnRegister(Log *log)
@@ -121,10 +120,9 @@ void logUnRegister(Log *log)
     }
 }
 
-
 /**
  * @brief 设置log日志级别
- * 
+ *
  * @param log log对象
  * @param level 日志级别
  */
@@ -134,19 +132,18 @@ void logSetLevel(Log *log, LogLevel level)
     log->level = level;
 }
 #if SHELL_USING_COMPANION == 1
-SHELL_EXPORT_CMD_AGENCY(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-logSetLevel, logSetLevel,  set log level\r\n logSetLevel [level],
-(void *)shellCompanionGet(shellGetCurrent(), SHELL_COMPANION_ID_LOG), p1);
+SHELL_EXPORT_CMD_AGENCY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
+                            SHELL_CMD_DISABLE_RETURN,
+                        logSetLevel, logSetLevel, set log level\r\n logSetLevel[level],
+                        (void *)shellCompanionGet(shellGetCurrent(), SHELL_COMPANION_ID_LOG), p1);
 #else
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC),
-logSetLevel, logSetLevel, set log level\r\n logSetLevel [log] [level]);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), logSetLevel,
+                 logSetLevel, set log level\r\n logSetLevel[log][level]);
 #endif /** SHELL_USING_COMPANION == 1 */
-
 
 /**
  * @brief log写buffer
- * 
+ *
  * @param log log对象
  * @param level 日志级别
  * @param buffer buffer
@@ -161,9 +158,7 @@ static void logWriteBuffer(Log *log, LogLevel level, char *buffer, short len)
     {
         for (short i = 0; i < LOG_MAX_NUMBER; i++)
         {
-            if (logList[i] 
-                && logList[i]->active
-                && logList[i]->level >= level)
+            if (logList[i] && logList[i]->active && logList[i]->level >= level)
             {
                 logList[i]->write(logBuffer, len);
             }
@@ -180,7 +175,7 @@ static void logWriteBuffer(Log *log, LogLevel level, char *buffer, short len)
 
 /**
  * @brief log格式化写入数据
- * 
+ *
  * @param log log对象
  * @param level log级别
  * @param fmt 格式
@@ -190,7 +185,7 @@ void logWrite(Log *log, LogLevel level, const char *fmt, ...)
 {
     va_list vargs;
     int len;
-    
+
 #if LOG_USING_LOCK == 1
     logLock(log);
 #endif /* LOG_USING_LOCK == 1 */
@@ -211,7 +206,7 @@ void logWrite(Log *log, LogLevel level, const char *fmt, ...)
 
 /**
  * @brief 16进制输出
- * 
+ *
  * @param log log对象
  * @param level 日志级别
  * @param base 内存基址
@@ -235,7 +230,7 @@ void logHexDump(Log *log, LogLevel level, void *base, unsigned int length)
     logWriteBuffer(log, level, logBuffer, len);
 
     len = length;
-    
+
     address = (unsigned char *)((unsigned int)base & (~0x0000000F));
     length += (unsigned int)base - (unsigned int)address;
     length = (length + 15) & (~0x0000000F);
@@ -245,26 +240,26 @@ void logHexDump(Log *log, LogLevel level, void *base, unsigned int length)
         printLen += sprintf(logBuffer + printLen, memPrintAddr, (unsigned int)address);
         for (int i = 0; i < 16; i++)
         {
-            if ((unsigned int)(address + i) < (unsigned int)base
-                || (unsigned int)(address + i) >= (unsigned int)base + len)
+            if ((unsigned int)(address + i) < (unsigned int)base ||
+                (unsigned int)(address + i) >= (unsigned int)base + len)
             {
-                logBuffer[printLen ++] = ' ';
-                logBuffer[printLen ++] = ' ';
-                logBuffer[printLen ++] = ' ';
+                logBuffer[printLen++] = ' ';
+                logBuffer[printLen++] = ' ';
+                logBuffer[printLen++] = ' ';
             }
             else
             {
                 printLen += sprintf(logBuffer + printLen, "%02x ", *(address + i));
             }
         }
-        logBuffer[printLen ++] = '|';
-        logBuffer[printLen ++] = ' ';
+        logBuffer[printLen++] = '|';
+        logBuffer[printLen++] = ' ';
         for (int i = 0; i < 16; i++)
         {
-            if ((unsigned int)(address + i) < (unsigned int)base
-                || (unsigned int)(address + i) >= (unsigned int)base + len)
+            if ((unsigned int)(address + i) < (unsigned int)base ||
+                (unsigned int)(address + i) >= (unsigned int)base + len)
             {
-                logBuffer[printLen ++] = ' ';
+                logBuffer[printLen++] = ' ';
             }
             else
             {
@@ -274,14 +269,14 @@ void logHexDump(Log *log, LogLevel level, void *base, unsigned int length)
                 }
                 else
                 {
-                    logBuffer[printLen ++] = '.';
+                    logBuffer[printLen++] = '.';
                 }
             }
         }
-        logBuffer[printLen ++] = ' ';
-        logBuffer[printLen ++] = '|';
-        logBuffer[printLen ++] = '\r';
-        logBuffer[printLen ++] = '\n';
+        logBuffer[printLen++] = ' ';
+        logBuffer[printLen++] = '|';
+        logBuffer[printLen++] = '\r';
+        logBuffer[printLen++] = '\n';
         logWriteBuffer(log, level, logBuffer, printLen);
         address += 16;
         length -= 16;
@@ -292,14 +287,15 @@ void logHexDump(Log *log, LogLevel level, void *base, unsigned int length)
 #endif /* LOG_USING_LOCK == 1 */
 }
 #if SHELL_USING_COMPANION == 1
-SHELL_EXPORT_CMD_AGENCY(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-hexdump, logHexDump, hex dump\r\n hexdump [base] [len],
-(void *)shellCompanionGet(shellGetCurrent(), SHELL_COMPANION_ID_LOG), LOG_NONE, (void *)p1, (unsigned int)p2);
+SHELL_EXPORT_CMD_AGENCY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
+                            SHELL_CMD_DISABLE_RETURN,
+                        hexdump, logHexDump, hex dump\r\n hexdump[base][len],
+                        (void *)shellCompanionGet(shellGetCurrent(), SHELL_COMPANION_ID_LOG),
+                        LOG_NONE, (void *)p1, (unsigned int)p2);
 #else
-SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-hexdump, logHexDump, hex dump\r\n hexdump [log] [level] [base] [len]);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
+                     SHELL_CMD_DISABLE_RETURN,
+                 hexdump, logHexDump, hex dump\r\n hexdump[log][level][base][len]);
 #endif /** SHELL_USING_COMPANION == 1 */
 
 #if SHELL_USING_COMPANION == 1

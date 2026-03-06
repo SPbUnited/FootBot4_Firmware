@@ -1,0 +1,20 @@
+{
+    "name": "letter-shell",
+    "version": "0.3.1",
+    "keywords": "shell, embedded, command line, cli, console",
+    "description": "Letter shell for embedded systems",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NevermindZZT/letter-shell.git"
+    },
+    "frameworks": "stm32cube",
+    "platforms": "ststm32",
+    "build": {
+        "libArchive": false,
+        "flags": [
+            "-Isrc/",
+            "-Isrc/extensions/cpp_support",
+            "-Isrc/extensions/log"
+        ]
+    }
+}
