@@ -94,6 +94,11 @@ class UartDriver : public UartConfig
         vsnprintf(buffer, sizeof(buffer), fmt, args);
         HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 1000);
     }
+
+    void getc(char *c)
+    {
+        HAL_UART_Receive(&handle, (uint8_t *)c, 1, HAL_MAX_DELAY);
+    }
 };
 
 }  // namespace drivers::uart

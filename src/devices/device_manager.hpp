@@ -1,6 +1,7 @@
 #pragma once
 
-#include "devices/oled/oled.hpp"
+#include "oled/oled.hpp"
+#include "shell/shell.hpp"
 
 namespace devices
 {
