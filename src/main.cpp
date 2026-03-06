@@ -41,21 +41,27 @@ int main(void)
     // Отправляем на дисплей
     display.flush();
 
+    devices::shell::my_shellInit();
+
     // Главный цикл
     uint32_t counter = 0;
     while (1)
     {
-        HAL_Delay(1000);
+        // char c;
+        // drivers::uart4.getc(&c);
+        // drivers::uart4.putc(c);
+        // HAL_Delay(1000);
 
-        // Обновляем счётчик
-        display.rectFill(1, 24, 126, 7, false);  // Очищаем область
-        display.setCursor(4, 24);
-        display.setTextSize(1);
-        display.printf("Uptime: %lu sec", counter);
-        display.flush();
-        drivers::leds.display_number(counter);
-        drivers::uart4.printf("Uptime: %lu sec\n", counter);
+        // // Обновляем счётчик
+        // display.rectFill(1, 24, 126, 7, false);  // Очищаем область
+        // display.setCursor(4, 24);
+        // display.setTextSize(1);
+        // display.printf("Uptime: %lu sec", counter);
+        // display.flush();
+        // drivers::leds.display_number(counter);
+        // drivers::uart4.printf("Uptime: %lu sec\n", counter);
 
-        counter++;
+        // counter++;
+        devices::shell::my_shellLoop();
     }
 }
