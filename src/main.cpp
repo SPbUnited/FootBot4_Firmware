@@ -43,7 +43,7 @@ int main(void)
         // drivers::uart4.getc(&c);
         // drivers::uart4.putc(c);
         logInfo("Uptime: %lu sec", counter);
-        HAL_Delay(1000);
+        // HAL_Delay(1000);
 
         // // Обновляем счётчик
         display.rectFill(1, 24, 126, 7, false);  // Очищаем область
@@ -55,6 +55,10 @@ int main(void)
         // drivers::uart4.printf("Uptime: %lu sec\n", counter);
 
         counter++;
-        devices::shell::my_shellLoop();
+
+        for (int i = 0; i < 10; i++)
+        {
+            devices::shell::my_shellLoop();
+        }
     }
 }

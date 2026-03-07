@@ -100,9 +100,9 @@ class UartDriver : public UartConfig
         HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 1000);
     }
 
-    void getc(char *c)
+    HAL_StatusTypeDef getc(char *c)
     {
-        HAL_UART_Receive(&handle, (uint8_t *)c, 1, 1);
+        return HAL_UART_Receive(&handle, (uint8_t *)c, 1, 100);
     }
 };
 
