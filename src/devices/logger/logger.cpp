@@ -16,6 +16,8 @@ void uartLogWrite(char *buffer, short len)
         shellWriteEndLine(uartLog.shell, buffer, len);
     }
 }
+SHELL_EXPORT_VAR(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_VAR_POINT), uartLog, &uartLog,
+                 log object for all logs);
 
 void init()
 {

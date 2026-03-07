@@ -16,13 +16,16 @@ signed short shellWrite(char *data, unsigned short len)
 
 signed short shellRead(char *data, unsigned short len)
 {
-    // UNUSED(data);
-    // UNUSED(len);
+    unsigned short recv = len;
     for (unsigned short i = 0; i < len; i++)
     {
-        drivers::uart4.getc(&data[i]);
+        if (drivers::uart4.getc(&data[i]) != HAL_OK)
+        {
+            recv = i;
+            break;
+        }
     }
-    return len;
+    return recv;
 }
 
 char shellBuffer[512];

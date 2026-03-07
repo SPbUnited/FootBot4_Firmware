@@ -202,8 +202,8 @@ void shellInit(Shell *shell, char *buffer, unsigned short size)
 #if SHELL_USING_CMD_EXPORT == 1
     #if defined(__CC_ARM) || (defined(__ARMCC_VERSION) && __ARMCC_VERSION >= 6000000)
         shell->commandList.base = (ShellCommand *)(&shellCommand$$Base);
-        shell->commandList.count = ((size_t)(&shellCommand$$Limit)
-                                - (size_t)(&shellCommand$$Base))
+        shell->commandList.count =
+        ((size_t)(&shellCommand$$Limit) - (size_t)(&shellCommand$$Base))
                                 / sizeof(ShellCommand);
 
     #elif defined(__ICCARM__) || defined(__ICCRX__)
