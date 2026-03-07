@@ -1,6 +1,6 @@
 {
     "name": "letter-shell",
-    "version": "0.3.1",
+    "version": "3.2.4",
     "keywords": "shell, embedded, command line, cli, console",
     "description": "Letter shell for embedded systems",
     "repository": {
