@@ -137,8 +137,10 @@ SHELL_EXPORT_CMD_AGENCY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_
                         logSetLevel, logSetLevel, set log level\r\n logSetLevel[level],
                         (void *)shellCompanionGet(shellGetCurrent(), SHELL_COMPANION_ID_LOG), p1);
 #else
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), logSetLevel,
-                 logSetLevel, set log level\r\n logSetLevel[log][level]);
+SHELL_EXPORT_CMD(
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), logSetLevel, logSetLevel,
+    set log level\r\n logSetLevel[log][level]\n LOG_NONE = 0\n LOG_ERROR = 1\n LOG_WRANING =
+        2\n LOG_INFO = 3\n LOG_DEBUG = 4\n LOG_VERBOSE = 5\n LOG_ALL = 6);
 #endif /** SHELL_USING_COMPANION == 1 */
 
 /**
