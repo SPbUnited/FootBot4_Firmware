@@ -81,6 +81,8 @@ i2c::I2cConfig i2c2_config = {
 
 i2c::I2cDriver i2c2(i2c2_config);
 
+can::CanDriver can_drv;
+
 led::LedDriver leds;
 
 buzzer::Buzzer buzzer_drv;
@@ -98,6 +100,7 @@ void init()
     drivers::uart4.init();
     drivers::i2c2.init();
     drivers::leds.init();
+    drivers::can_drv.init();
 }
 
 }  // namespace drivers

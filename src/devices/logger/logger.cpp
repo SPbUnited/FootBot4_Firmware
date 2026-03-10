@@ -21,6 +21,9 @@ SHELL_EXPORT_VAR(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_VAR_POINT),
 
 void init()
 {
+    asm(".global _printf_float");  // To enable float support in printf
+    // https://github.com/platformio/platform-ststm32/issues/616
+
     logRegister(&uartLog, &shell::shell);
 }
 
