@@ -42,7 +42,7 @@ int main(void)
         // char c;
         // drivers::uart4.getc(&c);
         // drivers::uart4.putc(c);
-        logInfo("Uptime: %lu sec", counter);
+        logVerbose("Uptime: %lu sec", counter);
         // HAL_Delay(1000);
 
         // // Обновляем счётчик
