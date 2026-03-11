@@ -3,6 +3,9 @@
 #include "kernel/kernel.hpp"
 #include "stm32f4xx_hal.h"
 
+#define Ts_us 100000
+#define Ts_s (Ts_us / 1000000.0f)
+
 namespace drivers::system_clock
 {
 
@@ -43,7 +46,16 @@ class SystemClock
         // Включение тактирования необходимых периферийных модулей
         __HAL_RCC_GPIOF_CLK_ENABLE();  // для PF0, PF1
         __HAL_RCC_I2C2_CLK_ENABLE();   // для I2C2
+
+        // Enable TIM5 for us measurements
+        // https://stackoverflow.com/a/42749284
+        __HAL_RCC_TIM5_CLK_ENABLE();
+        TIM5->PSC = HAL_RCC_GetPCLK2Freq() / 1000000 - 1;
+        TIM5->CR1 = TIM_CR1_CEN;
+        TIM5->CNT = -1;
     }
 };
+
+uint32_t micros();
 
 }  // namespace drivers::system_clock

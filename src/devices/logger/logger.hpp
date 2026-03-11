@@ -6,6 +6,8 @@
 namespace devices::logger
 {
 
+extern Log uartLog;
+
 void init();
 
 }  // namespace devices::logger
