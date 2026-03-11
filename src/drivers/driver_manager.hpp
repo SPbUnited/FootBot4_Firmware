@@ -5,7 +5,6 @@
 #include "can/can.hpp"
 #include "i2c/i2c.hpp"
 #include "led/led.hpp"
-#include "stm32f4xx_hal.h"
 #include "system_clock/system_clock.hpp"
 #include "uart/uart.hpp"
 

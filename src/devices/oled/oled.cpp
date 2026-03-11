@@ -2,6 +2,8 @@
 
 #include "drivers/driver_manager.hpp"
 
+#ifndef NATIVE
+
 namespace devices::oled
 {
 
@@ -26,3 +28,7 @@ void OledDriver::init()
 }
 
 }  // namespace devices::oled
+
+#else
+
+#endif

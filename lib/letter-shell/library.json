@@ -7,8 +7,8 @@
         "type": "git",
         "url": "https://github.com/NevermindZZT/letter-shell.git"
     },
-    "frameworks": "stm32cube",
-    "platforms": "ststm32",
+    "frameworks": "*",
+    "platforms": "*",
     "build": {
         "libArchive": false,
         "flags": [

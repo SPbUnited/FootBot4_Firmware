@@ -1,5 +1,9 @@
 #include "driver_manager.hpp"
 
+#ifndef NATIVE
+
+#include "stm32f4xx_hal.h"
+
 namespace drivers
 {
 
@@ -104,3 +108,38 @@ void init()
 }
 
 }  // namespace drivers
+
+#else
+
+namespace drivers
+{
+
+uart::UartConfig uart4_config;
+uart::UartDriver uart4(uart4_config);
+
+i2c::I2cConfig i2c2_config;
+i2c::I2cDriver i2c2(i2c2_config);
+
+led::LedDriver leds;
+
+buzzer::Buzzer buzzer_drv;
+
+can::CanDriver can_drv;
+
+bootstrap::Bootstrap bootstrap_drv;
+system_clock::SystemClock system_clock_drv;
+
+void init()
+{
+    drivers::system_clock_drv.init();
+    drivers::bootstrap_drv.init();
+
+    drivers::uart4.init();
+    drivers::i2c2.init();
+    drivers::leds.init();
+    drivers::can_drv.init();
+}
+
+}  // namespace drivers
+
+#endif

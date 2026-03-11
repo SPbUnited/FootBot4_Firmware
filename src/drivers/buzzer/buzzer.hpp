@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef NATIVE
+
 #include "stm32f4xx_hal.h"
 
 namespace drivers::buzzer
@@ -31,3 +33,23 @@ class Buzzer
 };
 
 }  // namespace drivers::buzzer
+
+#else
+
+namespace drivers::buzzer
+{
+
+class Buzzer
+{
+  private:
+  public:
+    Buzzer() {}
+
+    void init() {}
+
+    void buzz() {}
+};
+
+}  // namespace drivers::buzzer
+
+#endif

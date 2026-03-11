@@ -6,6 +6,8 @@
 
 #include <cstdint>
 
+#ifndef NATIVE
+
 #include "stm32f4xx_hal.h"
 
 namespace drivers::uart
@@ -107,3 +109,50 @@ class UartDriver : public UartConfig
 };
 
 }  // namespace drivers::uart
+
+#else
+
+namespace drivers::uart
+{
+
+struct UartConfig
+{
+};
+
+class UartDriver : public UartConfig
+{
+  private:
+  public:
+    UartDriver(UartConfig config) {}
+
+    void init() {}
+
+    void putc(char c)
+    {
+        printf("%c", c);
+    }
+
+    void write(const char *data, uint16_t size)
+    {
+        printf("%s", data);
+    }
+
+    void printf(const char *fmt, ...)
+    {
+        printf(fmt);
+    }
+
+    void vprintf(const char *fmt, va_list args)
+    {
+        printf(fmt);
+    }
+
+    int getc(char *c)
+    {
+        return getc(c);
+    }
+};
+
+}  // namespace drivers::uart
+
+#endif

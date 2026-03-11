@@ -1,5 +1,7 @@
 #include "devices/device_manager.hpp"
 
+#ifndef NATIVE
+
 namespace
 {
 
@@ -21,3 +23,7 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), 
                  oledPrint, write info on OLED screen);
 
 }  // namespace
+
+#else
+
+#endif

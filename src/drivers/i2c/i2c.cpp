@@ -1,7 +1,10 @@
 #include "i2c.hpp"
 
+#ifndef NATIVE
+
 #include "drivers/driver_manager.hpp"
 #include "kernel/kernel.hpp"
+#include "stm32f4xx_hal.h"
 
 namespace drivers::i2c
 {
@@ -46,3 +49,16 @@ void I2cDriver::init()
 }
 
 }  // namespace drivers::i2c
+
+#else
+
+// namespace drivers::i2c
+// {
+
+// I2cDriver::I2cDriver(I2cConfig config) {}
+
+// void I2cDriver::init() {}
+
+// }  // namespace drivers::i2c
+
+#endif

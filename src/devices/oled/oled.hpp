@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef NATIVE
+
 #include <oled/OledSsd1315.hpp>
 
 namespace devices::oled
@@ -16,3 +18,21 @@ class OledDriver : public oled_lib::OledConfig
 };
 
 }  // namespace devices::oled
+
+#else
+
+namespace devices::oled
+{
+
+class OledDriver
+{
+  private:
+  public:
+    OledDriver() {}
+
+    void init() {}
+};
+
+}  // namespace devices::oled
+
+#endif

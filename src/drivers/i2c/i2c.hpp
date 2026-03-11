@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#ifndef NATIVE
+
 #include "stm32f4xx_hal.h"
 
 namespace drivers::i2c
@@ -42,3 +44,25 @@ class I2cDriver : public I2cConfig
 };
 
 };  // namespace drivers::i2c
+
+#else
+
+namespace drivers::i2c
+{
+
+struct I2cConfig
+{
+};
+
+class I2cDriver : public I2cConfig
+{
+  private:
+  public:
+    I2cDriver(I2cConfig config) {}
+
+    void init() {}
+};
+
+};  // namespace drivers::i2c
+
+#endif

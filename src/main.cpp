@@ -1,3 +1,5 @@
+#ifndef NATIVE
+
 #include <oled/OledSsd1315.hpp>
 
 #include "devices/device_manager.hpp"
@@ -62,3 +64,22 @@ int main(void)
         }
     }
 }
+
+#else
+
+#include "devices/device_manager.hpp"
+#include "drivers/driver_manager.hpp"
+
+int main(void)
+{
+    drivers::init();
+
+    devices::init();
+
+    while (1)
+    {
+        devices::shell::my_shellLoop();
+    }
+}
+
+#endif

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef NATIVE
+
 #include "stm32f4xx_hal.h"
 
 namespace drivers::bootstrap
@@ -25,3 +27,21 @@ class Bootstrap
 };
 
 }  // namespace drivers::bootstrap
+
+#else
+
+namespace drivers::bootstrap
+{
+
+class Bootstrap
+{
+  private:
+  public:
+    Bootstrap() {}
+
+    void init() {}
+};
+
+}  // namespace drivers::bootstrap
+
+#endif

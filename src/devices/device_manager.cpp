@@ -5,6 +5,8 @@
 namespace devices
 {
 
+#ifndef NATIVE
+
 oled_lib::OledConfig oled_config = {
     .i2cAddr7 = 0x3C,  // 7-битный адрес
     .width = 128,
@@ -16,6 +18,12 @@ oled_lib::OledConfig oled_config = {
 };
 
 oled::OledDriver oled_drv(oled_config, &drivers::i2c2.handle);
+
+#else
+
+oled::OledDriver oled_drv;
+
+#endif
 
 bldc::BldcsConfig bldcs_config = {
     .can = &drivers::can_drv,

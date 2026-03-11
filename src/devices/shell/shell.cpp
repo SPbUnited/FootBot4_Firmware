@@ -19,7 +19,7 @@ signed short shellRead(char *data, unsigned short len)
     unsigned short recv = len;
     for (unsigned short i = 0; i < len; i++)
     {
-        if (drivers::uart4.getc(&data[i]) != HAL_OK)
+        if (drivers::uart4.getc(&data[i]) != 0)
         {
             recv = i;
             break;

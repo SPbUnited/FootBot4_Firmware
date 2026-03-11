@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef NATIVE
+
 #include "kernel/kernel.hpp"
 #include "stm32f4xx_hal.h"
 
@@ -47,3 +49,21 @@ class SystemClock
 };
 
 }  // namespace drivers::system_clock
+
+#else
+
+namespace drivers::system_clock
+{
+
+class SystemClock
+{
+  private:
+  public:
+    SystemClock() {}
+
+    void init() {}
+};
+
+}  // namespace drivers::system_clock
+
+#endif

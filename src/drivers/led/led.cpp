@@ -1,5 +1,9 @@
 #include "led.hpp"
 
+#ifndef NATIVE
+
+#include "stm32f4xx_hal.h"
+
 namespace drivers::led
 {
 
@@ -60,3 +64,20 @@ void LedDriver::display_number(uint8_t value)
 }
 
 }  // namespace drivers::led
+
+#else
+
+namespace drivers::led
+{
+
+void LedDriver::init() {}
+
+void LedDriver::write(LED led, bool state) {}
+
+void LedDriver::toggle(LED led) {}
+
+void LedDriver::display_number(uint8_t value) {}
+
+}  // namespace drivers::led
+
+#endif
