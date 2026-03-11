@@ -1,8 +1,5 @@
-#include <oled/OledSsd1315.hpp>
-
 #include "devices/device_manager.hpp"
 #include "drivers/driver_manager.hpp"
-#include "stm32f4xx_hal.h"
 
 #define display devices::oled_drv.display
 
@@ -10,55 +7,34 @@ int main(void)
 {
     HAL_Init();
     drivers::init();
-
     devices::init();
-
-    HAL_Delay(200);
-
-    display.clear();
-    display.setCursor(0, 0);
-    display.setTextSize(1);
-    display.print("OLED SSD1315");
-
-    display.setCursor(0, 8);
-    display.print("STM32 HAL Demo");
-
-    display.setCursor(0, 16);
-    display.setTextSize(1);
-    display.print("Привет!");
-
-    // Рисуем рамку
-    display.rect(0, 0, 128, 32, true);
-
-    // Отправляем на дисплей
-    display.flush();
 
     // Главный цикл
     uint32_t counter = 0;
     UNUSED(counter);
 
+    logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
+
     while (1)
     {
-        // char c;
-        // drivers::uart4.getc(&c);
-        // drivers::uart4.putc(c);
-        logVerbose("Uptime: %lu sec", counter);
-        // HAL_Delay(1000);
+        static uint32_t last = 0;
+        while (drivers::system_clock::micros() - last < Ts_us - 2000)
+            devices::shell::my_shellLoop();
+        while (drivers::system_clock::micros() - last < Ts_us)
+            ;
+        uint32_t delta = drivers::system_clock::micros() - last;
+        last += Ts_us;
+
+        logVerbose("Uptime: %lu ticks, delta: %lu", counter, delta);
 
         // // Обновляем счётчик
-        display.rectFill(1, 24, 126, 7, false);  // Очищаем область
-        display.setCursor(4, 24);
+        display.rectFill(1, 8, 126, 24, false);  // Очищаем область
+        display.setCursor(4, 8);
         display.setTextSize(1);
-        display.printf("Uptime: %lu sec", counter);
+        display.printf("Uptime:\n  %lu ticks\n  delta: %lu", counter, delta);
         display.flush();
         drivers::leds.display_number(counter);
-        // drivers::uart4.printf("Uptime: %lu sec\n", counter);
 
         counter++;
-
-        for (int i = 0; i < 10; i++)
-        {
-            devices::shell::my_shellLoop();
-        }
     }
 }
