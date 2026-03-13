@@ -6,6 +6,7 @@ namespace devices
 {
 
 const char init_message[] =
+    "\n"
     "    ______            __  ____        __  __ __\n"
     "   / ____/___  ____  / /_/ __ )____  / /_/ // /\n"
     "  / /_  / __ \\/ __ \\/ __/ __  / __ \\/ __/ // /_\n"
@@ -16,9 +17,7 @@ const char init_message[] =
     "\n"
     "Firmware version:   " FIRMWARE_VERSION
     "\n"
-    //    "Shell version:      " SHELL_VERSION
-    //    "\n"
-    "Copyright:          (c) 2025 SPbUnited\n";
+    "Copyright:          (c) 2025 SPbUnited\n\n";
 
 oled_lib::OledConfig oled_config = {
     .i2cAddr7 = 0x3C,  // 7-битный адрес
@@ -51,7 +50,11 @@ void init()
 {
     shell::my_shellInit();
     logger::init();
-    logPrintln("%s", init_message);
+    // char buffer[128];
+    // int rem = sizeof(init_message) % sizeof(buffer);
+    // snprintf(buffer, sizeof(buffer), "%s", init_message);
+    // logPrintln("%s", buffer);
+    shellWriteString(&shell::shell, init_message);
     logInfo("Shell initialized");
     logInfo("Logger initialized");
     oled_drv.init();
