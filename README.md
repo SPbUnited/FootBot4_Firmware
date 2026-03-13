@@ -8,6 +8,10 @@
 2. HAL
 3. letter-shell + extensions
 
+## Стуктура исходного кода
+
+https://web.archive.org/web/20231210061404/https://api.csswg.org/bikeshed/?force=1&url=https://raw.githubusercontent.com/vector-of-bool/pitchfork/develop/data/spec.bs
+
 ## Дерево технологий
 
 ![](docs/tech_tree.excalidraw.png)

@@ -5,6 +5,21 @@
 namespace devices
 {
 
+const char init_message[] =
+    "    ______            __  ____        __  __ __\n"
+    "   / ____/___  ____  / /_/ __ )____  / /_/ // /\n"
+    "  / /_  / __ \\/ __ \\/ __/ __  / __ \\/ __/ // /_\n"
+    " / __/ / /_/ / /_/ / /_/ /_/ / /_/ / /_/__  __/\n"
+    "/_/    \\____/\\____/\\__/_____/\\____/\\__/  /_/   \n"
+    "\n"
+    "Build:              " __DATE__ " " __TIME__
+    "\n"
+    "Firmware version:   " FIRMWARE_VERSION
+    "\n"
+    //    "Shell version:      " SHELL_VERSION
+    //    "\n"
+    "Copyright:          (c) 2025 SPbUnited\n";
+
 oled_lib::OledConfig oled_config = {
     .i2cAddr7 = 0x3C,  // 7-битный адрес
     .width = 128,
@@ -35,8 +50,9 @@ chassis::Chassis chassis_drv(chassis_config);
 void init()
 {
     shell::my_shellInit();
-    logInfo("Shell initialized");
     logger::init();
+    logPrintln("%s", init_message);
+    logInfo("Shell initialized");
     logInfo("Logger initialized");
     oled_drv.init();
     logInfo("OLED initialized");
