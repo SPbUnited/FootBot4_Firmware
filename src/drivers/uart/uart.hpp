@@ -129,27 +129,35 @@ class UartDriver : public UartConfig
 
     void putc(char c)
     {
-        printf("%c", c);
+        ::printf("%c", c);
     }
 
     void write(const char *data, uint16_t size)
     {
-        printf("%s", data);
+        ::printf("%s", data);
     }
 
     void printf(const char *fmt, ...)
     {
-        printf(fmt);
+        va_list args;
+        va_start(args, fmt);
+        char buffer[128];
+        vsnprintf(buffer, sizeof(buffer), fmt, args);
+        va_end(args);
+        ::printf("%s", buffer);
     }
 
     void vprintf(const char *fmt, va_list args)
     {
-        printf(fmt);
+        char buffer[128];
+        vsnprintf(buffer, sizeof(buffer), fmt, args);
+        ::printf("%s", buffer);
     }
 
     int getc(char *c)
     {
-        return getc(c);
+        *c = ::getchar();
+        return 0;
     }
 };
 
