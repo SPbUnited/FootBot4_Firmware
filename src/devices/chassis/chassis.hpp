@@ -1,6 +1,7 @@
 #pragma once
 
 #include "devices/bldc/bldc.hpp"
+#include "vt_linalg"
 
 namespace devices::chassis
 {
@@ -23,12 +24,15 @@ struct ChassisConfig
 class Chassis : public ChassisConfig
 {
   private:
+    vt::numeric_matrix<4, 3> J;
+    vt::numeric_matrix<3, 4> Jinv;
+
   public:
     Chassis(ChassisConfig config);
 
     void init();
     void setVel(StateVector vel);
-    void getVel(StateVector *vel);
+    void getVel(StateVector *vel, bldc::BldcsVec wheel_vels);
 };
 
 }  // namespace devices::chassis
