@@ -7,7 +7,9 @@ namespace apps::mainloop
 
 struct MainloopState
 {
-    uint32_t delta;
+    uint32_t deltamin;
+    uint32_t deltaavg;
+    uint32_t deltamax;
     uint32_t counter;
 };
 
