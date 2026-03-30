@@ -22,10 +22,11 @@ void screen()
 
     apps::mainloop::MainloopState state = apps::mainloop::get_state();
 
-    display.rectFill(1, 8, 126, 24, false);  // Очищаем область
-    display.setCursor(4, 8);
+    display.rectFill(0, 0, 126, 32, false);  // Очищаем область
+    display.setCursor(0, 0);
     display.setTextSize(1);
-    display.printf("Uptime:\n  %lu ticks\n  delta: %lu", state.counter, state.delta);
+    display.printf("Uptime: %lu ticks\n  delta(avg|min|max):\n%lu|%lu|%lu", state.counter,
+                   state.deltaavg, state.deltamin, state.deltamax);
     display.flush();
 }
 
