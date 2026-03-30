@@ -25,8 +25,9 @@ void screen()
     display.rectFill(0, 0, 126, 32, false);  // Очищаем область
     display.setCursor(0, 0);
     display.setTextSize(1);
-    display.printf("Uptime: %lu ticks\n  delta(avg|min|max):\n%lu|%lu|%lu", state.counter,
-                   state.deltaavg, state.deltamin, state.deltamax);
+    display.printf("Version: %s\nUptime: %lu ticks\ndelta(avg|min|max):\n %lu | %lu | %lu",
+                   FIRMWARE_VERSION, state.counter, state.deltaavg, state.deltamin,
+                   state.deltamax);
     display.flush();
 }
 
