@@ -17,7 +17,8 @@ void OledDriver::init()
         while (1)
         {
             // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-            drivers::uart4.printf("OLED init error\n");
+            drivers::uart4.printf("OLED init error: %d %s\n", display.getLastResult(),
+                                  display.getLastError());
             HAL_Delay(100);
         }
     }

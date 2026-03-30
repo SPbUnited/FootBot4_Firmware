@@ -75,12 +75,12 @@ class UartDriver : public UartConfig
 
     void putc(char c)
     {
-        HAL_UART_Transmit(&handle, (uint8_t *)(&c), 1, 1000);
+        HAL_UART_Transmit(&handle, (uint8_t *)(&c), 1, 100);
     }
 
     void write(const char *data, uint16_t size)
     {
-        HAL_UART_Transmit(&handle, (uint8_t *)data, size, 1000);
+        HAL_UART_Transmit(&handle, (uint8_t *)data, size, 100);
     }
 
     void printf(const char *fmt, ...)
@@ -90,7 +90,7 @@ class UartDriver : public UartConfig
         char buffer[128];
         vsnprintf(buffer, sizeof(buffer), fmt, args);
         va_end(args);
-        HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 1000);
+        HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 100);
     }
 
     void vprintf(const char *fmt, va_list args)
