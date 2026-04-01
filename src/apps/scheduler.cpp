@@ -42,9 +42,9 @@ static void run(Apps app)
         case app_mainloop:
             mainloop::loop();
             break;
-        case app_shell:
-            devices::shell::my_shellLoop();
-            break;
+        // case app_shell:
+        //     devices::shell::my_shellLoop();
+        //     break;
         case app_screen:
             screen::screen();
         default:
