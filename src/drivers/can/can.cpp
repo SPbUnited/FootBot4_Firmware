@@ -46,14 +46,36 @@ void CanDriver::init()
     HAL_StatusTypeDef status = HAL_CAN_Init(&handle);
     if (status != HAL_OK)
     {
-        kernel::error("CAN init error: %d\n", int(status));
+        uint32_t error = HAL_CAN_GetError(&handle);
+        kernel::error("CAN init error: %d, error code: %lu\n", int(status), error);
     }
 
     // Start the CAN peripheral
     status = HAL_CAN_Start(&handle);
     if (status != HAL_OK)
     {
-        kernel::error("CAN start error: %d\n", int(status));
+        uint32_t error = HAL_CAN_GetError(&handle);
+        kernel::error("CAN start error: %d, error code: %lu\n", int(status), error);
+    }
+
+    // Configure and activate a filter to allow all messages (standard ID)
+    CAN_FilterTypeDef sFilterConfig;
+    sFilterConfig.FilterBank = 0;
+    sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+    sFilterConfig.FilterIdHigh = 0x0000;
+    sFilterConfig.FilterIdLow = 0x0000;
+    sFilterConfig.FilterMaskIdHigh = 0x0000;
+    sFilterConfig.FilterMaskIdLow = 0x0000;
+    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+    sFilterConfig.FilterActivation = ENABLE;
+    sFilterConfig.SlaveStartFilterBank = 14;
+
+    status = HAL_CAN_ConfigFilter(&handle, &sFilterConfig);
+    if (status != HAL_OK)
+    {
+        uint32_t error = HAL_CAN_GetError(&handle);
+        kernel::error("CAN filter config error: %d, error code: %lu\n", int(status), error);
     }
 }
 
