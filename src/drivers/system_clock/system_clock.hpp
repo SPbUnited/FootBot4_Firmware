@@ -25,9 +25,9 @@ class SystemClock
         RCC_OscInitStruct.HSEState = RCC_HSE_ON;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-        RCC_OscInitStruct.PLL.PLLM = 6;              // Делитель HSE (8 МГц / 6 = 1.333 МГц)
-        RCC_OscInitStruct.PLL.PLLN = 180;            // Множитель VCO (1.333 МГц * 180 = 240 МГц)
-        RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;  // Делитель PLLP (240 / 2 = 120 МГц)
+        RCC_OscInitStruct.PLL.PLLM = 6;              // Делитель HSE (12 МГц / 6 = 2 МГц)
+        RCC_OscInitStruct.PLL.PLLN = 180;            // Множитель VCO (2 МГц * 180 = 360 МГц)
+        RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;  // Делитель PLLP (360 / 2 = 180 МГц)
         RCC_OscInitStruct.PLL.PLLQ = 4;              // Для USB/SDIO, не обязательно
         if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
             kernel::error("SystemClock init error: HAL_RCC_OscConfig");
