@@ -93,7 +93,7 @@ can::CanConfig can1_config = {
     .rxPin = GPIO_PIN_0,
     .rxPort = GPIOD,
     .rxAlternate = GPIO_AF9_CAN1,
-    .prescaler = 60,
+    .prescaler = 12,  // Для 250 кбит/с при 45 МГц CAN clock: 15TQ * (12/45МГц) = 4мкс = 250кбит/с
     .mode = CAN_MODE_NORMAL,
     .sjw = CAN_SJW_1TQ,
     .timeSeg1 = CAN_BS1_6TQ,
