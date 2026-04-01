@@ -79,9 +79,36 @@ i2c::I2cConfig i2c2_config = {
     .noStretchMode = I2C_NOSTRETCH_DISABLE,
 };
 
+can::CanConfig can1_config = {
+    .instance = CAN1,
+    .clk_enable =
+        []()
+    {
+        __HAL_RCC_GPIOD_CLK_ENABLE();
+        __HAL_RCC_CAN1_CLK_ENABLE();
+    },
+    .txPin = GPIO_PIN_1,
+    .txPort = GPIOD,
+    .txAlternate = GPIO_AF9_CAN1,
+    .rxPin = GPIO_PIN_1,
+    .rxPort = GPIOD,
+    .rxAlternate = GPIO_AF9_CAN1,
+    .prescaler = 2,
+    .mode = CAN_MODE_NORMAL,
+    .sjw = CAN_SJW_2TQ,
+    .timeSeg1 = CAN_BS1_2TQ,
+    .timeSeg2 = CAN_BS2_2TQ,
+    .timeTriggeredMode = DISABLE,
+    .autoBusOff = DISABLE,
+    .autoWakeUp = DISABLE,
+    .autoRetrans = DISABLE,
+    .receiveFifoLocked = DISABLE,
+    .transmitFifoPriority = DISABLE,
+};
+
 i2c::I2cDriver i2c2(i2c2_config);
 
-can::CanDriver can_drv;
+can::CanDriver can_drv(can1_config);
 
 led::LedDriver leds;
 

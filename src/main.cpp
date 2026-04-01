@@ -11,4 +11,5 @@ int main(void)
     logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
 
     apps::init();
+    
 }
