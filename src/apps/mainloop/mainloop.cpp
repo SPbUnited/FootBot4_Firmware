@@ -48,7 +48,7 @@ void loop()
     uint8_t kkk[4];
     array = reinterpret_cast<uint8_t *>(&kekw);
     memcpy(kkk, array, 4);
-    drivers::can_drv.write(0x10A, array, 4);
+    drivers::can_drv.write(0x70A, array, 4);
 }
 
 MainloopState get_state()
