@@ -75,31 +75,20 @@ void CanDriver::write(uint32_t id, uint8_t *data, uint8_t len)
         TxData[i] = data[i];
     }
 
-    // Wait for a mailbox to be available
-    uint32_t timeout = 1000;
-    while (HAL_CAN_GetTxMailboxesFreeLevel(&handle) == 0)
+    // Try to add message to available mailbox
+    uint32_t timeout = 10000;
+    HAL_StatusTypeDef status = HAL_BUSY;
+    
+    while (status == HAL_BUSY && timeout-- > 0)
     {
-        if (timeout-- == 0)
-        {
-            kernel::error("CAN write timeout: no free mailbox");
-        }
+        status = HAL_CAN_AddTxMessage(&handle, &TxHeader, TxData, &TxMailbox);
         HAL_Delay(1);
     }
-
-    HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(&handle, &TxHeader, TxData, &TxMailbox);
+    
     if (status != HAL_OK)
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kernel::error("CAN write error: %d, error code: %lu\n", int(status), error);
-    }
-    
-    // Check for CAN error state and recover if needed
-    if (HAL_CAN_GetState(&handle) == HAL_CAN_STATE_ERROR)
-    {
-        kernel::error("CAN in error state, restarting...\n");
-        HAL_CAN_DeInit(&handle);
-        HAL_CAN_Init(&handle);
-        HAL_CAN_Start(&handle);
     }
 }
 

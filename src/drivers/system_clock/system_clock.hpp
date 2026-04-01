@@ -25,10 +25,10 @@ class SystemClock
         RCC_OscInitStruct.HSEState = RCC_HSE_ON;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-        RCC_OscInitStruct.PLL.PLLM = 8;              // Делитель HSE (8 МГц / 8 = 1 МГц)
-        RCC_OscInitStruct.PLL.PLLN = 360;            // Множитель VCO (1 МГц * 360 = 360 МГц)
-        RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;  // Делитель PLLP (360 / 2 = 180 МГц)
-        RCC_OscInitStruct.PLL.PLLQ = 7;              // Для USB/SDIO, не обязательно
+        RCC_OscInitStruct.PLL.PLLM = 6;              // Делитель HSE (8 МГц / 6 = 1.333 МГц)
+        RCC_OscInitStruct.PLL.PLLN = 180;            // Множитель VCO (1.333 МГц * 180 = 240 МГц)
+        RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;  // Делитель PLLP (240 / 2 = 120 МГц)
+        RCC_OscInitStruct.PLL.PLLQ = 4;              // Для USB/SDIO, не обязательно
         if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
             kernel::error("SystemClock init error: HAL_RCC_OscConfig");
 
@@ -37,8 +37,8 @@ class SystemClock
             RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
         RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;  // SYSCLK = PLL (180 МГц)
         RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;         // HCLK = 180 МГц
-        RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;          // APB1 = 45 МГц
-        RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;          // APB2 = 90 МГц
+        RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;          // APB1 = 45 МГц
+        RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;          // APB2 = 90 МГц
 
         if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
             kernel::error("SystemClock init error: HAL_RCC_ClockConfig");
