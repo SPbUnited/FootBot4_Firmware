@@ -1,6 +1,6 @@
-#include "apps/scheduler.hpp"
 #include "devices/device_manager.hpp"
 #include "drivers/driver_manager.hpp"
+#include "kernel/scheduler/scheduler.hpp"
 
 int main(void)
 {
@@ -10,6 +10,5 @@ int main(void)
 
     logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
 
-    apps::init();
-    
+    kernel::scheduler::init();
 }
