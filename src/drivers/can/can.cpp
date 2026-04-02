@@ -47,7 +47,7 @@ void CanDriver::init()
     if (status != HAL_OK)
     {
         uint32_t error = HAL_CAN_GetError(&handle);
-        kernel::error("CAN init error: %d, error code: %lu\n", int(status), error);
+        kerror("CAN init error: %d, error code: %lu\n", int(status), error);
     }
 
     // Start the CAN peripheral
@@ -55,7 +55,7 @@ void CanDriver::init()
     if (status != HAL_OK)
     {
         uint32_t error = HAL_CAN_GetError(&handle);
-        kernel::error("CAN start error: %d, error code: %lu\n", int(status), error);
+        kerror("CAN start error: %d, error code: %lu\n", int(status), error);
     }
 
     // Configure and activate a filter to allow all messages (standard ID)
@@ -75,7 +75,7 @@ void CanDriver::init()
     if (status != HAL_OK)
     {
         uint32_t error = HAL_CAN_GetError(&handle);
-        kernel::error("CAN filter config error: %d, error code: %lu\n", int(status), error);
+        kerror("CAN filter config error: %d, error code: %lu\n", int(status), error);
     }
 }
 
@@ -100,17 +100,17 @@ void CanDriver::write(uint32_t id, uint8_t *data, uint8_t len)
     // Try to add message to available mailbox
     uint32_t timeout = 10000;
     HAL_StatusTypeDef status = HAL_BUSY;
-    
+
     while (status == HAL_BUSY && timeout-- > 0)
     {
         status = HAL_CAN_AddTxMessage(&handle, &TxHeader, TxData, &TxMailbox);
         HAL_Delay(1);
     }
-    
+
     if (status != HAL_OK)
     {
         uint32_t error = HAL_CAN_GetError(&handle);
-        kernel::error("CAN write error: %d, error code: %lu\n", int(status), error);
+        kerror("CAN write error: %d, error code: %lu\n", int(status), error);
     }
 }
 
@@ -131,7 +131,7 @@ void CanDriver::read(uint32_t id, uint8_t *data, uint8_t len)
     }
     else
     {
-        kernel::error("CAN read error: %d\n", int(status));
+        kerror("CAN read error: %d\n", int(status));
     }
 }
 

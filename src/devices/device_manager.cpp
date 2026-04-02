@@ -55,18 +55,18 @@ void init()
     // snprintf(buffer, sizeof(buffer), "%s", init_message);
     // logPrintln("%s", buffer);
     shellWriteString(&shell::shell, init_message);
-    logInfo("Shell initialized");
-    logInfo("Logger initialized");
+    kinfo("Shell initialized");
+    kinfo("Logger initialized");
     oled_drv.init();
-    logInfo("OLED initialized");
+    kinfo("OLED initialized");
 
     bldcs_drv.init();
-    logInfo("BLDC initialized");
+    kinfo("BLDC initialized");
 
     chassis_drv.init();
-    logInfo("Chassis initialized");
+    kinfo("Chassis initialized");
 
-    logInfo("Devices initialized");
+    kinfo("Devices initialized");
 }
 
 }  // namespace devices

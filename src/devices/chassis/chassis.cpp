@@ -24,12 +24,12 @@ void print_matrix(const vt::generic_matrix<T, Row, Col> &matrix)
         }
         offset += snprintf(buffer + offset, sizeof(buffer) - offset, "\n");
     }
-    logDebug("%s", buffer);
+    kdebug("%s", buffer);
 }
 
 void Chassis::init()
 {
-    logDebug(
+    kdebug(
         "Chassis initialized:\n  wheel_angles: %f %f %f %f\n  wheel_radius: %f\n  "
         "robot_radius: %f",
         wheel_angles[0], wheel_angles[1], wheel_angles[2], wheel_angles[3], wheel_radius,
@@ -46,15 +46,15 @@ void Chassis::init()
                                      {-0.372225, -0.276332, 0.276332, 0.372225},
                                      {3.95441, 2.58154, 2.58154, 3.95441}});
 
-    logDebug("J:");
+    kdebug("J:");
     print_matrix(J);
-    logDebug("Jinv:");
+    kdebug("Jinv:");
     print_matrix(Jinv);
 }
 
 void Chassis::setVel(StateVector vel)
 {
-    logDebug("setVel: %f %f %f", vel.x, vel.y, vel.theta);
+    kdebug("setVel: %f %f %f", vel.x, vel.y, vel.theta);
 
     bldc::BldcsVec wheel_vels;
 
@@ -73,8 +73,8 @@ void Chassis::setVel(StateVector vel)
 
 void Chassis::getVel(StateVector *vel, bldc::BldcsVec wheel_vels)
 {
-    logDebug("getVel: %f %f %f %f", wheel_vels.vec[0], wheel_vels.vec[1], wheel_vels.vec[2],
-             wheel_vels.vec[3]);
+    kdebug("getVel: %f %f %f %f", wheel_vels.vec[0], wheel_vels.vec[1], wheel_vels.vec[2],
+           wheel_vels.vec[3]);
 
     vt::numeric_vector<4> w(
         {wheel_vels.vec[0], wheel_vels.vec[1], wheel_vels.vec[2], wheel_vels.vec[3]});
@@ -85,7 +85,7 @@ void Chassis::getVel(StateVector *vel, bldc::BldcsVec wheel_vels)
     vel->y = vel_vec[1];
     vel->theta = vel_vec[2];
 
-    logDebug("getVel: %f %f %f", vel->x, vel->y, vel->theta);
+    kdebug("getVel: %f %f %f", vel->x, vel->y, vel->theta);
 }
 
 }  // namespace devices::chassis
