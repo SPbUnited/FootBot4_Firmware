@@ -30,7 +30,7 @@ class SystemClock
         RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;  // Делитель PLLP (360 / 2 = 180 МГц)
         RCC_OscInitStruct.PLL.PLLQ = 4;              // Для USB/SDIO, не обязательно
         if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-            kernel::error("SystemClock init error: HAL_RCC_OscConfig");
+            kerror("SystemClock init error: HAL_RCC_OscConfig");
 
         // Настройка шин AHB, APB
         RCC_ClkInitStruct.ClockType =
@@ -41,7 +41,7 @@ class SystemClock
         RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;          // APB2 = 90 МГц
 
         if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-            kernel::error("SystemClock init error: HAL_RCC_ClockConfig");
+            kerror("SystemClock init error: HAL_RCC_ClockConfig");
 
         // Включение тактирования необходимых периферийных модулей
         __HAL_RCC_GPIOF_CLK_ENABLE();  // для PF0, PF1

@@ -7,11 +7,11 @@ namespace devices::bldc
 
 void BldcsDriver::setDriveVel(BldcsVec vel)
 {
-    logDebug("setDriveVel: %f %f %f %f", vel.vec[0], vel.vec[1], vel.vec[2], vel.vec[3]);
+    kdebug("setDriveVel: %f %f %f %f", vel.vec[0], vel.vec[1], vel.vec[2], vel.vec[3]);
 }
 void BldcsDriver::getDriveVel(BldcsVec *vel)
 {
-    logDebug("getDriveVel: %f %f %f %f", vel->vec[0], vel->vec[1], vel->vec[2], vel->vec[3]);
+    kdebug("getDriveVel: %f %f %f %f", vel->vec[0], vel->vec[1], vel->vec[2], vel->vec[3]);
 }
 
 }  // namespace devices::bldc
