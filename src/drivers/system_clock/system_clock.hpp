@@ -3,7 +3,7 @@
 #include "kernel/kernel.hpp"
 #include "stm32f4xx_hal.h"
 
-#define Ts_us 2000
+#define Ts_us 20000
 #define Ts_s (Ts_us / 1000000.0f)
 
 namespace drivers::system_clock
