@@ -1,6 +1,7 @@
 #pragma once
 
 #include "log.h"
+#include "scheduler/scheduler.hpp"
 
 namespace kernel
 {
