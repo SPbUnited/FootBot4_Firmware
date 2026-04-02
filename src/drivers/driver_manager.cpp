@@ -122,7 +122,7 @@ void init()
     drivers::system_clock_drv.init();
     drivers::bootstrap_drv.init();
 
-    HAL_Delay(200);
+    HAL_Delay(5000);
 
     drivers::uart4.init();
     drivers::i2c2.init();

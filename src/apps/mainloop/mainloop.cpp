@@ -44,7 +44,7 @@ void loop()
     state.counter++;
 
     uint8_t *array;
-    float kekw = 10;
+    float kekw = 200;
     uint8_t kkk[4];
     array = reinterpret_cast<uint8_t *>(&kekw);
     memcpy(kkk, array, 4);
