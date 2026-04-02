@@ -41,7 +41,7 @@ void I2cDriver::init()
     HAL_StatusTypeDef status = HAL_I2C_Init(&handle);
     if (status != HAL_OK)
     {
-        kernel::error("I2C init error: %d %d\n", 42, int(status));
+        kerror("I2C init error: %d %d\n", 42, int(status));
     }
 }
 
