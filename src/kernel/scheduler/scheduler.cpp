@@ -4,7 +4,7 @@
 #include "apps/screen/screen.hpp"
 #include "devices/device_manager.hpp"
 
-namespace apps
+namespace kernel::scheduler
 {
 
 static bool is_init = false;
@@ -40,13 +40,13 @@ static void run(Apps app)
     switch (app)
     {
         case app_mainloop:
-            mainloop::loop();
+            apps::mainloop::loop();
             break;
-        // case app_shell:
-        //     devices::shell::my_shellLoop();
-        //     break;
+        case app_shell:
+            devices::shell::my_shellLoop();
+            break;
         case app_screen:
-            screen::screen();
+            apps::screen::screen();
         default:
             break;
     }
@@ -60,11 +60,11 @@ void yield()
         return;
     }
 
-    if (mainloop::is_loop_pending())
+    if (apps::mainloop::is_loop_pending())
     {
         run(app_mainloop);
     }
-    else if (screen::is_screen_pending())
+    else if (apps::screen::is_screen_pending())
     {
         run(app_screen);
     }
@@ -84,4 +84,4 @@ void init()
     }
 }
 
-}  // namespace apps
+}  // namespace kernel::scheduler

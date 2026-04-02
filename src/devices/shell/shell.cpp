@@ -1,6 +1,6 @@
 #include "shell.hpp"
 
-#include "apps/scheduler.hpp"
+#include "kernel/kernel.hpp"
 
 namespace devices::shell
 {
@@ -11,7 +11,7 @@ signed short shellWrite(char *data, unsigned short len)
 {
     for (unsigned short i = 0; i < len; i++)
     {
-        apps::yield();
+        kernel::scheduler::yield();
         drivers::uart4.putc(data[i]);
     }
     return len;
@@ -22,7 +22,7 @@ signed short shellRead(char *data, unsigned short len)
     unsigned short recv = len;
     for (unsigned short i = 0; i < len; i++)
     {
-        apps::yield();
+        kernel::scheduler::yield();
         if (drivers::uart4.getc(&data[i]) != HAL_OK)
         {
             recv = i;
