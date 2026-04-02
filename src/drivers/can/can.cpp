@@ -82,7 +82,7 @@ void CanDriver::init()
 void CanDriver::write(uint32_t id, uint8_t *data, uint8_t len)
 {
     CAN_TxHeaderTypeDef TxHeader;
-    uint8_t TxData[4];
+    uint8_t TxData[8];
     uint32_t TxMailbox;
 
     TxHeader.StdId = id;

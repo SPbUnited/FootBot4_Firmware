@@ -16,6 +16,9 @@ bool is_loop_pending()
     return drivers::system_clock::micros() - timer > Ts_us * 0.95;
 }
 
+float dribbler_target = 200;
+bool dribbler_update = true;
+
 void loop()
 {
     while (drivers::system_clock::micros() - timer < Ts_us)
@@ -43,12 +46,11 @@ void loop()
 
     state.counter++;
 
-    uint8_t *array;
-    float kekw = 200;
-    uint8_t kkk[4];
-    array = reinterpret_cast<uint8_t *>(&kekw);
-    memcpy(kkk, array, 4);
-    drivers::can_drv.write(0x70A, array, 4);
+    if (dribbler_update)
+    {
+        devices::bldcs_drv.setDribblerVel(dribbler_target);
+        dribbler_update = false;
+    }
 }
 
 MainloopState get_state()
@@ -57,3 +59,12 @@ MainloopState get_state()
 }
 
 }  // namespace apps::mainloop
+
+float set_dribbler_target(float target)
+{
+    apps::mainloop::dribbler_target = target;
+    apps::mainloop::dribbler_update = true;
+    return apps::mainloop::dribbler_target;
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC),
+                 set_dribbler_target, set_dribbler_target, set dribbler target);
