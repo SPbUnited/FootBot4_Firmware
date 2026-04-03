@@ -58,11 +58,22 @@ int main_chassis_teleop(int argc, char *argv[])
         return -1;
     }
 
-    float vf = 0.1;
-    float w = 1.0;
+    float vf_base = 0.1;
+    float w_base = 1.0;
+
+    float vf_mult = 1.0;
+    float w_mult = 1.0;
 
     while (true)
     {
+        float vf = vf_base * vf_mult;
+        float w = w_base * w_mult;
+
+        printf(
+            "\rControl robot with keyboard [vel: %.2fm/s, %.2frad/s]: qweasdzxc for car movement, "
+            "uiojklm,. for "
+            "translation, ; to quit.",
+            vf, w);
         char c = getchar();
         if (c == -1)
         {
@@ -71,29 +82,75 @@ int main_chassis_teleop(int argc, char *argv[])
         }
         switch (c)
         {
-            case 'q':
+            case ';':
                 chassisPrint(0, 0, 0);
                 return 0;
+            case 'q':
+                chassisPrint(vf, 0, w);
+                break;
+            case 'w':
+                chassisPrint(vf, 0, 0);
+                break;
+            case 'e':
+                chassisPrint(vf, 0, -w);
+                break;
+            case 'a':
+                chassisPrint(0, 0, w);
+                break;
+            case 's':
+                chassisPrint(0, 0, 0);
+                break;
+            case 'd':
+                chassisPrint(0, 0, -w);
+                break;
+            case 'z':
+                chassisPrint(-vf, 0, -w);
+                break;
+            case 'x':
+                chassisPrint(-vf, 0, 0);
+                break;
+            case 'c':
+                chassisPrint(-vf, 0, w);
+                break;
+            case 'u':
+                chassisPrint(vf, vf, 0);
+                break;
             case 'i':
                 chassisPrint(vf, 0, 0);
                 break;
-            case ',':
-                chassisPrint(-vf, 0, 0);
+            case 'o':
+                chassisPrint(vf, -vf, 0);
                 break;
             case 'j':
                 chassisPrint(0, vf, 0);
                 break;
+            case 'k':
+                chassisPrint(0, 0, 0);
+                break;
             case 'l':
                 chassisPrint(0, -vf, 0);
                 break;
-            case 'u':
-                chassisPrint(0, 0, w);
+            case 'm':
+                chassisPrint(-vf, vf, 0);
                 break;
-            case 'o':
-                chassisPrint(0, 0, -w);
+            case ',':
+                chassisPrint(-vf, 0, 0);
                 break;
-            case 'k':
-                chassisPrint(0, 0, 0);
+            case '.':
+                chassisPrint(-vf, -vf, 0);
+                break;
+
+            case '-':
+                vf_mult /= 1.1;
+                break;
+            case '=':
+                vf_mult *= 1.1;
+                break;
+            case '[':
+                w_mult /= 1.1;
+                break;
+            case ']':
+                w_mult *= 1.1;
                 break;
             default:
                 break;
