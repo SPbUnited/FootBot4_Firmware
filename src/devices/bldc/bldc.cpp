@@ -6,6 +6,33 @@
 namespace devices::bldc
 {
 
+void BldcsDriver::init()
+{
+    kprogress_start("Awaiting BLDC initialization...");
+    for (int i = 0; i < 4; i++)
+    {
+        HAL_Delay(500);
+        kprogress_tick(25.0);
+    }
+    kprogress_finish("BLDC OK");
+
+    if (!isnan(drive_vel_p))
+    {
+        setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_P_RW, drive_vel_p);
+        kinfo("Set PID_VELOCITY_P_RW: %f", drive_vel_p);
+    }
+    if (!isnan(drive_vel_i))
+    {
+        setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_I_RW, drive_vel_i);
+        kinfo("Set PID_VELOCITY_I_RW: %f", drive_vel_i);
+    }
+    if (!isnan(drive_vel_limit))
+    {
+        setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_LIMIT_RW, drive_vel_limit);
+        kinfo("Set PID_VELOCITY_LIMIT_RW: %f", drive_vel_limit);
+    }
+}
+
 void BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, uint8_t *data, uint8_t len)
 {
     uint32_t id = motor_addr << 8 | register_addr;
@@ -31,10 +58,12 @@ void BldcsDriver::setDriveVel(BldcsVec vel)
     motorWrite(0, MULTI_TARGET_W, payload, 8);
 
     kdebug("setDriveVel: %f %f %f %f", vel.vec[0], vel.vec[1], vel.vec[2], vel.vec[3]);
+    current_vel = vel;
 }
 
 void BldcsDriver::getDriveVel(BldcsVec *vel)
 {
+    *vel = current_vel;
     kdebug("getDriveVel: %f %f %f %f", vel->vec[0], vel->vec[1], vel->vec[2], vel->vec[3]);
 }
 

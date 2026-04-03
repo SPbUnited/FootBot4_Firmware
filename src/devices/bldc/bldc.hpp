@@ -107,6 +107,9 @@ union BldcsVec
 struct BldcsConfig
 {
     drivers::can::CanDriver *can;
+    float drive_vel_p;
+    float drive_vel_i;
+    float drive_vel_limit;
 };
 
 class BldcsDriver : public BldcsConfig
@@ -123,7 +126,7 @@ class BldcsDriver : public BldcsConfig
   public:
     BldcsDriver(BldcsConfig config) : BldcsConfig(config) {}
 
-    void init() {}
+    void init();
 
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);

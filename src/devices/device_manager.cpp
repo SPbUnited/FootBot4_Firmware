@@ -33,6 +33,9 @@ oled::OledDriver oled_drv(oled_config, &drivers::i2c2.handle);
 
 bldc::BldcsConfig bldcs_config = {
     .can = &drivers::can_drv,
+    .drive_vel_p = 0.25,
+    .drive_vel_i = 8.0,
+    .drive_vel_limit = NAN,
 };
 
 bldc::BldcsDriver bldcs_drv(bldcs_config);
