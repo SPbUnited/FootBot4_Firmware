@@ -20,7 +20,7 @@ void BldcsDriver::setDriveVel(BldcsVec vel)
             float value;
             uint8_t buffer[4];
         } target_speed;
-        target_speed.value = vel.vec[i];
+        target_speed.value = -vel.vec[i];  // Positive speed should be CCW viewed from the top
         motorWrite(i + 1, 0x0A, target_speed.buffer, 4);
     }
 

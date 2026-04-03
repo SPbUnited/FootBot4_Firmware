@@ -36,15 +36,17 @@ void Chassis::init()
         robot_radius);
 
     J = vt::numeric_matrix<4, 3>({
-        {-cos(wheel_angles[0]), -sin(wheel_angles[0]), robot_radius},
-        {-cos(wheel_angles[1]), -sin(wheel_angles[1]), robot_radius},
-        {-cos(wheel_angles[2]), -sin(wheel_angles[2]), robot_radius},
-        {-cos(wheel_angles[3]), -sin(wheel_angles[3]), robot_radius},
+        {-sin(wheel_angles[0]), cos(wheel_angles[0]), robot_radius},
+        {-sin(wheel_angles[1]), cos(wheel_angles[1]), robot_radius},
+        {-sin(wheel_angles[2]), cos(wheel_angles[2]), robot_radius},
+        {-sin(wheel_angles[3]), cos(wheel_angles[3]), robot_radius},
     });
 
-    Jinv = vt::numeric_matrix<3, 4>({{-0.394976, 0.394976, 0.394976, -0.394976},
-                                     {-0.372225, -0.276332, 0.276332, 0.372225},
-                                     {3.95441, 2.58154, 2.58154, 3.95441}});
+    // Jinv = vt::numeric_matrix<3, 4>({{-0.394976, 0.394976, 0.394976, -0.394976},
+    //                                  {-0.372225, -0.276332, 0.276332, 0.372225},
+    //                                  {3.95441, 2.58154, 2.58154, 3.95441}});
+
+    Jinv = vt::numeric_matrix<3, 4>({0});  // TODO: recalculate Jinv
 
     kdebug("J:");
     print_matrix(J);
