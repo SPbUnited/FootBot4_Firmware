@@ -16,7 +16,7 @@ bool is_loop_pending()
     return drivers::system_clock::micros() - timer > Ts_us * 0.95;
 }
 
-float dribbler_target = 200;
+float dribbler_target = 0.0;
 bool dribbler_update = true;
 
 void loop()
