@@ -58,22 +58,31 @@ int main_chassis_teleop(int argc, char *argv[])
         return -1;
     }
 
+    logSetLevel(&devices::logger::uartLog, LOG_WRANING);
+
     float vf_base = 0.1;
     float w_base = 1.0;
 
     float vf_mult = 1.0;
     float w_mult = 1.0;
 
+    devices::chassis::StateVector vel = {0, 0, 0};
+
     while (true)
     {
         float vf = vf_base * vf_mult;
         float w = w_base * w_mult;
 
+        devices::chassis_drv.getVel(&vel);
+
         printf(
-            "\rControl robot with keyboard [vel: %.2fm/s, %.2frad/s]: qweasdzxc for car movement, "
-            "uiojklm,. for "
-            "translation, ; to quit.",
-            vf, w);
+            "\rControl robot with keyboard [vel: %.2fm/s, %.2frad/s]:"
+            // " qweasdzxc for car movement, "
+            // "uiojklm,. for "
+            // "translation, ; to quit., "
+            "current vel: x: %.2fm/s, y: %.2fm/s, theta: %.2frad/s",
+            vf, w, vel.x, vel.y, vel.theta);
+
         char c = getchar();
         if (c == -1)
         {
@@ -156,6 +165,8 @@ int main_chassis_teleop(int argc, char *argv[])
                 break;
         }
     }
+
+    logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), chassisTeleop,
                  main_chassis_teleop, chassis teleop);
