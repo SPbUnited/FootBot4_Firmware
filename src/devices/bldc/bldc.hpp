@@ -43,6 +43,8 @@ class BldcsDriver : public BldcsConfig
 
     void setDribblerVel(float vel);
     void getDribblerVel(float *vel);
+
+    void setDriveRegisterFloat(uint8_t register_addr, float value);
 };
 
 }  // namespace devices::bldc
