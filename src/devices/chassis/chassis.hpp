@@ -32,6 +32,7 @@ class Chassis : public ChassisConfig
 
     void init();
     void setVel(StateVector vel);
+    void getVel(StateVector *vel);
     void getVel(StateVector *vel, bldc::BldcsVec wheel_vels);
 };
 

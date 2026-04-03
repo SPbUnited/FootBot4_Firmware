@@ -42,11 +42,9 @@ void Chassis::init()
         {-sin(wheel_angles[3]), cos(wheel_angles[3]), robot_radius},
     });
 
-    // Jinv = vt::numeric_matrix<3, 4>({{-0.394976, 0.394976, 0.394976, -0.394976},
-    //                                  {-0.372225, -0.276332, 0.276332, 0.372225},
-    //                                  {3.95441, 2.58154, 2.58154, 3.95441}});
-
-    Jinv = vt::numeric_matrix<3, 4>({0});  // TODO: recalculate Jinv
+    Jinv = vt::numeric_matrix<3, 4>({{-0.372225, -0.276332, 0.276332, 0.372225},
+                                     {0.394976, -0.394976, -0.394976, 0.394976},
+                                     {3.95441, 2.58154, 2.58154, 3.95441}});
 
     kdebug("J:");
     print_matrix(J);
@@ -71,6 +69,13 @@ void Chassis::setVel(StateVector vel)
     }
 
     bldcs->setDriveVel(wheel_vels);
+}
+
+void Chassis::getVel(StateVector *vel)
+{
+    bldc::BldcsVec wheel_vels = {{0, 0, 0, 0}};
+    bldcs->getDriveVel(&wheel_vels);
+    getVel(vel, wheel_vels);
 }
 
 void Chassis::getVel(StateVector *vel, bldc::BldcsVec wheel_vels)
