@@ -28,7 +28,7 @@ void BldcsDriver::setDriveVel(BldcsVec vel)
         reinterpret_cast<uint16_t *>(payload)[i] = value_fp16;
     }
 
-    motorWrite(0, 96, payload, 8);
+    motorWrite(0, MULTI_TARGET_W, payload, 8);
 
     kdebug("setDriveVel: %f %f %f %f", vel.vec[0], vel.vec[1], vel.vec[2], vel.vec[3]);
 }
@@ -48,8 +48,7 @@ void BldcsDriver::setDribblerVel(float vel)
         uint8_t buffer[4];
     } target_speed;
     target_speed.value = vel;
-    motorWrite(7, 0x0A, target_speed.buffer, 4);
-    // drivers::can_drv.write(0x70A, target_speed.buffer, 4);
+    motorWrite(7, TARGET_RW, target_speed.buffer, 4);
 }
 
 void BldcsDriver::getDribblerVel(float *vel)
