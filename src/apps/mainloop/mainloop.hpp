@@ -13,7 +13,7 @@ struct MainloopState
     uint32_t counter;
 };
 
-bool is_loop_pending();
+bool is_loop_pending(uint32_t time_elapsed, uint32_t period);
 
 void loop();
 
