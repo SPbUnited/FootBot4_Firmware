@@ -5,11 +5,7 @@
 
 int schedulerTop()
 {
-    Shell *ch_shell = shellGetCurrent();
-    if (!ch_shell)
-    {
-        return -1;
-    }
+    getshell();
 
     kernel::scheduler::TaskDescriptor *tasks = kernel::scheduler::get_tasks();
 

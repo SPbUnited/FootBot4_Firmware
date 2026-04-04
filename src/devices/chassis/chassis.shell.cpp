@@ -38,11 +38,7 @@ Shell *shell2048 = NULL;
 
 int main_chassis_teleop(int argc, char *argv[])
 {
-    Shell *ch_shell = shellGetCurrent();
-    if (!ch_shell)
-    {
-        return -1;
-    }
+    getshell();
 
     logSetLevel(&devices::logger::uartLog, LOG_WRANING);
 

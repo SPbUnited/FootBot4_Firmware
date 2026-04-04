@@ -7,8 +7,6 @@
 namespace apps::mainloop
 {
 
-MainloopState state = {0};
-
 bool is_loop_pending(uint32_t time_elapsed, uint32_t period)
 {
     return time_elapsed > period * 0.95;
@@ -25,36 +23,20 @@ void loop()
     uint32_t delta = drivers::system_clock::micros() - timer;
     timer = drivers::system_clock::micros();
 
-    if (state.counter % 1000 == 0)
-    {
-        state.deltamin = 0;
-        state.deltamax = 0;
-    }
+    logSetLevel(&devices::logger::uartLog, LOG_NONE);
 
-    if (state.deltamax < delta)
-    {
-        state.deltamax = delta;
-    }
-    if (state.deltamin > delta || state.deltamin == 0)
-    {
-        state.deltamin = delta;
-    }
-    state.deltaavg = (0.9 * state.deltaavg + 0.1 * delta);
+    // drivers::leds.display_number(state.counter);
 
-    drivers::leds.display_number(state.counter);
-
-    state.counter++;
+    devices::chassis::StateVector vel = {0, 0, 0};
+    devices::chassis_drv.getVel(&vel);
+    devices::odom_dev.update(vel);
 
     if (dribbler_update)
     {
         devices::bldcs_drv.setDribblerVel(dribbler_target);
         dribbler_update = false;
     }
-}
-
-MainloopState get_state()
-{
-    return state;
+    logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
 }
 
 }  // namespace apps::mainloop

@@ -35,6 +35,8 @@ bldc::BldcsConfig bldcs_config = {
     .can = &drivers::can_drv,
     .drive_vel_p = 0.25,
     .drive_vel_i = 40.0,
+    // .drive_vel_p = 0.1,
+    // .drive_vel_i = 1.0,
     .drive_vel_limit = NAN,
 };
 
@@ -43,11 +45,17 @@ bldc::BldcsDriver bldcs_drv(bldcs_config);
 chassis::ChassisConfig chassis_config = {
     .bldcs = &bldcs_drv,
     .wheel_angles = {1.0472, 2.4433, -2.4433, -1.0472},
-    .wheel_radius = 0.034f,
+    .wheel_radius = 0.034f * 4 / 5,
     .robot_radius = 0.0765f,
 };
 
 chassis::Chassis chassis_drv(chassis_config);
+
+odom::OdometerConfig odom_config = {
+    .Ts = Ts_s,
+};
+
+odom::Odometer odom_dev(odom_config);
 
 void init()
 {
@@ -68,6 +76,9 @@ void init()
 
     chassis_drv.init();
     kinfo("Chassis initialized");
+
+    odom_dev.init();
+    kinfo("Odometer initialized");
 
     kinfo("Devices initialized");
 }
