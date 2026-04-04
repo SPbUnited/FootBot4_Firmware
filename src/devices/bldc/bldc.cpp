@@ -16,20 +16,34 @@ void BldcsDriver::init()
     }
     kprogress_finish("BLDC OK");
 
+    setDriveSettings(true);
+}
+
+void BldcsDriver::setDriveSettings(bool is_verbose)
+{
     if (!isnan(drive_vel_p))
     {
         setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_P_RW, drive_vel_p);
-        kinfo("Set PID_VELOCITY_P_RW: %f", drive_vel_p);
+        if (is_verbose)
+        {
+            kinfo("Set PID_VELOCITY_P_RW: %f", drive_vel_p);
+        }
     }
     if (!isnan(drive_vel_i))
     {
         setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_I_RW, drive_vel_i);
-        kinfo("Set PID_VELOCITY_I_RW: %f", drive_vel_i);
+        if (is_verbose)
+        {
+            kinfo("Set PID_VELOCITY_I_RW: %f", drive_vel_i);
+        }
     }
     if (!isnan(drive_vel_limit))
     {
         setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_LIMIT_RW, drive_vel_limit);
-        kinfo("Set PID_VELOCITY_LIMIT_RW: %f", drive_vel_limit);
+        if (is_verbose)
+        {
+            kinfo("Set PID_VELOCITY_LIMIT_RW: %f", drive_vel_limit);
+        }
     }
 }
 
