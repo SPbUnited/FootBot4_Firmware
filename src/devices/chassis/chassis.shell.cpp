@@ -28,27 +28,13 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), 
 
 }  // namespace
 
-#define printf(...) shellPrint(ch_shell, ##__VA_ARGS__)
-#define getchar() shellGetChar(ch_shell)
+#include "devices/shell/shell.main.hpp"
 
 #define SIZE 4
 uint32_t score = 0;
 uint8_t scheme = 0;
 
 Shell *shell2048 = NULL;
-
-char shellGetChar(Shell *shell)
-{
-    char data;
-    if (shell->read && shell->read(&data, 1) == 1)
-    {
-        return data;
-    }
-    else
-    {
-        return -1;
-    }
-}
 
 int main_chassis_teleop(int argc, char *argv[])
 {
@@ -164,6 +150,8 @@ int main_chassis_teleop(int argc, char *argv[])
             default:
                 break;
         }
+
+        kernel::scheduler::delay_ms(100);
     }
 
     logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
