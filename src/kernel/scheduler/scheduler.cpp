@@ -2,6 +2,7 @@
 
 #include "apps/mainloop/mainloop.hpp"
 #include "apps/screen/screen.hpp"
+#include "apps/setting_broadcaster/setting_broadcaster.hpp"
 #include "devices/device_manager.hpp"
 
 namespace kernel::scheduler
@@ -13,13 +14,21 @@ enum Apps
 {
     app_mainloop,
     app_screen,
+    app_setting_broadcaster,
     app_shell,
     app_count,
 };
 
+#define TPS(x) (static_cast<uint32_t>(1e6 / x))  // Ticks per second
+#define SPT(x) (static_cast<uint32_t>(1e6 * x))  // Seconds per tick
+
+#define ksperiodic [](uint32_t time_elapsed, uint32_t period) { return time_elapsed > period; }
+#define kspersistent [](uint32_t time_elapsed, uint32_t period) { return true; }
+
 TaskDescriptor tasks[app_count] = {
     {apps::mainloop::loop, 0, Ts_us, apps::mainloop::is_loop_pending, idle},
-    {apps::screen::screen, 0, 1000000 / 10, ksperiodic, idle},
+    {apps::setting_broadcaster::broadcast_settings, 0, TPS(1), ksperiodic, idle},
+    {apps::screen::screen, 0, TPS(10), ksperiodic, idle},
     {devices::shell::my_shellLoop, 0, 0, kspersistent, idle},
 };
 
