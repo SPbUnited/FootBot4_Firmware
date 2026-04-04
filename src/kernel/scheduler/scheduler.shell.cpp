@@ -36,14 +36,15 @@ int schedulerTop()
         printf("\033[H\n");
         printf(
             "app |                name  |   exec_time (min|avg|max)  |  period_time (min|avg|max) "
-            "| "
+            "|    freq   |"
             "counter \n");
         for (size_t app = 0; app < kernel::scheduler::get_task_count(); app++)
         {
-            printf(" %2d | %20s | %8lu|%8lu|%8lu | %8lu|%8lu|%8lu | %6lu \n", app, tasks[app].name,
-                   tasks[app].monitor.exec_time.min, tasks[app].monitor.exec_time.avg,
-                   tasks[app].monitor.exec_time.max, tasks[app].monitor.period_time.min,
-                   tasks[app].monitor.period_time.avg, tasks[app].monitor.period_time.max,
+            printf(" %2d | %20s | %8lu|%8lu|%8lu | %8lu|%8lu|%8lu | %7.1fHz | %6lu \n", app,
+                   tasks[app].name, tasks[app].monitor.exec_time.min,
+                   tasks[app].monitor.exec_time.avg, tasks[app].monitor.exec_time.max,
+                   tasks[app].monitor.period_time.min, tasks[app].monitor.period_time.avg,
+                   tasks[app].monitor.period_time.max, 1e6 / tasks[app].monitor.period_time.avg,
                    tasks[app].monitor.counter);
         }
 

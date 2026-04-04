@@ -1,6 +1,7 @@
 #pragma once
 
 #include "inttypes.h"
+#include "log.h"
 #include "stddef.h"
 
 namespace kernel::scheduler
@@ -54,6 +55,7 @@ struct TaskDescriptor
         MinAvgMax period_time;
         uint32_t counter;
     } monitor;
+    LogLevel log_level;
 };
 
 void yield();

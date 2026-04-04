@@ -143,6 +143,11 @@ SHELL_EXPORT_CMD(
         2\n LOG_INFO = 3\n LOG_DEBUG = 4\n LOG_VERBOSE = 5\n LOG_ALL = 6);
 #endif /** SHELL_USING_COMPANION == 1 */
 
+LogLevel logGetLevel(Log *log)
+{
+    return log->level;
+}
+
 /**
  * @brief log写buffer
  *
