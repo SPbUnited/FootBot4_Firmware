@@ -9,11 +9,9 @@ namespace apps::mainloop
 
 MainloopState state = {0};
 
-static uint32_t timer = 0;
-
-bool is_loop_pending()
+bool is_loop_pending(uint32_t time_elapsed, uint32_t period)
 {
-    return drivers::system_clock::micros() - timer > Ts_us * 0.95;
+    return time_elapsed > period * 0.95;
 }
 
 float dribbler_target = 0.0;
@@ -21,6 +19,7 @@ bool dribbler_update = true;
 
 void loop()
 {
+    static uint32_t timer = 0;
     while (drivers::system_clock::micros() - timer < Ts_us)
         ;
     uint32_t delta = drivers::system_clock::micros() - timer;

@@ -12,18 +12,16 @@ static bool is_init = false;
 enum Apps
 {
     app_mainloop,
-    app_shell,
     app_screen,
+    app_shell,
     app_count,
 };
 
-enum State
-{
-    idle,
-    running,
+TaskDescriptor tasks[app_count] = {
+    {apps::mainloop::loop, 0, Ts_us, apps::mainloop::is_loop_pending, idle},
+    {apps::screen::screen, 0, 1000000 / 10, ksperiodic, idle},
+    {devices::shell::my_shellLoop, 0, 0, kspersistent, idle},
 };
-
-static State state[app_count] = {idle};
 
 static void run(Apps app)
 {
@@ -32,25 +30,14 @@ static void run(Apps app)
         return;
     }
 
-    if (state[app] == running)
+    if (tasks[app].state == running)
     {
         return;
     }
-    state[app] = running;
-    switch (app)
-    {
-        case app_mainloop:
-            apps::mainloop::loop();
-            break;
-        case app_shell:
-            devices::shell::my_shellLoop();
-            break;
-        case app_screen:
-            apps::screen::screen();
-        default:
-            break;
-    }
-    state[app] = idle;
+    tasks[app].state = running;
+    tasks[app].last_exec = drivers::system_clock::micros();
+    tasks[app].function();
+    tasks[app].state = idle;
 }
 
 void yield()
@@ -60,17 +47,13 @@ void yield()
         return;
     }
 
-    if (apps::mainloop::is_loop_pending())
+    for (size_t app = 0; app < app_count; app++)
     {
-        run(app_mainloop);
-    }
-    else if (apps::screen::is_screen_pending())
-    {
-        run(app_screen);
-    }
-    else
-    {
-        run(app_shell);
+        uint32_t elapsed_time = drivers::system_clock::micros() - tasks[app].last_exec;
+        if (tasks[app].is_pending(elapsed_time, tasks[app].period))
+        {
+            run(static_cast<Apps>(app));
+        }
     }
 }
 
