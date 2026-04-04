@@ -20,9 +20,6 @@ struct TaskDescriptor
     TaskState state;
 };
 
-#define ksperiodic [](uint32_t time_elapsed, uint32_t period) { return time_elapsed > period; }
-#define kspersistent [](uint32_t time_elapsed, uint32_t period) { return true; }
-
 void yield();
 
 void init();

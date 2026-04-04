@@ -128,6 +128,8 @@ class BldcsDriver : public BldcsConfig
 
     void init();
 
+    void setDriveSettings(bool is_verbose = false);
+
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);
 
