@@ -6,11 +6,15 @@
 namespace devices::chassis
 {
 
-struct StateVector
+union StateVector
 {
-    float x;
-    float y;
-    float theta;
+    float vec[3];
+    struct
+    {
+        float x;
+        float y;
+        float theta;
+    };
 };
 
 struct ChassisConfig
