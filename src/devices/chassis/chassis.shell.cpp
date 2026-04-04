@@ -54,6 +54,8 @@ int main_chassis_teleop(int argc, char *argv[])
 
     devices::chassis::StateVector vel = {0, 0, 0};
 
+    printf("\033[2J");  // Clear screen
+
     while (true)
     {
         float vf = vf_base * vf_mult;
@@ -62,12 +64,16 @@ int main_chassis_teleop(int argc, char *argv[])
         devices::chassis_drv.getVel(&vel);
 
         printf(
-            "\rControl robot with keyboard [vel: %.2fm/s, %.2frad/s]:"
-            // " qweasdzxc for car movement, "
-            // "uiojklm,. for "
-            // "translation, ; to quit., "
-            "current vel: x: %.2fm/s, y: %.2fm/s, theta: %.2frad/s",
-            vf, w, vel.x, vel.y, vel.theta);
+            "\033[H\nControl robot with keyboard [vel: %5.2fm/s, %5.2frad/s]:\n"
+            "  qweasdzxc for car movement, \n"
+            "  uiojklm,. for translation, \n",
+            vf, w);
+        printf(
+            "  -= change linear velocity, \n"
+            "  [] change angular velocity, \n"
+            "  ; to quit.,\n");
+        printf("current vel: x: %5.2fm/s, y: %5.2fm/s, theta: %5.2frad/s", vel.x, vel.y,
+               vel.theta);
 
         char c = getchar();
         if (c == -1)
@@ -151,7 +157,7 @@ int main_chassis_teleop(int argc, char *argv[])
                 break;
         }
 
-        kernel::scheduler::delay_ms(100);
+        kernel::scheduler::delay_ms(50);
     }
 
     logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
