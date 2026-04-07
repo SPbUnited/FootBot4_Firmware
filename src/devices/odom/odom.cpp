@@ -16,9 +16,9 @@ void Odometer::update(devices::chassis::StateVector vel)
     state.theta = state.theta + vel.theta * Ts;
 }
 
-void Odometer::getState(devices::chassis::StateVector *vel)
+void Odometer::getState(devices::chassis::StateVector *state)
 {
-    *vel = state;
+    *state = this->state;
 }
 
 }  // namespace devices::odom

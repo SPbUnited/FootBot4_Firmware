@@ -1,0 +1,122 @@
+#include "robot.hpp"
+
+#include "devices/device_manager.hpp"
+
+namespace devices::robot
+{
+
+void Robot::set_target_linear_vel(float vel_x, float vel_y)
+{
+    linear_mode = VELOCITY;
+
+    target_vel.x = vel_x;
+    target_vel.y = vel_y;
+}
+
+void Robot::set_target_angular_vel(float vel_theta)
+{
+    angle_mode = ANGLEVEL;
+
+    target_vel.theta = vel_theta;
+}
+
+void Robot::set_target_angular_dpos(float dpos_theta)
+{
+    angle_mode = ANGLEPOS;
+
+    target_pos.theta = current_pos.theta + dpos_theta;
+}
+
+void Robot::set_max_linear_vel(float max_vel)
+{
+    this->max_linear_vel = max_vel;
+}
+
+void Robot::set_max_linear_accel(float max_accel)
+{
+    this->max_linear_accel = max_accel;
+}
+
+void Robot::set_dribbler_setting(uint8_t setting)
+{
+    if (dribbler_setting == setting)
+    {
+        return;
+    }
+
+    dribbler_setting = setting;
+    dribbler_update = true;
+}
+
+void Robot::set_kicker_setting(uint8_t setting)
+{
+    kicker_setting = setting;
+}
+
+void Robot::set_kicker_mode(KickerMode mode)
+{
+    kicker_mode = mode;
+}
+
+void Robot::init() {}
+
+void Robot::sense()
+{
+    chassis_drv.getVel(&current_vel);
+    odom_dev.update(current_vel);
+    odom_dev.getState(&current_pos);
+}
+
+void Robot::plan()
+{
+    if (linear_mode == VELOCITY)
+    {
+        // Just keep current target_vel
+    }
+    else if (linear_mode == COORDINATE)
+    {
+        // TODO position control
+    }
+
+    if (angle_mode == ANGLEVEL)
+    {
+        // Just keep current target_vel
+    }
+    else if (angle_mode == ANGLEPOS)
+    {
+        float error = target_pos.theta - current_pos.theta;
+        target_vel.theta = error * angle_kp;
+    }
+}
+
+void Robot::act()
+{
+    float vel_abs = sqrt(target_vel.x * target_vel.x + target_vel.y * target_vel.y);
+    if (vel_abs > max_linear_vel)
+    {
+        target_vel.x = target_vel.x / vel_abs * max_linear_vel;
+        target_vel.y = target_vel.y / vel_abs * max_linear_vel;
+    }
+
+    if (fabs(target_vel.theta) > max_angular_vel)
+    {
+        target_vel.theta = target_vel.theta / fabs(target_vel.theta) * max_angular_vel;
+    }
+
+    chassis_drv.setVel(target_vel);
+
+    if (dribbler_update)
+    {
+        bldcs_drv.setDribblerVel(dribbler_setting * dribbler_setting_to_vel);
+        dribbler_update = false;
+    }
+}
+
+void setTargetDangle(float angle)
+{
+    robot_dev.set_target_angular_dpos(angle);
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), setTargetDangle,
+                 setTargetDangle, set target angle);
+
+}  // namespace devices::robot

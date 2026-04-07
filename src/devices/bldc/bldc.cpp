@@ -65,7 +65,7 @@ void BldcsDriver::setDriveVel(BldcsVec vel)
     for (size_t i = 0; i < 4; i++)
     {
         float value = -vel.vec[i];  // Positive speed should be CCW viewed from the top
-        ushort value_fp16 = float_to_half(value);
+        ushort value_fp16 = fp32_to_fp16(value);
         reinterpret_cast<uint16_t *>(payload)[i] = value_fp16;
     }
 
