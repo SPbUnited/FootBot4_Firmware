@@ -7,7 +7,7 @@ namespace devices::logger
 
 void uartLogWrite(char *buffer, short len);
 
-Log uartLog = {.write = uartLogWrite, .active = true, .level = LOG_DEBUG};
+Log uartLog = {.write = uartLogWrite, .active = true, .level = LOG_ALL};
 
 void uartLogWrite(char *buffer, short len)
 {
