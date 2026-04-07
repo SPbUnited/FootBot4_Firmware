@@ -40,8 +40,6 @@ int main_chassis_teleop(int argc, char *argv[])
 {
     getshell();
 
-    logSetLevel(&devices::logger::uartLog, LOG_WRANING);
-
     float vf_base = 0.1;
     float w_base = 1.0;
 
@@ -155,8 +153,6 @@ int main_chassis_teleop(int argc, char *argv[])
 
         kernel::scheduler::delay_ms(50);
     }
-
-    logSetLevel(&devices::logger::uartLog, LOG_DEBUG);
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), chassisTeleop,
                  main_chassis_teleop, chassis teleop);

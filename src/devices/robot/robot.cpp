@@ -11,6 +11,9 @@ void Robot::set_target_linear_vel(float vel_x, float vel_y)
 
     target_vel.x = vel_x;
     target_vel.y = vel_y;
+
+    kverbose("set_target_linear_vel(vel_x = %f, vel_y = %f): target_vel.x = %f, target_vel.y = %f",
+             vel_x, vel_y, target_vel.x, target_vel.y);
 }
 
 void Robot::set_target_angular_vel(float vel_theta)
@@ -18,6 +21,9 @@ void Robot::set_target_angular_vel(float vel_theta)
     angle_mode = ANGLEVEL;
 
     target_vel.theta = vel_theta;
+
+    kverbose("set_target_angular_vel(vel_theta = %f): target_vel.theta = %f", vel_theta,
+             target_vel.theta);
 }
 
 void Robot::set_target_angular_dpos(float dpos_theta)
@@ -25,16 +31,23 @@ void Robot::set_target_angular_dpos(float dpos_theta)
     angle_mode = ANGLEPOS;
 
     target_pos.theta = current_pos.theta + dpos_theta;
+
+    kverbose("set_target_angular_dpos(dpos_theta = %f): target_pos.theta = %f", dpos_theta,
+             target_pos.theta);
 }
 
 void Robot::set_max_linear_vel(float max_vel)
 {
     this->max_linear_vel = max_vel;
+
+    kverbose("set_max_linear_vel(max_vel = %f)", max_vel);
 }
 
 void Robot::set_max_linear_accel(float max_accel)
 {
     this->max_linear_accel = max_accel;
+
+    kverbose("set_max_linear_accel(max_accel = %f)", max_accel);
 }
 
 void Robot::set_dribbler_setting(uint8_t setting)
@@ -46,16 +59,23 @@ void Robot::set_dribbler_setting(uint8_t setting)
 
     dribbler_setting = setting;
     dribbler_update = true;
+
+    kverbose("set_dribbler_setting(setting = %d): dribbler_setting = %d", setting,
+             dribbler_setting);
 }
 
 void Robot::set_kicker_setting(uint8_t setting)
 {
     kicker_setting = setting;
+
+    kverbose("set_kicker_setting(setting = %d): kicker_setting = %d", setting, kicker_setting);
 }
 
 void Robot::set_kicker_mode(KickerMode mode)
 {
     kicker_mode = mode;
+
+    kverbose("set_kicker_mode(mode = %d): kicker_mode = %d", mode, kicker_mode);
 }
 
 void Robot::init() {}
