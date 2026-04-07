@@ -24,6 +24,8 @@ void OledDriver::init()
     }
     drivers::uart4.printf("OLED init ok\n");
     display.clear();
+    display.print("Booting...");
+    display.flush();
 }
 
 }  // namespace devices::oled
