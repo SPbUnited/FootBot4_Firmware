@@ -57,6 +57,19 @@ odom::OdometerConfig odom_config = {
 
 odom::Odometer odom_dev(odom_config);
 
+robot::RobotConfig robot_config = {
+    .dribbler_setting_to_vel = 250.0 / 16,
+    .kicker_setting_to_voltage = 200.0 / 16,
+    .angle_kp = 6.0,
+    .max_linear_vel = 0.5,
+    .max_linear_accel = NAN,
+    .max_angular_vel = 2.0,
+    .max_angular_accel = NAN,
+    .robot_id = 15,
+};
+
+robot::Robot robot_dev(robot_config);
+
 void init()
 {
     shell::my_shellInit();
@@ -79,6 +92,9 @@ void init()
 
     odom_dev.init();
     kinfo("Odometer initialized");
+
+    robot_dev.init();
+    kinfo("Robot initialized");
 
     kinfo("Devices initialized");
 }
