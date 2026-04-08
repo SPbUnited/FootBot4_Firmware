@@ -83,14 +83,17 @@ void NRF24Driver::init()
 
     // Set CS high (deselect)
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
+
+    // Initialize NRF24 module
+    nrf24_init();
 }
 
-void NRF24Driver::write(uint32_t id, uint8_t *data, uint8_t len)
+void NRF24Driver::write(uint32_t id, const uint8_t *data, uint8_t len)
 {
     // TODO: Implement write with ID filtering
     // For now, just send data through SPI
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&handle, data, len, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(&handle, (uint8_t *)data, len, HAL_MAX_DELAY);
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
 }
 
@@ -110,6 +113,11 @@ void NRF24Driver::setReg(uint32_t reg, uint32_t value)
         static_cast<uint8_t>(value & 0xFF)  // Value
     };
     write(0, cmd, 2);
+}
+
+void NRF24Driver::set_channel(uint8_t channel)
+{
+    nrf24_set_channel(channel);
 }
 
 }  // namespace drivers::nrf24

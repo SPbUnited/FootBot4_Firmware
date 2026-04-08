@@ -21,7 +21,7 @@ extern i2c::I2cDriver i2c2;
 extern led::LedDriver leds;
 extern buzzer::Buzzer buzzer_drv;
 extern can::CanDriver can_drv;
-extern nrf24::NRF24Driver nrf24;
+extern nrf24::NRF24Driver nrf24_drv;
 
 void init();
 
