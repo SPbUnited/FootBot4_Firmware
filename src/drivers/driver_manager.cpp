@@ -134,7 +134,7 @@ nrf24::NRF24Config nrf24_config = {
 };
 
 can::CanDriver can_drv(can1_config);
-nrf24::NRF24Driver nrf24(nrf24_config);
+nrf24::NRF24Driver nrf24_drv(nrf24_config);
 
 led::LedDriver leds;
 
@@ -154,7 +154,7 @@ void init()
     drivers::i2c2.init();
     drivers::leds.init();
     drivers::can_drv.init();
-    drivers::nrf24.init();
+    drivers::nrf24_drv.init();
 }
 
 }  // namespace drivers

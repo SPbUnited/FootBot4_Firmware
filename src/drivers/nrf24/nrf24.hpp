@@ -3,6 +3,7 @@
 #include <inttypes.h>
 
 #include "stm32f4xx_hal.h"
+#include "nrf24_lib.h"
 
 namespace drivers::nrf24
 {
@@ -46,7 +47,9 @@ class NRF24Driver : public NRF24Config
     NRF24Driver(NRF24Config config);
 
     void init();
-    void write(uint32_t id, uint8_t *data, uint8_t len);
+    void init_nrf24();
+    void set_channel(uint8_t channel);
+    void write(uint32_t id, const uint8_t *data, uint8_t len);
     void read(uint32_t id, uint8_t *data, uint8_t len);
     void setReg(uint32_t reg, uint32_t value);
 };
