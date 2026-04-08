@@ -108,7 +108,33 @@ can::CanConfig can1_config = {
 
 i2c::I2cDriver i2c2(i2c2_config);
 
+nrf24::NRF24Config nrf24_config = {
+    .instance = SPI2,
+    .clk_enable =
+        []()
+    {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_SPI2_CLK_ENABLE();
+    },
+    .sckPin = GPIO_PIN_13,
+    .sckPort = GPIOB,
+    .sckAlternate = GPIO_AF5_SPI2,
+    .misoPin = GPIO_PIN_14,
+    .misoPort = GPIOB,
+    .misoAlternate = GPIO_AF5_SPI2,
+    .mosiPin = GPIO_PIN_15,
+    .mosiPort = GPIOB,
+    .mosiAlternate = GPIO_AF5_SPI2,
+    .cePin = GPIO_PIN_1,
+    .cePort = GPIOB,
+    .csPin = GPIO_PIN_12,
+    .csPort = GPIOB,
+    .irqPin = 0,
+    .irqPort = GPIOA,
+};
+
 can::CanDriver can_drv(can1_config);
+nrf24::NRF24Driver nrf24(nrf24_config);
 
 led::LedDriver leds;
 
@@ -128,6 +154,7 @@ void init()
     drivers::i2c2.init();
     drivers::leds.init();
     drivers::can_drv.init();
+    drivers::nrf24.init();
 }
 
 }  // namespace drivers
