@@ -85,7 +85,31 @@ void NRF24Driver::init()
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
 
     // Initialize NRF24 module
-    nrf24_init();
+    init_nrf24();
+}
+
+void NRF24Driver::init_nrf24()
+{
+    // Wait for module to stabilize
+    HAL_Delay(5);
+
+    // Configure basic settings
+    write_register(NRF24_REG_EN_AA, NRF24_DEFAULT_EN_AA);
+    write_register(NRF24_REG_EN_RXADDR, NRF24_DEFAULT_EN_RXADDR);
+    write_register(NRF24_REG_SETUP_AW, NRF24_DEFAULT_SETUP_AW);
+    write_register(NRF24_REG_SETUP_RETR, NRF24_DEFAULT_SETUP_RETR);
+    write_register(NRF24_REG_DYNPD, NRF24_DEFAULT_DYNPD);
+    write_register(NRF24_REG_FEATURE, NRF24_DEFAULT_FEATURE);
+
+    // Set default data rate (250kbps) and power (0dBm)
+    set_data_rate(DataRate::DATARATE_250K);
+    set_power(Power::POWER_0DBM);
+
+    // Enable 2-byte CRC
+    set_crc(2);
+
+    // Power up the module
+    power_up();
 }
 
 void NRF24Driver::write(uint32_t id, const uint8_t *data, uint8_t len)
@@ -117,7 +141,188 @@ void NRF24Driver::setReg(uint32_t reg, uint32_t value)
 
 void NRF24Driver::set_channel(uint8_t channel)
 {
-    nrf24_set_channel(channel);
+    write_register(0x05, channel);  // RF_CH register
+}
+
+// Private methods
+void NRF24Driver::spi_select()
+{
+    HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_RESET);
+}
+
+void NRF24Driver::spi_deselect()
+{
+    HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
+}
+
+uint8_t NRF24Driver::spi_transmit_receive(uint8_t data)
+{
+    uint8_t rx_data;
+    spi_select();
+    write(0, &data, 1);
+    read(0, &rx_data, 1);
+    spi_deselect();
+    return rx_data;
+}
+
+void NRF24Driver::write_register(uint8_t reg, uint8_t value)
+{
+    uint8_t cmd[2] = {
+        NRF24_CMD_W_REGISTER | (reg & 0x1F),
+        value
+    };
+    spi_select();
+    write(0, cmd, 2);
+    spi_deselect();
+}
+
+uint8_t NRF24Driver::read_register(uint8_t reg)
+{
+    uint8_t cmd = NRF24_CMD_R_REGISTER | (reg & 0x1F);
+    uint8_t result;
+    spi_select();
+    write(0, &cmd, 1);
+    read(0, &result, 1);
+    spi_deselect();
+    return result;
+}
+
+void NRF24Driver::set_address_width(uint8_t width)
+{
+    if (width < 2 || width > 5) return;
+    write_register(NRF24_REG_SETUP_AW, width - 2);
+}
+
+void NRF24Driver::set_data_rate(DataRate rate)
+{
+    uint8_t value = read_register(NRF24_REG_RF_SETUP);
+    value &= ~0x28;  // Clear DR1 and DR0 bits
+    value |= (static_cast<uint8_t>(rate) << 3) & 0x28;
+    write_register(NRF24_REG_RF_SETUP, value);
+}
+
+void NRF24Driver::set_power(Power power)
+{
+    uint8_t value = read_register(NRF24_REG_RF_SETUP);
+    value &= ~0x06;  // Clear RF_PWR1 and RF_PWR0 bits
+    value |= (static_cast<uint8_t>(power) << 1) & 0x06;
+    write_register(NRF24_REG_RF_SETUP, value);
+}
+
+void NRF24Driver::set_crc(uint8_t length)
+{
+    uint8_t config = read_register(NRF24_REG_CONFIG);
+    config &= ~(NRF24_CONFIG_EN_CRC | NRF24_CONFIG_CRCO);
+    if (length > 0) {
+        config |= NRF24_CONFIG_EN_CRC;
+        if (length > 1) {
+            config |= NRF24_CONFIG_CRCO;
+        }
+    }
+    write_register(NRF24_REG_CONFIG, config);
+}
+
+void NRF24Driver::enable_auto_ack(uint8_t pipe)
+{
+    uint8_t value = read_register(NRF24_REG_EN_AA);
+    value |= (1 << pipe);
+    write_register(NRF24_REG_EN_AA, value);
+}
+
+void NRF24Driver::disable_auto_ack(uint8_t pipe)
+{
+    uint8_t value = read_register(NRF24_REG_EN_AA);
+    value &= ~(1 << pipe);
+    write_register(NRF24_REG_EN_AA, value);
+}
+
+void NRF24Driver::enable_dynamic_payload(uint8_t pipe)
+{
+    uint8_t value = read_register(NRF24_REG_DYNPD);
+    value |= (1 << pipe);
+    write_register(NRF24_REG_DYNPD, value);
+}
+
+void NRF24Driver::set_retransmit(uint8_t count, uint8_t delay)
+{
+    uint8_t value = ((count & 0x0F) << 4) | (delay & 0x0F);
+    write_register(NRF24_REG_SETUP_RETR, value);
+}
+
+void NRF24Driver::tx_payload(const uint8_t *data, uint8_t len)
+{
+    spi_select();
+    uint8_t cmd = NRF24_CMD_W_TX_PAYLOAD;
+    write(0, &cmd, 1);
+    write(0, data, len);
+    spi_deselect();
+}
+
+void NRF24Driver::flush_tx()
+{
+    uint8_t cmd = NRF24_CMD_FLUSH_TX;
+    spi_select();
+    write(0, &cmd, 1);
+    spi_deselect();
+}
+
+void NRF24Driver::flush_rx()
+{
+    uint8_t cmd = NRF24_CMD_FLUSH_RX;
+    spi_select();
+    write(0, &cmd, 1);
+    spi_deselect();
+}
+
+uint8_t NRF24Driver::rx_payload(uint8_t *data, uint8_t len)
+{
+    spi_select();
+    uint8_t cmd = NRF24_CMD_R_RX_PAYLOAD;
+    write(0, &cmd, 1);
+    read(0, data, len);
+    spi_deselect();
+    return len;
+}
+
+uint8_t NRF24Driver::get_status()
+{
+    uint8_t cmd = NRF24_CMD_NOP;
+    uint8_t status;
+    spi_select();
+    write(0, &cmd, 1);
+    read(0, &status, 1);
+    spi_deselect();
+    return status;
+}
+
+uint8_t NRF24Driver::get_fifo_status()
+{
+    return read_register(0x17);  // FIFO_STATUS register
+}
+
+uint8_t NRF24Driver::get_observe_tx()
+{
+    return read_register(0x08);  // OBSERVE_TX register
+}
+
+uint8_t NRF24Driver::get_cd()
+{
+    return read_register(0x09);  // CD register
+}
+
+void NRF24Driver::power_up()
+{
+    uint8_t config = read_register(NRF24_REG_CONFIG);
+    config |= NRF24_CONFIG_PWR_UP;
+    write_register(NRF24_REG_CONFIG, config);
+    HAL_Delay(2);  // Wait for PLL to lock
+}
+
+void NRF24Driver::power_down()
+{
+    uint8_t config = read_register(NRF24_REG_CONFIG);
+    config &= ~NRF24_CONFIG_PWR_UP;
+    write_register(NRF24_REG_CONFIG, config);
 }
 
 }  // namespace drivers::nrf24
