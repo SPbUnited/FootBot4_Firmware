@@ -135,7 +135,7 @@ nrf24::NRF24Config nrf24_config = {
 
 can::CanDriver can_drv(can1_config);
 nrf24::NRF24Driver nrf24_drv(nrf24_config);
-
+nrf24::Nrf24Recv nrf24_recv(nrf24_config);
 led::LedDriver leds;
 
 buzzer::Buzzer buzzer_drv;

@@ -9,6 +9,7 @@
 #include "stm32f4xx_hal.h"
 #include "system_clock/system_clock.hpp"
 #include "uart/uart.hpp"
+#include "nrf24/nrf.hpp"
 
 namespace drivers
 {
@@ -22,6 +23,8 @@ extern led::LedDriver leds;
 extern buzzer::Buzzer buzzer_drv;
 extern can::CanDriver can_drv;
 extern nrf24::NRF24Driver nrf24_drv;
+extern nrf24::Nrf24Recv nrf24_recv;
+// extern nrf24_test::Nrf24Recv nrf24_recv;
 
 void init();
 

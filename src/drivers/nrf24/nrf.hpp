@@ -8,30 +8,14 @@
 #include "nrf24.hpp"
 #include "minifloat3.h"
 
-// Forward declarations
-namespace motion {
-class Control;
-}
+namespace drivers::nrf24
+{
 
-namespace kicker {
-struct Kicker;
-}
-
-namespace canbroadcast {
-class CanBroadcast;
-}
-
-class LedDisplay;
-
-class Nrf24Recv
+class Nrf24Recv : public NRF24Config
 {
 private:
-    // SPI and GPIO handles
+    // SPI handle
     SPI_HandleTypeDef *m_spi_handle;
-    uint32_t m_chip_enable_pin;
-    GPIO_TypeDef *m_chip_enable_port;
-    uint32_t m_chip_select_pin;
-    GPIO_TypeDef *m_chip_select_port;
 
     // Static data members
     static uint8_t m_txAddress[6];
@@ -103,9 +87,7 @@ public:
     volatile uint32_t m_lastPacketTime;
     uint8_t m_address;
 
-    Nrf24Recv(SPI_HandleTypeDef *spi_handle,
-              uint32_t chip_enable_pin, GPIO_TypeDef *chip_enable_port,
-              uint32_t chip_select_pin, GPIO_TypeDef *chip_select_port);
+    Nrf24Recv(drivers::nrf24::NRF24Config config);
 
     int recv();
     void send(uint8_t checker, uint8_t id);
@@ -115,3 +97,4 @@ public:
     void flushTx(void);
     void flushRx(void);
 };
+}

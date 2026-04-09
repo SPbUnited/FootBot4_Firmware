@@ -5,12 +5,12 @@
 typedef unsigned char ubyte3;
 typedef unsigned int uint3;
 
-float as_float_3(const uint3 x)
+inline float as_float_3(const uint3 x)
 {
     return *(float *)&x;
 }
 
-float minif_to_float3(const ubyte3 x, size_t exponent_bits = 4, size_t mantissa_bits = 3)
+inline float minif_to_float3(const ubyte3 x, size_t exponent_bits = 4, size_t mantissa_bits = 3)
 {
     const uint3 sign = (x >> (exponent_bits + mantissa_bits)) & 1;
     const uint3 exponent = (x >> mantissa_bits) & ((1 << exponent_bits) - 1);

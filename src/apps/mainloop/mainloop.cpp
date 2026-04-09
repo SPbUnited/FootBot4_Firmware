@@ -32,6 +32,8 @@ void loop()
 
     // Act
     devices::robot_dev.act();
+
+    drivers::nrf24_recv.recv();
 }
 
 }  // namespace apps::mainloop

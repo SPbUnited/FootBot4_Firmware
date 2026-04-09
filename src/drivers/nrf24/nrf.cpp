@@ -1,6 +1,8 @@
 #include "nrf.hpp"
 #include <math.h>
 
+namespace drivers::nrf24
+{
 // Static member definitions
 uint8_t Nrf24Recv::m_txAddress[6] = {0};
 uint32_t Nrf24Recv::m_prevTime_ms = 0;
@@ -26,9 +28,9 @@ void Nrf24Recv::flushTx(void)
 {
     uint8_t cmd = 0xE1;  // NRF24_CMD_FLUSH_TX
     uint8_t dummy;
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, &cmd, 1, 100);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 }
 
 // Flush the RX FIFO
@@ -36,9 +38,9 @@ void Nrf24Recv::flushRx(void)
 {
     uint8_t cmd = 0xE2;  // NRF24_CMD_FLUSH_RX
     uint8_t dummy;
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, &cmd, 1, 100);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 }
 
 // Main receive function
@@ -152,31 +154,85 @@ void Nrf24Recv::send(uint8_t checker, uint8_t id)
 }
 
 // Constructor
-Nrf24Recv::Nrf24Recv(SPI_HandleTypeDef *spi_handle,
-                     uint32_t chip_enable_pin, GPIO_TypeDef *chip_enable_port,
-                     uint32_t chip_select_pin, GPIO_TypeDef *chip_select_port)
+Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
 {
-    m_spi_handle = spi_handle;
-    m_chip_enable_pin = chip_enable_pin;
-    m_chip_enable_port = chip_enable_port;
-    m_chip_select_pin = chip_select_pin;
-    m_chip_select_port = chip_select_port;
+    // Initialize base class (NRF24Config)
+    this->instance = config.instance;
+    this->clk_enable = config.clk_enable;
+    this->sckPin = config.sckPin;
+    this->sckPort = config.sckPort;
+    this->sckAlternate = config.sckAlternate;
+    this->misoPin = config.misoPin;
+    this->misoPort = config.misoPort;
+    this->misoAlternate = config.misoAlternate;
+    this->mosiPin = config.mosiPin;
+    this->mosiPort = config.mosiPort;
+    this->mosiAlternate = config.mosiAlternate;
+    this->cePin = config.cePin;
+    this->cePort = config.cePort;
+    this->csPin = config.csPin;
+    this->csPort = config.csPort;
+    this->irqPin = config.irqPin;
+    this->irqPort = config.irqPort;
+
+    // Initialize SPI clock
+    if (this->clk_enable)
+    {
+        this->clk_enable();
+    }
 
 
     // Configure CE pin as output
     GPIO_InitTypeDef GPIO_InitStruct = {};
-    GPIO_InitStruct.Pin = m_chip_enable_pin;
+    GPIO_InitStruct.Pin = this->cePin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(m_chip_enable_port, &GPIO_InitStruct);
+    HAL_GPIO_Init(this->cePort, &GPIO_InitStruct);
 
     // Configure CS pin as output
-    GPIO_InitStruct.Pin = m_chip_select_pin;
+    GPIO_InitStruct.Pin = this->csPin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(m_chip_select_port, &GPIO_InitStruct);
+    HAL_GPIO_Init(this->csPort, &GPIO_InitStruct);
+
+    // Configure SPI pins (SCK, MISO, MOSI)
+    GPIO_InitStruct.Pin = this->sckPin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = this->sckAlternate;
+    HAL_GPIO_Init(this->sckPort, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = this->misoPin;
+    GPIO_InitStruct.Alternate = this->misoAlternate;
+    HAL_GPIO_Init(this->misoPort, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = this->mosiPin;
+    GPIO_InitStruct.Alternate = this->mosiAlternate;
+    HAL_GPIO_Init(this->mosiPort, &GPIO_InitStruct);
+
+    // Initialize SPI handle
+    m_spi_handle = new SPI_HandleTypeDef;
+    m_spi_handle->Instance = this->instance;
+    m_spi_handle->Init.Mode = SPI_MODE_MASTER;
+    m_spi_handle->Init.Direction = SPI_DIRECTION_2LINES;
+    m_spi_handle->Init.DataSize = SPI_DATASIZE_8BIT;
+    m_spi_handle->Init.CLKPolarity = SPI_POLARITY_LOW;
+    m_spi_handle->Init.CLKPhase = SPI_PHASE_1EDGE;
+    m_spi_handle->Init.NSS = SPI_NSS_SOFT;
+    m_spi_handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;  // 180MHz / 32 = 5.625MHz SPI clock
+    m_spi_handle->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    m_spi_handle->Init.TIMode = SPI_TIMODE_DISABLE;
+    m_spi_handle->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    m_spi_handle->Init.CRCPolynomial = 10;
+
+    HAL_StatusTypeDef status = HAL_SPI_Init(m_spi_handle);
+    if (status != HAL_OK)
+    {
+        // Error - SPI init failed
+    }
 
     // Set CE high to enable the module
     setCe();
@@ -217,16 +273,16 @@ Nrf24Recv::Nrf24Recv(SPI_HandleTypeDef *spi_handle,
     uint8_t cmd[6];
     cmd[0] = 0x10;  // W_TX_ADDR
     memcpy(&cmd[1], default_addr_0, 5);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Write RX address pipe 1
     cmd[0] = 0x0B;  // RX_ADDR_P1
     memcpy(&cmd[1], default_addr_1, 5);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Set RX pipe 1 address width
     w(0x03, 0x03);  // SETUP_AW: 5 bytes
@@ -263,9 +319,9 @@ Nrf24Recv::Nrf24Recv(SPI_HandleTypeDef *spi_handle,
     uint8_t self_addr[]{0xAB, 0xAD, 0xAF};
     cmd[0] = 0x10;  // W_TX_ADDR
     memcpy(&cmd[1], self_addr, 3);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, cmd, 4, 100);
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Set TX/RX mode
     w(0x02, 0x06);  // EN_RXADDR: Enable pipe 1 and 2
@@ -310,7 +366,7 @@ int Nrf24Recv::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     }
 
     // Select chip
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
 
     // Send register address
     HAL_SPI_Transmit(m_spi_handle, buffer_tx, 1, 100);
@@ -319,7 +375,7 @@ int Nrf24Recv::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     HAL_SPI_Receive(m_spi_handle, buffer_rx, len + 1, 100);
 
     // Deselect chip
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Copy received data (skip first byte which is the NOP response)
     uint8_t *value_p = value;
@@ -362,13 +418,13 @@ int Nrf24Recv::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)
     }
 
     // Select chip
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
 
     // Transmit data
     HAL_SPI_TransmitReceive(m_spi_handle, buffer_tx, buffer_rx, len + 1, 100);
 
     // Deselect chip
-    HAL_GPIO_WritePin(m_chip_select_port, m_chip_select_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     return 0;
 }
@@ -376,11 +432,12 @@ int Nrf24Recv::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)
 // Set CE pin high
 void Nrf24Recv::setCe()
 {
-    HAL_GPIO_WritePin(m_chip_enable_port, m_chip_enable_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->cePort, this->cePin, GPIO_PIN_SET);
 }
 
 // Set CE pin low
 void Nrf24Recv::resetCe()
 {
-    HAL_GPIO_WritePin(m_chip_enable_port, m_chip_enable_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->cePort, this->cePin, GPIO_PIN_RESET);
+}
 }
