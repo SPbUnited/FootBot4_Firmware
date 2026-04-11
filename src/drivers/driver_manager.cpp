@@ -125,8 +125,8 @@ nrf24::NRF24Config nrf24_config = {
     .mosiPin = GPIO_PIN_15,
     .mosiPort = GPIOB,
     .mosiAlternate = GPIO_AF5_SPI2,
-    .cePin = GPIO_PIN_1,
-    .cePort = GPIOB,
+    .cePin = GPIO_PIN_8,
+    .cePort = GPIOD,
     .csPin = GPIO_PIN_12,
     .csPort = GPIOB,
     .irqPin = 0,
@@ -154,7 +154,8 @@ void init()
     drivers::i2c2.init();
     drivers::leds.init();
     drivers::can_drv.init();
-    drivers::nrf24_drv.init();
+    // drivers::nrf24_drv.init();
+    
 }
 
 }  // namespace drivers

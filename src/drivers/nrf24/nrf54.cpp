@@ -1,6 +1,7 @@
-#include "nrf.hpp"
-#include <math.h>
-
+#include "nrf54.hpp"
+// #include <math.h>
+#include "drivers/driver_manager.hpp"
+#include "kernel/kernel.hpp"
 namespace drivers::nrf24
 {
 // Static member definitions
@@ -47,7 +48,7 @@ void Nrf24Recv::flushRx(void)
 int Nrf24Recv::recv()
 {
     uint8_t reg = 1;
-    uint32_t time_ms = HAL_GetTick();
+    uint32_t time_ms = 0;//HAL_GetTick();
     int rc = readReg(7, &reg);  // 7 = NRF24_REG_FIFO_STATUS
     if (rc < 0)
     {
@@ -57,7 +58,7 @@ int Nrf24Recv::recv()
     if (reg & 0x40)  // RX_DR - Data Ready
     {
         // Read payload length
-        uint32_t timeout_nrf_timer_recv = HAL_GetTick();
+        uint32_t timeout_nrf_timer_recv = 0;//HAL_GetTick();
         rc = readReg(0x60, &m_lenDbg);  // 0x60 = RX_PAYLOAD_WIDTH0
         if (rc < 0)
         {
@@ -99,7 +100,7 @@ int Nrf24Recv::recv()
             if (m_address + 0xA0 == m_iArray[m_lenDbg - 1])
             {
                 uint8_t t_test_arr[4];
-                memcpy(t_test_arr, m_iArray, 4);
+                // memcpy(t_test_arr, m_iArray, 4);
                 // m_cannabus->sendDebugOverride(t_test_arr, m_iArray[m_lenDbg - 4] + (m_iArray[m_lenDbg - 3] << 8), m_lenDbg);
             }
         }
@@ -142,8 +143,8 @@ int Nrf24Recv::recv()
         }
     }
 
-    HAL_Delay(1);
-    return 0;
+    // HAL_Delay(1);
+    // return 0;
 }
 
 // Send function
@@ -236,8 +237,8 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
 
     // Set CE high to enable the module
     setCe();
-    HAL_Delay(5);
-    resetCe();
+    // HAL_Delay(5);
+    // resetCe();
 
     // Initialize NRF24 module
     auto w = [this](uint8_t reg, uint8_t val)
@@ -272,14 +273,14 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     // Write TX address
     uint8_t cmd[6];
     cmd[0] = 0x10;  // W_TX_ADDR
-    memcpy(&cmd[1], default_addr_0, 5);
+    // memcpy(&cmd[1], default_addr_0, 5);
     HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
     HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Write RX address pipe 1
     cmd[0] = 0x0B;  // RX_ADDR_P1
-    memcpy(&cmd[1], default_addr_1, 5);
+    // memcpy(&cmd[1], default_addr_1, 5);
     HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
     HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
@@ -297,7 +298,7 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     flushTx();
     w(0x07, 0x70);  // FIFO_STATUS: Clear status flags
 
-    HAL_Delay(10);
+    // HAL_Delay(10);
 
     // Final configuration
     w(0x06, 0x0E);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0
@@ -318,7 +319,7 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     // Set self address
     uint8_t self_addr[]{0xAB, 0xAD, 0xAF};
     cmd[0] = 0x10;  // W_TX_ADDR
-    memcpy(&cmd[1], self_addr, 3);
+    // memcpy(&cmd[1], self_addr, 3);
     HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(m_spi_handle, cmd, 4, 100);
     HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
@@ -334,11 +335,11 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     w(0x07, 0x40);  // Clear RX_DR
 
     setCe();
-    HAL_Delay(1);
-    resetCe();
-    HAL_Delay(1);
-    setCe();
-    HAL_Delay(10);
+    // HAL_Delay(1);
+    // resetCe();
+    // // HAL_Delay(1);
+    // setCe();
+    // HAL_Delay(10);
 }
 
 // Private methods implementation
@@ -414,7 +415,7 @@ int Nrf24Recv::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)
 
     if (value != NULL && len > 0)
     {
-        memcpy(&buffer_tx[1], value, len);
+        // memcpy(&buffer_tx[1], value, len);
     }
 
     // Select chip

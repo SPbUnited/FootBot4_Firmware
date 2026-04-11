@@ -1,8 +1,8 @@
 #pragma once
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-
+// #include <stdio.h>
+// #include <stdint.h>
+// #include <string.h>
+#include <inttypes.h>
 #include "stm32f4xx_hal.h"
 
 #include "nrf24.hpp"
