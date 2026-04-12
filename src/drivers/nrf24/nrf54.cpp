@@ -2,6 +2,22 @@
 // #include <math.h>
 #include "drivers/driver_manager.hpp"
 #include "kernel/kernel.hpp"
+
+#define NRF24_REG_RX_ADDR_P0  (uint8_t) 0x0A // Receive address data pipe 0
+#define NRF24_REG_RX_ADDR_P1  (uint8_t) 0x0B // Receive address data pipe 1
+#define NRF24_REG_RX_ADDR_P2  (uint8_t) 0x0C // Receive address data pipe 2
+#define NRF24_REG_RX_ADDR_P3  (uint8_t) 0x0D // Receive address data pipe 3
+#define NRF24_REG_RX_ADDR_P4  (uint8_t) 0x0E // Receive address data pipe 4
+#define NRF24_REG_RX_ADDR_P5  (uint8_t) 0x0F // Receive address data pipe 5
+#define NRF24_REG_TX_ADDR     (uint8_t) 0x10 // Transmit address
+#define NRF24_REG_RX_PW_P0    (uint8_t) 0x11 // Number of bytes in RX payload in data pipe 0
+#define NRF24_REG_RX_PW_P1    (uint8_t) 0x12 // Number of bytes in RX payload in data pipe 1
+#define NRF24_REG_RX_PW_P2    (uint8_t) 0x13 // Number of bytes in RX payload in data pipe 2
+#define NRF24_REG_RX_PW_P3    (uint8_t) 0x14 // Number of bytes in RX payload in data pipe 3
+#define NRF24_REG_RX_PW_P4    (uint8_t) 0x15 // Number of bytes inNRF24_CMD_NOP RX payload in data pipe 4
+#define NRF24_REG_RX_PW_P5    (uint8_t) 0x16 // Number of bytes in RX payload in data pipe 5
+
+
 namespace drivers::nrf24
 {
 // Static member definitions
@@ -54,9 +70,10 @@ int Nrf24Recv::recv()
     {
         // Error handling - could add logging here
     }
-
+    drivers::leds.toggle(led::DRV1);
     if (reg & 0x40)  // RX_DR - Data Ready
     {
+        drivers::leds.toggle(led::DATA_TRANSFER_STATUS_1);
         // Read payload length
         uint32_t timeout_nrf_timer_recv = 0;//HAL_GetTick();
         rc = readReg(0x60, &m_lenDbg);  // 0x60 = RX_PAYLOAD_WIDTH0
@@ -213,7 +230,7 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     GPIO_InitStruct.Pin = this->mosiPin;
     GPIO_InitStruct.Alternate = this->mosiAlternate;
     HAL_GPIO_Init(this->mosiPort, &GPIO_InitStruct);
-
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
     // Initialize SPI handle
     m_spi_handle = new SPI_HandleTypeDef;
     m_spi_handle->Instance = this->instance;
@@ -223,11 +240,11 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     m_spi_handle->Init.CLKPolarity = SPI_POLARITY_LOW;
     m_spi_handle->Init.CLKPhase = SPI_PHASE_1EDGE;
     m_spi_handle->Init.NSS = SPI_NSS_SOFT;
-    m_spi_handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;  // 180MHz / 32 = 5.625MHz SPI clock
+    m_spi_handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;  // 180MHz / 2 = 90 MHz SPI clock (closest to 100 MHz)
     m_spi_handle->Init.FirstBit = SPI_FIRSTBIT_MSB;
     m_spi_handle->Init.TIMode = SPI_TIMODE_DISABLE;
     m_spi_handle->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    m_spi_handle->Init.CRCPolynomial = 10;
+    m_spi_handle->Init.CRCPolynomial = 7;
 
     HAL_StatusTypeDef status = HAL_SPI_Init(m_spi_handle);
     if (status != HAL_OK)
@@ -237,8 +254,9 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
 
     // Set CE high to enable the module
     setCe();
+    for (int i =0; i <5000; i++);
     // HAL_Delay(5);
-    // resetCe();
+    resetCe();
 
     // Initialize NRF24 module
     auto w = [this](uint8_t reg, uint8_t val)
@@ -266,79 +284,181 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     w(0x1D, 0x05);  // FEATURE: Enable features
     w(0x04, 0x53);  // SETUP_RETR: 5 retransmit, 500us delay
 
-    // Set addresses
-    uint8_t default_addr_0[]{0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
-    uint8_t default_addr_1[]{0xC2, 0xC2, 0xC2, 0xC2, 0xC2};
+    uint8_t default_addr_0[]{0xe7, 0xe7, 0xe7, 0xe7, 0xe7};
+    rawWrite(0x0A, default_addr_0, 5);
 
-    // Write TX address
-    uint8_t cmd[6];
-    cmd[0] = 0x10;  // W_TX_ADDR
-    // memcpy(&cmd[1], default_addr_0, 5);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+    w(NRF24_REG_RX_PW_P0, 0x00);
 
-    // Write RX address pipe 1
-    cmd[0] = 0x0B;  // RX_ADDR_P1
-    // memcpy(&cmd[1], default_addr_1, 5);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+    uint8_t default_addr_1[]{0xc2, 0xc2, 0xc2, 0xc2, 0xc2};
+    rawWrite(0x0B, default_addr_1, 5);
 
-    // Set RX pipe 1 address width
-    w(0x03, 0x03);  // SETUP_AW: 5 bytes
+    w(NRF24_REG_RX_PW_P1, 0x00);
+    w(NRF24_REG_RX_ADDR_P2, 0xC3);
+    w(NRF24_REG_RX_PW_P2, 0x00);
+    w(NRF24_REG_RX_ADDR_P3, 0xC4);
+    w(NRF24_REG_RX_PW_P3, 0x00);
+    w(NRF24_REG_RX_ADDR_P4, 0xC5);
+    w(NRF24_REG_RX_PW_P4, 0x00);
+    w(NRF24_REG_RX_ADDR_P5, 0xC6);
+    w(NRF24_REG_RX_PW_P5, 0x00);
 
-    // Set channel
-    w(0x05, 0x4C);  // RF_CH: Channel 76 (2.476 GHz)
+    rawWrite(0x10, default_addr_0, 5);
 
-    // Power up and flush
-    w(0x00, 0x0D);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=1 (RX mode)
+    w(0x03, 0x03);
+
+        w(0x05, 0x34); // channel set
+    w(0x00, 0x0D);
     flushRx();
-    w(0x00, 0x0C);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0 (TX mode)
+    w(0x00, 0x0C);
     flushTx();
-    w(0x07, 0x70);  // FIFO_STATUS: Clear status flags
+    w(0x07, 0x70);
 
-    // HAL_Delay(10);
-
-    // Final configuration
-    w(0x06, 0x0E);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0
+    // k_sleep(K_MSEC(10));
+    for (int i =0; i <10000; i++);
+    w(0x06, 0x0E);
 
     if (r(0x00) != 0x0C)
     {
-        // Error
+        volatile int a = 0;
+        a++;
+        // fail();
     }
-
-    w(0x03, 0x01);  // RX_ADDR_P1
+    w(0x03, 0x01);
     w(0x06, 0x0E);
+    // w(0x01, 0x40);
+    w(0x01, 0x00);
 
     if (r(0x03) != 0x01)
     {
-        // Error
+        volatile int a = 0;
+        a++;
+        // fail();
     }
 
-    // Set self address
     uint8_t self_addr[]{0xAB, 0xAD, 0xAF};
-    cmd[0] = 0x10;  // W_TX_ADDR
-    // memcpy(&cmd[1], self_addr, 3);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(m_spi_handle, cmd, 4, 100);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+    // rawWrite(0x0A, self_addr, 3);
+    // uint8_t self_addr[]{0xAF, 0xAD, 0xAB};
+    // if (send_or_recieve)
+    //     rawWrite(0x10, self_addr, 3);
+    // else
+        rawWrite(0x0A, self_addr, 3);
 
-    // Set TX/RX mode
-    w(0x02, 0x06);  // EN_RXADDR: Enable pipe 1 and 2
+    if (r(0x02) != 0x00)
+    {
+        volatile int a = 0;
+        a++;
+        // fail();
+    }
+    // if (send_or_recieve)
+    //     w(0x02, 0x06);
+    // else
+        w(0x02, 0x01);
+    w(0x11, 0x20);
 
-    // Final setup
-    w(0x11, 0x20);  // RX_PW_P1: Payload width 32 bytes
-    w(0x00, 0x0E);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=1 (RX mode)
+    rawWrite(0x0A, self_addr, 3);
+    // if (send_or_recieve)
+    //     w(0x00, 0x0E);
+    // else
+        w(0x00, 0x0F);
 
     flushRx();
-    w(0x07, 0x40);  // Clear RX_DR
+
+    w(0x07, 0x40);
 
     setCe();
-    // HAL_Delay(1);
+    // k_sleep(K_MSEC(1));
+    for (int i =0; i <1000; i++);
+    resetCe();
+    // k_sleep(K_MSEC(1));
+    for (int i =0; i <1000; i++);
+    setCe();
+    for (int i =0; i <5000; i++);
+    // k_sleep(K_MSEC(10));
+    // flushTx();
+    // k_thread_create(&thread, thread_stack, K_THREAD_STACK_SIZEOF(thread_stack),
+    //                 (k_thread_entry_t)Nrf24Recv::work,
+    //                 NULL, NULL, NULL,
+    //                 K_PRIO_COOP(2),
+    //                 0, K_NO_WAIT);
+    // k_thread_name_set(&thread, "nrf24_thread");
+    // gpio_pin_set_dt(&_spec->config.cs->gpio, true);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    // Set addresses
+    // uint8_t default_addr_0[]{0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
+    // uint8_t default_addr_1[]{0xC2, 0xC2, 0xC2, 0xC2, 0xC2};
+
+    // // Write TX address
+    // uint8_t cmd[6];
+    // cmd[0] = 0x10;  // W_TX_ADDR
+    // // memcpy(&cmd[1], default_addr_0, 5);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+
+    // // Write RX address pipe 1
+    // cmd[0] = 0x0B;  // RX_ADDR_P1
+    // // memcpy(&cmd[1], default_addr_1, 5);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(m_spi_handle, cmd, 6, 100);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+
+    // // Set RX pipe 1 address width
+    // w(0x03, 0x03);  // SETUP_AW: 5 bytes
+
+    // // Set channel
+    // w(0x05, 52);  // RF_CH: Channel 76 (2.476 GHz)
+
+    // // Power up and flush
+    // w(0x00, 0x0D);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=1 (RX mode)
+    // flushRx();
+    // w(0x00, 0x0C);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0 (TX mode)
+    // flushTx();
+    // w(0x07, 0x70);  // FIFO_STATUS: Clear status flags
+
+    // // HAL_Delay(10);
+
+    // // Final configuration
+    // w(0x06, 0x0E);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0
+
+    // if (r(0x00) != 0x0C)
+    // {
+    //     // Error
+    // }
+
+    // w(0x03, 0x01);  // RX_ADDR_P1
+    // w(0x06, 0x0E);
+
+    // if (r(0x03) != 0x01)
+    // {
+    //     // Error
+    // }
+
+    // // Set self address
+    // uint8_t self_addr[]{0xAB, 0xAD, 0xAF};
+    // cmd[0] = 0x10;  // W_TX_ADDR
+    // // memcpy(&cmd[1], self_addr, 3);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(m_spi_handle, cmd, 4, 100);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+
+    // // Set TX/RX mode
+    // w(0x02, 0x01);  // EN_RXADDR: Enable pipe 1 and 2
+
+    // // Final setup
+    // w(0x11, 0x20);  // RX_PW_P1: Payload width 32 bytes
+    // w(0x00, 0x0E);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=1 (RX mode)
+
+    // flushRx();
+    // w(0x07, 0x40);  // Clear RX_DR
+
+    // setCe();
+    // // HAL_Delay(1);
+    // for (int i =0; i <1000; i++);
     // resetCe();
+    // for (int i =0; i <1000; i++);
     // // HAL_Delay(1);
     // setCe();
+    // for (int i =0; i <3000; i++);
     // HAL_Delay(10);
 }
 
@@ -367,7 +487,7 @@ int Nrf24Recv::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     }
 
     // Select chip
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
 
     // Send register address
     HAL_SPI_Transmit(m_spi_handle, buffer_tx, 1, 100);
@@ -376,7 +496,7 @@ int Nrf24Recv::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     HAL_SPI_Receive(m_spi_handle, buffer_rx, len + 1, 100);
 
     // Deselect chip
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Copy received data (skip first byte which is the NOP response)
     uint8_t *value_p = value;

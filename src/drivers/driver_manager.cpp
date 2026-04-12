@@ -114,16 +114,18 @@ nrf24::NRF24Config nrf24_config = {
         []()
     {
         __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        __HAL_RCC_GPIOD_CLK_ENABLE();
         __HAL_RCC_SPI2_CLK_ENABLE();
     },
-    .sckPin = GPIO_PIN_13,
+    .sckPin = GPIO_PIN_10,
     .sckPort = GPIOB,
     .sckAlternate = GPIO_AF5_SPI2,
-    .misoPin = GPIO_PIN_14,
-    .misoPort = GPIOB,
+    .misoPin = GPIO_PIN_2,
+    .misoPort = GPIOC,
     .misoAlternate = GPIO_AF5_SPI2,
-    .mosiPin = GPIO_PIN_15,
-    .mosiPort = GPIOB,
+    .mosiPin = GPIO_PIN_3,
+    .mosiPort = GPIOC,
     .mosiAlternate = GPIO_AF5_SPI2,
     .cePin = GPIO_PIN_8,
     .cePort = GPIOD,
@@ -134,14 +136,16 @@ nrf24::NRF24Config nrf24_config = {
 };
 
 can::CanDriver can_drv(can1_config);
-nrf24::NRF24Driver nrf24_drv(nrf24_config);
-nrf24::Nrf24Recv nrf24_recv(nrf24_config);
+// nrf24::NRF24Driver nrf24_drv(nrf24_config);
+
 led::LedDriver leds;
 
 buzzer::Buzzer buzzer_drv;
 
 bootstrap::Bootstrap bootstrap_drv;
 system_clock::SystemClock system_clock_drv;
+
+nrf24::Nrf24Recv nrf24_recv(nrf24_config);
 
 void init()
 {
