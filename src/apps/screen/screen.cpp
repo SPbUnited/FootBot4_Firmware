@@ -72,6 +72,18 @@ void screen()
     {
         devices::robot_dev.dec_id();
     }
+    if (!drivers::gpio_in.read(drivers::gpio::BUTTON_SELECT) && old_select)
+    {
+        kinfo("Saving robot config to EEPROM");
+        display.clear();
+        display.setCursor(0, 0);
+        display.setTextSize(1);
+        display.printf("Saving robot\nconfig to EEPROM and\nrebooting...");
+        display.flush();
+
+        devices::eeprom::put(0, static_cast<devices::robot::RobotConfig>(devices::robot_dev));
+        kernel::reboot();
+    }
 
     old_up = drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP);
     old_down = drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN);
