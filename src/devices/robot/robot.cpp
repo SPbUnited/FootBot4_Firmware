@@ -94,6 +94,11 @@ void Robot::dec_id()
 
 void Robot::init() {}
 
+void Robot::init(RobotConfig config)
+{
+    static_cast<RobotConfig&>(*this) = config;
+}
+
 void Robot::sense()
 {
     chassis_drv.getVel(&current_vel);
