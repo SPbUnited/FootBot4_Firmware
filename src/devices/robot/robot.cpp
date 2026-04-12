@@ -78,6 +78,20 @@ void Robot::set_kicker_mode(KickerMode mode)
     kverbose("set_kicker_mode(mode = %d): kicker_mode = %d", mode, kicker_mode);
 }
 
+void Robot::inc_id()
+{
+    robot_id++;
+    robot_id %= 16;
+    kverbose("inc_id(): robot_id = %d", robot_id);
+}
+
+void Robot::dec_id()
+{
+    robot_id--;
+    robot_id %= 16;
+    kverbose("dec_id(): robot_id = %d", robot_id);
+}
+
 void Robot::init() {}
 
 void Robot::sense()
