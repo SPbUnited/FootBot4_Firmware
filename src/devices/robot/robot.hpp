@@ -79,6 +79,9 @@ struct Robot : RobotConfig
     void set_kicker_setting(uint8_t setting);
     void set_kicker_mode(KickerMode mode);
 
+    void inc_id();
+    void dec_id();
+
     void init();
     void sense();
     void plan();
