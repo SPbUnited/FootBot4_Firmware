@@ -136,7 +136,8 @@ nrf24::NRF24Config nrf24_config = {
 can::CanDriver can_drv(can1_config);
 nrf24::NRF24Driver nrf24_drv(nrf24_config);
 
-led::LedDriver leds;
+gpio::GPIOOutputDriver gpio_out;
+gpio::GPIOInputDriver gpio_in;
 
 buzzer::Buzzer buzzer_drv;
 
@@ -152,7 +153,8 @@ void init()
 
     drivers::uart4.init();
     drivers::i2c2.init();
-    drivers::leds.init();
+    drivers::gpio_out.init();
+    drivers::gpio_in.init();
     drivers::can_drv.init();
     drivers::nrf24_drv.init();
 }

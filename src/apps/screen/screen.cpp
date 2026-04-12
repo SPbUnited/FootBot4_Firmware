@@ -51,6 +51,31 @@ void screen()
     {
         counter = 0;
     }
+
+    drivers::gpio_out.write(drivers::gpio::LED_DRV1,
+                            drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP));
+    drivers::gpio_out.write(drivers::gpio::LED_DRV2,
+                            drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN));
+    drivers::gpio_out.write(drivers::gpio::LED_DRV3,
+                            drivers::gpio_in.read(drivers::gpio::BUTTON_SELECT));
+    drivers::gpio_out.write(drivers::gpio::LED_STM32, true);
+
+    static bool old_up = false;
+    static bool old_down = false;
+    static bool old_select = false;
+
+    if (drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP))
+    {
+        devices::robot_dev.inc_id();
+    }
+    if (drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN))
+    {
+        devices::robot_dev.dec_id();
+    }
+
+    old_up = drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP);
+    old_down = drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN);
+    old_select = drivers::gpio_in.read(drivers::gpio::BUTTON_SELECT);
 }
 
 }  // namespace apps::screen
