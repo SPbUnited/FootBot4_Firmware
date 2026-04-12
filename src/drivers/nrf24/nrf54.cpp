@@ -74,9 +74,9 @@ int Nrf24Recv::recv()
     if (reg & 0x40)  // RX_DR - Data Ready
     {
         drivers::leds.toggle(led::DATA_TRANSFER_STATUS_1);
-        // Read payload length
+        // Read payload length using R_RX_PL_WID command (0x60)
         uint32_t timeout_nrf_timer_recv = 0;//HAL_GetTick();
-        rc = readReg(0x60, &m_lenDbg);  // 0x60 = RX_PAYLOAD_WIDTH0
+        rc = rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command
         if (rc < 0)
         {
             // Error handling
@@ -230,7 +230,7 @@ Nrf24Recv::Nrf24Recv(drivers::nrf24::NRF24Config config)
     GPIO_InitStruct.Pin = this->mosiPin;
     GPIO_InitStruct.Alternate = this->mosiAlternate;
     HAL_GPIO_Init(this->mosiPort, &GPIO_InitStruct);
-    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
     // Initialize SPI handle
     m_spi_handle = new SPI_HandleTypeDef;
     m_spi_handle->Instance = this->instance;
@@ -487,16 +487,16 @@ int Nrf24Recv::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     }
 
     // Select chip
-    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
 
     // Send register address
-    HAL_SPI_Transmit(m_spi_handle, buffer_tx, 1, 100);
-
+    // HAL_SPI_Transmit(m_spi_handle, buffer_tx, 1, 100);
+    HAL_SPI_TransmitReceive(m_spi_handle, buffer_tx, buffer_rx, len + 1, 100);
     // Receive data
-    HAL_SPI_Receive(m_spi_handle, buffer_rx, len + 1, 100);
+    // HAL_SPI_Receive(m_spi_handle, buffer_rx, len + 1, 100);
 
     // Deselect chip
-    // HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_SET);
 
     // Copy received data (skip first byte which is the NOP response)
     uint8_t *value_p = value;
@@ -535,7 +535,7 @@ int Nrf24Recv::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)
 
     if (value != NULL && len > 0)
     {
-        // memcpy(&buffer_tx[1], value, len);
+        memcpy(&buffer_tx[1], value, len);
     }
 
     // Select chip
