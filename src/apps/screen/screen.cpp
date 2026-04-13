@@ -16,6 +16,8 @@ void screen()
     // static uint32_t last_click = 0;
     // static bool is_updating = true;
 
+    static bool was_id_changed = false;
+
     static int counter = 0;
     int version_len = strlen(FIRMWARE_VERSION);
     int version_field_width = 10;
@@ -44,9 +46,10 @@ void screen()
     display.rectFill(0, 0, 126, 32, false);  // Очищаем область
     display.setCursor(0, 0);
     display.setTextSize(1);
-    display.printf("robot  %2d |%s---------------------x: %6.3f |y: %6.3f\ntheta: %6.3f",
-                   devices::robot_dev.robot_id, vbuf, offset, devices::robot_dev.current_pos.x,
-                   devices::robot_dev.current_pos.y, devices::robot_dev.current_pos.theta);
+    display.printf("robot  %2d%c|%s---------------------x: %6.3f |y: %6.3f\ntheta: %6.3f",
+                   devices::robot_dev.robot_id, was_id_changed ? '*' : ' ', vbuf, offset,
+                   devices::robot_dev.current_pos.x, devices::robot_dev.current_pos.y,
+                   devices::robot_dev.current_pos.theta);
 
     counter++;
     if (counter > a + a + t1 + t2)
@@ -65,10 +68,12 @@ void screen()
 
     if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read())
     {
+        was_id_changed = true;
         devices::robot_dev.inc_id();
     }
     if (drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read())
     {
+        was_id_changed = true;
         devices::robot_dev.dec_id();
     }
 
