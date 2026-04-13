@@ -54,30 +54,27 @@ void screen()
         counter = 0;
     }
 
-    drivers::gpio_out.write(drivers::gpio::LED_DRV1,
-                            drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP));
-    drivers::gpio_out.write(drivers::gpio::LED_DRV2,
-                            drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN));
-    drivers::gpio_out.write(drivers::gpio::LED_DRV3,
-                            drivers::gpio_in.read(drivers::gpio::BUTTON_SELECT));
-    drivers::gpio_out.write(drivers::gpio::LED_STM32, true);
+    drivers::out_pins[drivers::LED_DRV1].write(drivers::in_pins[drivers::BUTTON_ADDR_UP].read());
+    drivers::out_pins[drivers::LED_DRV2].write(drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read());
+    drivers::out_pins[drivers::LED_DRV3].write(drivers::in_pins[drivers::BUTTON_SELECT].read());
+    drivers::out_pins[drivers::LED_STM32].toggle();
 
     static bool old_up = false;
     static bool old_down = false;
     static bool old_select = false;
 
-    if (drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP))
+    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read())
     {
         devices::robot_dev.inc_id();
     }
-    if (drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN))
+    if (drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read())
     {
         devices::robot_dev.dec_id();
     }
 
     static int save_progress = 0;
 
-    if (drivers::gpio_in.read(drivers::gpio::BUTTON_SELECT))
+    if (drivers::in_pins[drivers::BUTTON_SELECT].read())
     {
         save_progress++;
     }
@@ -113,9 +110,9 @@ void screen()
         kernel::reboot();
     }
 
-    old_up = drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_UP);
-    old_down = drivers::gpio_in.read(drivers::gpio::BUTTON_ADDR_DOWN);
-    old_select = drivers::gpio_in.read(drivers::gpio::BUTTON_SELECT);
+    old_up = drivers::in_pins[drivers::BUTTON_ADDR_UP].read();
+    old_down = drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read();
+    old_select = drivers::in_pins[drivers::BUTTON_SELECT].read();
 
     // if (old_up || old_down || old_select)
     // {

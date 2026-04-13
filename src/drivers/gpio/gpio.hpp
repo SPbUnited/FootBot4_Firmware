@@ -11,47 +11,28 @@ struct GPIODescriptor
     uint16_t GPIO_Pin;
 };
 
-enum GPIO_OUT
-{
-    LED_STM32,
-    LED_DRV1,
-    LED_DRV2,
-    LED_DRV3,
-    LED_DRV4,
-    LED_DRV5,
-    LED_DATA_TRANSFER_STATUS_1,
-    LED_DATA_TRANSFER_STATUS_2,
-};
-
-enum GPIO_INPUT
-{
-    BUTTON_ADDR_UP,
-    BUTTON_ADDR_DOWN,
-    BUTTON_SELECT,
-};
-
-class GPIOOutputDriver
+class GPIOOutputDriver : public GPIODescriptor
 {
   private:
   public:
     GPIOOutputDriver() {}
 
-    void init();
+    void init(GPIODescriptor pin);
 
-    void write(GPIO_OUT pin, bool state);
+    void write(bool state);
 
-    void toggle(GPIO_OUT pin);
+    void toggle();
 };
 
-class GPIOInputDriver
+class GPIOInputDriver : public GPIODescriptor
 {
   private:
   public:
     GPIOInputDriver() {}
 
-    void init();
+    void init(GPIODescriptor pin);
 
-    bool read(GPIO_INPUT pin);
+    bool read();
 };
 
 }  // namespace drivers::gpio
