@@ -138,6 +138,17 @@ void SPIDriver::resetCe()
     HAL_GPIO_WritePin(cePort, cePin, GPIO_PIN_RESET);
 }
 
+void SPIDriver::setCS()
+{
+    HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
+}
+
+
+void SPIDriver::resetCS()
+{
+    HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_RESET);
+}
+
 // Flush the TX FIFO
 void SPIDriver::flushTx(void)
 {

@@ -58,7 +58,7 @@ int Nrf24Recv::recv()
     // drivers::leds.toggle(led::DRV1);
     if (reg & 0x40)  // RX_DR - Data Ready
     {
-        drivers::leds.toggle(led::DATA_TRANSFER_STATUS_1);
+        // drivers::leds.toggle(led::DATA_TRANSFER_STATUS_1);
         // Read payload length using R_RX_PL_WID command (0x60)
         uint32_t timeout_nrf_timer_recv = 0;//HAL_GetTick();
         rc = spi_instance.rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command
@@ -118,7 +118,7 @@ int Nrf24Recv::recv()
         {
             return 0;  // Not for this device
         }
-        drivers::leds.toggle(led::DRV5);
+        // drivers::leds.toggle(led::DRV5);
         // Parse received data
         uint8_t flags = m_incomeArray[0];
         uint8_t kvlSpd = m_incomeArray[1];
@@ -283,7 +283,7 @@ void Nrf24Recv::init()
     for (int i =0; i <1000; i++);
     spi_instance.setCe();
     for (int i =0; i <5000; i++);
-    HAL_GPIO_WritePin(this->csPort, this->csPin, GPIO_PIN_RESET);
+    spi_instance.resetCS();
 }
 
 // Private methods implementation

@@ -9,7 +9,7 @@
 namespace devices::nrf24
 {
 
-class Nrf24Recv : public NRF24Config
+class Nrf24Recv
 {
 private:
     // SPI handle

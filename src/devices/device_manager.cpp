@@ -70,6 +70,8 @@ robot::RobotConfig robot_config = {
 
 robot::Robot robot_dev(robot_config);
 
+nrf24::Nrf24Recv nrf24_recv(drivers::spi2);
+
 void init()
 {
     shell::my_shellInit();
@@ -95,6 +97,9 @@ void init()
 
     robot_dev.init();
     kinfo("Robot initialized");
+
+    nrf24_recv.init();
+    kinfo("NRF24 initialized");
 
     kinfo("Devices initialized");
 }

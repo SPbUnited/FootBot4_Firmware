@@ -108,7 +108,7 @@ can::CanConfig can1_config = {
 
 i2c::I2cDriver i2c2(i2c2_config);
 
-nrf24::NRF24Config nrf24_config = {
+spi::SPIConfig nrf24_recv_config = {
     .instance = SPI2,
     .clk_enable =
         []()
@@ -145,7 +145,8 @@ buzzer::Buzzer buzzer_drv;
 bootstrap::Bootstrap bootstrap_drv;
 system_clock::SystemClock system_clock_drv;
 
-nrf24::Nrf24Recv nrf24_recv(nrf24_config);
+// nrf24::Nrf24Recv nrf24_recv(nrf24_config);
+spi::SPIDriver spi2(nrf24_recv_config);
 
 void init()
 {
@@ -158,7 +159,7 @@ void init()
     drivers::i2c2.init();
     drivers::leds.init();
     drivers::can_drv.init();
-    // drivers::nrf24_drv.init();
+    drivers::spi2.init();
     
 }
 

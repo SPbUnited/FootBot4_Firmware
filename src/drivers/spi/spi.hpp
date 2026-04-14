@@ -52,6 +52,9 @@ class SPIDriver : public SPIConfig
     void setCe();
     void resetCe();
 
+    void setCS();
+    void resetCS();
+
     void flushTx(void);
     void flushRx(void);
 };
