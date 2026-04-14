@@ -28,14 +28,14 @@ void new_old_and_old_format(NRFMPacket *packet, bool is_new_old_format = false)
 
     float dangle = packet->packet.payload.old_format.angular_velocity_or_angle * pi / 128.0f;
 
-    devices::robot_dev.set_target_linear_vel(velx, vely);
+    devices::robot_dev.set_target_linear_vel(vely, -velx);
     if (packet->packet.payload.old_format.AS)
     {
-        devices::robot_dev.set_target_angular_dpos(dangle);
+        devices::robot_dev.set_target_angular_dpos(-dangle);
     }
     else
     {
-        devices::robot_dev.set_target_angular_vel(angular_velocity);
+        devices::robot_dev.set_target_angular_vel(-angular_velocity);
     }
 
     devices::robot_dev.set_kicker_setting(packet->packet.payload.old_format.kicker_setting *
