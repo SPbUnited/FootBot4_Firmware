@@ -72,6 +72,8 @@ robot::RobotConfig robot_config = {.dribbler_setting_to_vel = 250.0 / 16,
 
 robot::Robot robot_dev(robot_config);
 
+nrf24::Nrf24Recv nrf24_recv(drivers::spi2);
+
 void init()
 {
     shell::my_shellInit();
@@ -110,6 +112,9 @@ void init()
     }
 
     kinfo("Robot initialized");
+
+    nrf24_recv.init();
+    kinfo("NRF24 initialized");
 
     kinfo("Devices initialized");
 }
