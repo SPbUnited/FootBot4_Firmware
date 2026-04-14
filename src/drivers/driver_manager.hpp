@@ -3,6 +3,7 @@
 #include "bootstrap/bootstrap.hpp"
 #include "buzzer/buzzer.hpp"
 #include "can/can.hpp"
+#include "gpio/gpio.hpp"
 #include "i2c/i2c.hpp"
 #include "led/led.hpp"
 
@@ -19,10 +20,33 @@ extern system_clock::SystemClock system_clock_drv;
 extern uart::UartDriver uart4;
 extern uart::UartDriver uart1;
 extern i2c::I2cDriver i2c2;
-extern led::LedDriver leds;
 extern buzzer::Buzzer buzzer_drv;
 extern can::CanDriver can_drv;
 extern spi::SPIDriver spi2;
+
+enum GPIO_OUT
+{
+    LED_STM32,
+    LED_DRV1,
+    LED_DRV2,
+    LED_DRV3,
+    LED_DRV4,
+    LED_DRV5,
+    LED_DATA_TRANSFER_STATUS_1,
+    LED_DATA_TRANSFER_STATUS_2,
+    OUT_COUNT,
+};
+
+enum GPIO_INPUT
+{
+    BUTTON_ADDR_UP,
+    BUTTON_ADDR_DOWN,
+    BUTTON_SELECT,
+    INPUT_COUNT,
+};
+
+extern gpio::GPIOInputDriver in_pins[INPUT_COUNT];
+extern gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 
 void init();
 

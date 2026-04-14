@@ -138,7 +138,8 @@ spi::SPIConfig nrf24_recv_config = {
 can::CanDriver can_drv(can1_config);
 // nrf24::NRF24Driver nrf24_drv(nrf24_config);
 
-led::LedDriver leds;
+gpio::GPIOOutputDriver gpio_out;
+gpio::GPIOInputDriver gpio_in;
 
 buzzer::Buzzer buzzer_drv;
 
@@ -147,6 +148,25 @@ system_clock::SystemClock system_clock_drv;
 
 // nrf24::Nrf24Recv nrf24_recv(nrf24_config);
 spi::SPIDriver spi2(nrf24_recv_config);
+gpio::GPIOOutputDriver out_pins[OUT_COUNT];
+gpio::GPIOInputDriver in_pins[INPUT_COUNT];
+
+gpio::GPIODescriptor out_pins_desc[] = {
+    [LED_STM32] = {GPIOD, GPIO_PIN_15},
+    [LED_DRV1] = {GPIOG, GPIO_PIN_2},
+    [LED_DRV2] = {GPIOG, GPIO_PIN_3},
+    [LED_DRV3] = {GPIOG, GPIO_PIN_4},
+    [LED_DRV4] = {GPIOG, GPIO_PIN_5},
+    [LED_DRV5] = {GPIOG, GPIO_PIN_6},
+    [LED_DATA_TRANSFER_STATUS_1] = {GPIOG, GPIO_PIN_7},
+    [LED_DATA_TRANSFER_STATUS_2] = {GPIOG, GPIO_PIN_8},
+};
+
+gpio::GPIODescriptor in_pins_desc[] = {
+    [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11},
+    [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
+    [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
+};
 
 void init()
 {
@@ -157,7 +177,19 @@ void init()
 
     drivers::uart4.init();
     drivers::i2c2.init();
-    drivers::leds.init();
+
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    for (int i = 0; i < OUT_COUNT; i++)
+    {
+        out_pins[i].init(out_pins_desc[i]);
+    }
+    for (int i = 0; i < INPUT_COUNT; i++)
+    {
+        in_pins[i].init(in_pins_desc[i]);
+    }
+
     drivers::can_drv.init();
     drivers::spi2.init();
     

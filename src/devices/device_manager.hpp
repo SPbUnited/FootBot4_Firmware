@@ -2,6 +2,7 @@
 
 #include "bldc/bldc.hpp"
 #include "chassis/chassis.hpp"
+#include "eeprom/eeprom.hpp"
 #include "logger/logger.hpp"
 #include "odom/odom.hpp"
 #include "oled/oled.hpp"

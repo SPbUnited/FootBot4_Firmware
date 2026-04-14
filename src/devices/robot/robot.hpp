@@ -38,6 +38,8 @@ struct RobotConfig
     float max_angular_accel;
 
     uint8_t robot_id;
+
+    uint32_t signature;
 };
 
 struct Robot : RobotConfig
@@ -79,7 +81,11 @@ struct Robot : RobotConfig
     void set_kicker_setting(uint8_t setting);
     void set_kicker_mode(KickerMode mode);
 
+    void inc_id();
+    void dec_id();
+
     void init();
+    void init(RobotConfig config);
     void sense();
     void plan();
     void act();

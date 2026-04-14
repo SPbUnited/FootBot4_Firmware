@@ -1,9 +1,12 @@
 #include "device_manager.hpp"
 
+#include "FlashStorage_STM32.h"
 #include "drivers/driver_manager.hpp"
 
 namespace devices
 {
+
+#define EEPROM_SIGNATURE 0x0239FABE
 
 const char init_message[] =
     "\n"
@@ -57,16 +60,15 @@ odom::OdometerConfig odom_config = {
 
 odom::Odometer odom_dev(odom_config);
 
-robot::RobotConfig robot_config = {
-    .dribbler_setting_to_vel = 250.0 / 16,
-    .kicker_setting_to_voltage = 200.0 / 16,
-    .angle_kp = 6.0,
-    .max_linear_vel = 0.5,
-    .max_linear_accel = NAN,
-    .max_angular_vel = 2.0,
-    .max_angular_accel = NAN,
-    .robot_id = 15,
-};
+robot::RobotConfig robot_config = {.dribbler_setting_to_vel = 250.0 / 16,
+                                   .kicker_setting_to_voltage = 200.0 / 16,
+                                   .angle_kp = 6.0,
+                                   .max_linear_vel = 0.5,
+                                   .max_linear_accel = NAN,
+                                   .max_angular_vel = 2.0,
+                                   .max_angular_accel = NAN,
+                                   .robot_id = 15,
+                                   .signature = EEPROM_SIGNATURE};
 
 robot::Robot robot_dev(robot_config);
 
@@ -95,7 +97,20 @@ void init()
     odom_dev.init();
     kinfo("Odometer initialized");
 
-    robot_dev.init();
+    eeprom::get(0, robot_config);
+
+    if (robot_config.signature != EEPROM_SIGNATURE)
+    {
+        kwarning("EEPROM signature mismatch");
+    }
+    else
+    {
+        kinfo("EEPROM signature match");
+        kinfo("Updating robot config from EEPROM");
+        kinfo("  id: %d", robot_config.robot_id);
+        robot_dev.init(robot_config);
+    }
+
     kinfo("Robot initialized");
 
     nrf24_recv.init();
