@@ -3,20 +3,20 @@
 #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 
-#define NRF24_REG_RX_ADDR_P0  (uint8_t) 0x0A // Receive address data pipe 0
-#define NRF24_REG_RX_ADDR_P1  (uint8_t) 0x0B // Receive address data pipe 1
-#define NRF24_REG_RX_ADDR_P2  (uint8_t) 0x0C // Receive address data pipe 2
-#define NRF24_REG_RX_ADDR_P3  (uint8_t) 0x0D // Receive address data pipe 3
-#define NRF24_REG_RX_ADDR_P4  (uint8_t) 0x0E // Receive address data pipe 4
-#define NRF24_REG_RX_ADDR_P5  (uint8_t) 0x0F // Receive address data pipe 5
-#define NRF24_REG_TX_ADDR     (uint8_t) 0x10 // Transmit address
-#define NRF24_REG_RX_PW_P0    (uint8_t) 0x11 // Number of bytes in RX payload in data pipe 0
-#define NRF24_REG_RX_PW_P1    (uint8_t) 0x12 // Number of bytes in RX payload in data pipe 1
-#define NRF24_REG_RX_PW_P2    (uint8_t) 0x13 // Number of bytes in RX payload in data pipe 2
-#define NRF24_REG_RX_PW_P3    (uint8_t) 0x14 // Number of bytes in RX payload in data pipe 3
-#define NRF24_REG_RX_PW_P4    (uint8_t) 0x15 // Number of bytes inNRF24_CMD_NOP RX payload in data pipe 4
-#define NRF24_REG_RX_PW_P5    (uint8_t) 0x16 // Number of bytes in RX payload in data pipe 5
-
+#define NRF24_REG_RX_ADDR_P0 (uint8_t)0x0A  // Receive address data pipe 0
+#define NRF24_REG_RX_ADDR_P1 (uint8_t)0x0B  // Receive address data pipe 1
+#define NRF24_REG_RX_ADDR_P2 (uint8_t)0x0C  // Receive address data pipe 2
+#define NRF24_REG_RX_ADDR_P3 (uint8_t)0x0D  // Receive address data pipe 3
+#define NRF24_REG_RX_ADDR_P4 (uint8_t)0x0E  // Receive address data pipe 4
+#define NRF24_REG_RX_ADDR_P5 (uint8_t)0x0F  // Receive address data pipe 5
+#define NRF24_REG_TX_ADDR (uint8_t)0x10     // Transmit address
+#define NRF24_REG_RX_PW_P0 (uint8_t)0x11    // Number of bytes in RX payload in data pipe 0
+#define NRF24_REG_RX_PW_P1 (uint8_t)0x12    // Number of bytes in RX payload in data pipe 1
+#define NRF24_REG_RX_PW_P2 (uint8_t)0x13    // Number of bytes in RX payload in data pipe 2
+#define NRF24_REG_RX_PW_P3 (uint8_t)0x14    // Number of bytes in RX payload in data pipe 3
+#define NRF24_REG_RX_PW_P4 \
+    (uint8_t)0x15  // Number of bytes inNRF24_CMD_NOP RX payload in data pipe 4
+#define NRF24_REG_RX_PW_P5 (uint8_t)0x16  // Number of bytes in RX payload in data pipe 5
 
 namespace devices::nrf24
 {
@@ -32,8 +32,7 @@ uint8_t Nrf24Recv::m_incomeArray[Nrf24Recv::m_incomePacketLen];
 uint8_t Nrf24Recv::m_iArray[8];
 uint8_t Nrf24Recv::m_lenDbg;
 
-
-Nrf24Recv::Nrf24Recv(drivers::spi::SPIDriver& spi_instance) : spi_instance(spi_instance) {}
+Nrf24Recv::Nrf24Recv(drivers::spi::SPIDriver &spi_instance) : spi_instance(spi_instance) {}
 
 // Convert unsigned 8-bit to signed 8-bit
 int8_t Nrf24Recv::u8Toi8(uint8_t x)
@@ -43,24 +42,30 @@ int8_t Nrf24Recv::u8Toi8(uint8_t x)
     return static_cast<int8_t>(x);
 }
 
-
-
 // Main receive function
 int Nrf24Recv::recv()
 {
-    uint8_t reg = 1;
-    uint32_t time_ms = 0;//HAL_GetTick();
-    int rc = readReg(7, &reg);  // 7 = NRF24_REG_FIFO_STATUS
-    if (rc < 0)
+    for (size_t i = 0; i < 100; i++)
     {
-        // Error handling - could add logging here
-    }
-    // drivers::leds.toggle(led::DRV1);
-    if (reg & 0x40)  // RX_DR - Data Ready
-    {
+        uint8_t reg = 1;
+        uint32_t time_ms = 0;       // HAL_GetTick();
+        int rc = readReg(7, &reg);  // 7 = NRF24_REG_FIFO_STATUS
+        if (rc < 0)
+        {
+            // Error handling - could add logging here
+        }
+
+        // drivers::leds.toggle(led::DRV1);
+        if (!(reg & 0x40))  // RX_DR - Data Not Ready
+        {
+            continue;
+        }
+
+        drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1].toggle();
+
         // drivers::leds.toggle(led::DATA_TRANSFER_STATUS_1);
         // Read payload length using R_RX_PL_WID command (0x60)
-        uint32_t timeout_nrf_timer_recv = 0;//HAL_GetTick();
+        uint32_t timeout_nrf_timer_recv = 0;            // HAL_GetTick();
         rc = spi_instance.rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command
         if (rc < 0)
         {
@@ -82,72 +87,80 @@ int Nrf24Recv::recv()
         }
         m_packetsReceived++;
 
-        if (m_lenDbg == 6)
-        {
-            spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);  // 0x61 = R_RX_PAYLOAD
-        }
-        else if (m_lenDbg == 8)
-        {
-            spi_instance.rawRead(0x61, m_iArray, m_lenDbg);
-        }
+        // if (m_lenDbg == 6)
+        // {
+        //     spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);  // 0x61 = R_RX_PAYLOAD
+        // }
+        // else if (m_lenDbg == 8)
+        // {
+        //     spi_instance.rawRead(0x61, m_iArray, m_lenDbg);
+        // }
+
+        spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);
+
         writeReg(0x07, 0x40);  // Clear RX_DR interrupt
 
         m_lastPacketTime = HAL_GetTick();
 
         spi_instance.flushRx();
+
+        devices::nrfm_decoder::nrfm_rx_callback(m_incomeArray, m_lenDbg);
+
         // m_address = m_display->adrAndCh[0];
 
-        if (m_lenDbg == 8)
-        {
-            if (m_address + 0xA0 == m_iArray[m_lenDbg - 1])
-            {
-                uint8_t t_test_arr[4];
-                // memcpy(t_test_arr, m_iArray, 4);
-                // m_cannabus->sendDebugOverride(t_test_arr, m_iArray[m_lenDbg - 4] + (m_iArray[m_lenDbg - 3] << 8), m_lenDbg);
-            }
-        }
-        // drivers::
-        uint8_t m_address = 6;
-        if ((m_address != (m_incomeArray[5] & 0x0F)) ||
-            (((m_address + 0xF0) == (m_incomeArray[5])) &&
-             ((m_address + 0xF0) == (m_incomeArray[4])) &&
-             ((m_address + 0xF0) == (m_incomeArray[3])) &&
-             ((m_address + 0xF0) == (m_incomeArray[2])) &&
-             ((m_address + 0xF0) == (m_incomeArray[1])) &&
-             ((m_address + 0xF0) == (m_incomeArray[0]))))
-        {
-            return 0;  // Not for this device
-        }
+        // if (m_lenDbg == 8)
+        // {
+        //     if (m_address + 0xA0 == m_iArray[m_lenDbg - 1])
+        //     {
+        //         uint8_t t_test_arr[4];
+        //         // memcpy(t_test_arr, m_iArray, 4);
+        //         // m_cannabus->sendDebugOverride(t_test_arr, m_iArray[m_lenDbg - 4] +
+        //         // (m_iArray[m_lenDbg - 3] << 8), m_lenDbg);
+        //     }
+        // }
+        // // drivers::
+        // uint8_t m_address = 6;
+        // if ((m_address != (m_incomeArray[5] & 0x0F)) ||
+        //     (((m_address + 0xF0) == (m_incomeArray[5])) &&
+        //      ((m_address + 0xF0) == (m_incomeArray[4])) &&
+        //      ((m_address + 0xF0) == (m_incomeArray[3])) &&
+        //      ((m_address + 0xF0) == (m_incomeArray[2])) &&
+        //      ((m_address + 0xF0) == (m_incomeArray[1])) &&
+        //      ((m_address + 0xF0) == (m_incomeArray[0]))))
+        // {
+        //     return 0;  // Not for this device
+        // }
         // drivers::leds.toggle(led::DRV5);
+        // drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_2].toggle();
         // Parse received data
-        uint8_t flags = m_incomeArray[0];
-        uint8_t kvlSpd = m_incomeArray[1];
-        uint8_t kvlVal = ((kvlSpd & m_kvlMask) >> 4);
-        uint8_t radioBarrier = (flags & 0x80) > 0 ? 1 : 0;
+        // uint8_t flags = m_incomeArray[0];
+        // uint8_t kvlSpd = m_incomeArray[1];
+        // uint8_t kvlVal = ((kvlSpd & m_kvlMask) >> 4);
+        // uint8_t radioBarrier = (flags & 0x80) > 0 ? 1 : 0;
 
-        uint8_t speedDribler = 0;
-        speedDribler = (kvlSpd & m_spdMask);
+        // uint8_t speedDribler = 0;
+        // speedDribler = (kvlSpd & m_spdMask);
 
-        // Motion control - standard format
-        if (0x00 == (m_incomeArray[m_lenDbg - 1] & 0xF0))
-        {
-            int8_t iVal = u8Toi8(m_incomeArray[2]);
-            iVal = u8Toi8(m_incomeArray[4]);
-            iVal = u8Toi8(m_incomeArray[3]);
-        }
-        // Motion control - minifloat format
-        else if (0xF0 == (m_incomeArray[m_lenDbg - 1] & 0xF0))
-        {
-            float iVal = minif_to_float3(m_incomeArray[2]);
+        // // Motion control - standard format
+        // if (0x00 == (m_incomeArray[m_lenDbg - 1] & 0xF0))
+        // {
+        //     int8_t iVal = u8Toi8(m_incomeArray[2]);
+        //     iVal = u8Toi8(m_incomeArray[4]);
+        //     iVal = u8Toi8(m_incomeArray[3]);
+        // }
+        // // Motion control - minifloat format
+        // else if (0xF0 == (m_incomeArray[m_lenDbg - 1] & 0xF0))
+        // {
+        //     float iVal = minif_to_float3(m_incomeArray[2]);
 
-            iVal = minif_to_float3(m_incomeArray[4]);
+        //     iVal = minif_to_float3(m_incomeArray[4]);
 
-            iVal = minif_to_float3(m_incomeArray[3]);
-        }
+        //     iVal = minif_to_float3(m_incomeArray[3]);
+        // }
     }
 
     // HAL_Delay(1);
-    // return 0;
+    return 0;
 }
 
 // Send function
@@ -164,13 +177,13 @@ void Nrf24Recv::init()
 
     // Set CE high to enable the module
     spi_instance.setCe();
-    for (int i =0; i <5000; i++);
+    for (int i = 0; i < 5000; i++)
+        ;
     // HAL_Delay(5);
     spi_instance.resetCe();
 
     // Initialize NRF24 module
-    auto w = [this](uint8_t reg, uint8_t val)
-    { writeReg(reg, val); };
+    auto w = [this](uint8_t reg, uint8_t val) { writeReg(reg, val); };
     auto r = [this](uint8_t reg)
     {
         uint8_t data = 2;
@@ -216,7 +229,7 @@ void Nrf24Recv::init()
 
     w(0x03, 0x03);
 
-        w(0x05, 0x34); // channel set
+    w(0x05, 0x34);  // channel set
     w(0x00, 0x0D);
     spi_instance.flushRx();
     w(0x00, 0x0C);
@@ -224,7 +237,8 @@ void Nrf24Recv::init()
     w(0x07, 0x70);
 
     // k_sleep(K_MSEC(10));
-    for (int i =0; i <10000; i++);
+    for (int i = 0; i < 10000; i++)
+        ;
     w(0x06, 0x0E);
 
     if (r(0x00) != 0x0C)
@@ -251,7 +265,7 @@ void Nrf24Recv::init()
     // if (send_or_recieve)
     //     rawWrite(0x10, self_addr, 3);
     // else
-        spi_instance.rawWrite(0x0A, self_addr, 3);
+    spi_instance.rawWrite(0x0A, self_addr, 3);
 
     if (r(0x02) != 0x00)
     {
@@ -262,14 +276,14 @@ void Nrf24Recv::init()
     // if (send_or_recieve)
     //     w(0x02, 0x06);
     // else
-        w(0x02, 0x01);
+    w(0x02, 0x01);
     w(0x11, 0x20);
 
     spi_instance.rawWrite(0x0A, self_addr, 3);
     // if (send_or_recieve)
     //     w(0x00, 0x0E);
     // else
-        w(0x00, 0x0F);
+    w(0x00, 0x0F);
 
     spi_instance.flushRx();
 
@@ -277,12 +291,15 @@ void Nrf24Recv::init()
 
     spi_instance.setCe();
     // k_sleep(K_MSEC(1));
-    for (int i =0; i <1000; i++);
+    for (int i = 0; i < 1000; i++)
+        ;
     spi_instance.resetCe();
     // k_sleep(K_MSEC(1));
-    for (int i =0; i <1000; i++);
+    for (int i = 0; i < 1000; i++)
+        ;
     spi_instance.setCe();
-    for (int i =0; i <5000; i++);
+    for (int i = 0; i < 5000; i++)
+        ;
     spi_instance.resetCS();
 }
 
@@ -299,7 +316,6 @@ int Nrf24Recv::spiUpdate_reg(uint8_t reg_addr, uint8_t mask, uint8_t value)
     return spi_instance.rawWrite(reg_addr, &tmp_val, 1);
 }
 
-
 // Read single register
 int Nrf24Recv::readReg(uint8_t reg_addr, uint8_t *value)
 {
@@ -312,5 +328,4 @@ int Nrf24Recv::writeReg(uint8_t reg_addr, uint8_t value)
     return spi_instance.rawWrite(reg_addr, &value, 1);
 }
 
-
-}
+}  // namespace devices::nrf24

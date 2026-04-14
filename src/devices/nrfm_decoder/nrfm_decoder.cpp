@@ -15,13 +15,41 @@ void nrfm_rx_callback(uint8_t *data, uint8_t len)
         return;
     }
 
+    kverbose(
+        "nrfm_packet: [%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X "
+        "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X]",
+        packet->data[0], packet->data[1], packet->data[2], packet->data[3], packet->data[4],
+        packet->data[5], packet->data[6], packet->data[7], packet->data[8], packet->data[9],
+        packet->data[10], packet->data[11], packet->data[12], packet->data[13], packet->data[14],
+        packet->data[15], packet->data[16], packet->data[17], packet->data[18], packet->data[19],
+        packet->data[20], packet->data[21], packet->data[22], packet->data[23], packet->data[24],
+        packet->data[25], packet->data[26], packet->data[27], packet->data[28], packet->data[29],
+        packet->data[30], packet->data[31]);
+
+    kverbose(" packet_type = %d, robot_id = %d", packet->packet.packet_type,
+             packet->packet.robot_id);
+
+    drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_2].toggle();
+
     switch (packet->packet.packet_type)
     {
         case NRFM_OLD_FORMAT:
+            if (len != sizeof(packet->packet.payload.old_format) + 1)
+            {
+                kerror("Old format packet length mismatch: expected %d, got %d",
+                       sizeof(packet->packet.payload.old_format) + 1, len);
+                return;
+            }
             kdebug("Old format packet");
             decoders::new_old_and_old_format(packet);
             break;
         case NRFM_NEW_OLD_FORMAT:
+            if (len != sizeof(packet->packet.payload.old_format) + 1)
+            {
+                kerror("New old format packet length mismatch: expected %d, got %d",
+                       sizeof(packet->packet.payload.old_format) + 1, len);
+                return;
+            }
             kdebug("New old format packet");
             decoders::new_old_and_old_format(packet, true);
             break;
@@ -35,16 +63,16 @@ void nrfmTestOldPacket(int8_t velx, int8_t vely, int8_t angular_velocity_or_angl
                        uint8_t kicker_setting, uint8_t dribbler_setting, uint8_t flags)
 {
     NRFMPacket packet = {
-        .packet = {.packet_type = NRFM_OLD_FORMAT,
-                   .robot_id = 15,
+        .packet = {.robot_id = 15,
+                   .packet_type = NRFM_OLD_FORMAT,
                    .payload = {
                        .old_format =
                            {
                                .velx = velx,
                                .vely = vely,
                                .angular_velocity_or_angle = angular_velocity_or_angle,
-                               .kicker_setting = kicker_setting,
                                .dribbler_setting = dribbler_setting,
+                               .kicker_setting = kicker_setting,
                                .reserved = flags & 0b10000000,
                                .AF = flags & 0b01000000,
                                .AU = flags & 0b00100000,
@@ -65,16 +93,16 @@ void nrfmTestNewOldPacket(int8_t velx, int8_t vely, int8_t angular_velocity_or_a
                           uint8_t kicker_setting, uint8_t dribbler_setting, uint8_t flags)
 {
     NRFMPacket packet = {
-        .packet = {.packet_type = NRFM_NEW_OLD_FORMAT,
-                   .robot_id = 15,
+        .packet = {.robot_id = 15,
+                   .packet_type = NRFM_NEW_OLD_FORMAT,
                    .payload = {
                        .old_format =
                            {
                                .velx = velx,
                                .vely = vely,
                                .angular_velocity_or_angle = angular_velocity_or_angle,
-                               .kicker_setting = kicker_setting,
                                .dribbler_setting = dribbler_setting,
+                               .kicker_setting = kicker_setting,
                                .reserved = flags & 0b10000000,
                                .AF = flags & 0b01000000,
                                .AU = flags & 0b00100000,

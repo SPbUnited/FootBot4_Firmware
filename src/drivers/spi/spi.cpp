@@ -55,7 +55,8 @@ void SPIDriver::init()
     handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     handle.Init.CLKPhase = SPI_PHASE_1EDGE;
     handle.Init.NSS = SPI_NSS_SOFT;
-    handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;  // 180MHz / 2 = 90 MHz SPI clock (closest to 100 MHz)
+    handle.Init.BaudRatePrescaler =
+        SPI_BAUDRATEPRESCALER_32;  // 180MHz / 2 = 90 MHz SPI clock (closest to 100 MHz)
     handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     handle.Init.TIMode = SPI_TIMODE_DISABLE;
     handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -99,7 +100,7 @@ int SPIDriver::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)
 int SPIDriver::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
 {
     uint8_t buffer_tx[2] = {reg_addr, 0xFF};  // 0xFF is NOP command
-    uint8_t buffer_rx[10] = {0};
+    uint8_t buffer_rx[32] = {0};
 
     if (len > 64)
     {
@@ -116,22 +117,25 @@ int SPIDriver::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
 
     // Copy received data (skip first byte which is the NOP response)
-    uint8_t *value_p = value;
-    for (uint8_t i = 0; i < len; ++i)
+    // memcpy(value, buffer_rx, len);
+    for (size_t i = 0; i < len; i++)
     {
-        *value_p = buffer_rx[len - i];
-        value_p++;
+        value[i] = buffer_rx[i + 1];
     }
+    // uint8_t *value_p = value;
+    // for (uint8_t i = 0; i < len; ++i)
+    // {
+    //     *value_p = buffer_rx[len - i];
+    //     value_p++;
+    // }
 
     return 0;
 }
-
 
 void SPIDriver::setCe()
 {
     HAL_GPIO_WritePin(cePort, cePin, GPIO_PIN_SET);
 }
-
 
 void SPIDriver::resetCe()
 {
@@ -142,7 +146,6 @@ void SPIDriver::setCS()
 {
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
 }
-
 
 void SPIDriver::resetCS()
 {
