@@ -45,8 +45,16 @@ enum GPIO_INPUT
     INPUT_COUNT,
 };
 
+enum ANALOG_INPUT
+{
+    KICKER_VOLTAGE,
+    ANALOG_COUNT,
+};
+
 extern gpio::GPIOInputDriver in_pins[INPUT_COUNT];
 extern gpio::GPIOOutputDriver out_pins[OUT_COUNT];
+
+extern gpio::GPIOAnalogInputDriver analog_in_pins[ANALOG_COUNT];
 
 void init();
 
