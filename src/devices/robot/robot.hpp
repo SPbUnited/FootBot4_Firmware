@@ -39,8 +39,10 @@ struct RobotConfig
 
     uint8_t robot_id;
 
-    uint32_t signature;
+    uint8_t signature;
 };
+
+uint8_t calculate_signature(RobotConfig config);
 
 struct Robot : RobotConfig
 {

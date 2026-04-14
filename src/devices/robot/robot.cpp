@@ -5,6 +5,19 @@
 namespace devices::robot
 {
 
+uint8_t calculate_signature(RobotConfig config)
+{
+    uint8_t signature = 0;
+    uint8_t *data = reinterpret_cast<uint8_t *>(&config);
+
+    for (size_t i = 0; i < sizeof(RobotConfig) - 2; i++)
+    {
+        signature ^= data[i];
+    }
+
+    return signature;
+}
+
 void Robot::set_target_linear_vel(float vel_x, float vel_y)
 {
     linear_mode = VELOCITY;
@@ -96,7 +109,7 @@ void Robot::init() {}
 
 void Robot::init(RobotConfig config)
 {
-    static_cast<RobotConfig&>(*this) = config;
+    static_cast<RobotConfig &>(*this) = config;
 }
 
 void Robot::sense()
