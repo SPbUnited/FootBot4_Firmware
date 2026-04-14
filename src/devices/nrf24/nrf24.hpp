@@ -1,17 +1,17 @@
 #pragma once
 
 #include <inttypes.h>
-#include "stm32f4xx_hal.h"
 
 #include "drivers/spi/spi.hpp"
 #include "minifloat3.h"
+#include "stm32f4xx_hal.h"
 
 namespace devices::nrf24
 {
 
 class Nrf24Recv
 {
-private:
+  private:
     // SPI handle
     SPI_HandleTypeDef *m_spi_handle;
 
@@ -24,9 +24,8 @@ private:
     static uint32_t m_ownPacketsReceived_1s;
     static uint8_t m_lenDbg;
 
-
     // Packet data
-    static const uint32_t m_incomePacketLen = 6;
+    static const uint32_t m_incomePacketLen = 32;
     static uint8_t m_incomeArray[m_incomePacketLen];
     static uint8_t m_iArray[8];
 
@@ -55,7 +54,6 @@ private:
     int readReg(uint8_t reg_addr, uint8_t *value);
     int writeReg(uint8_t reg_addr, uint8_t value);
 
-
     // NRF24L01+ Register Map
     static constexpr uint8_t NRF24_REG_CONFIG = 0x00;
     static constexpr uint8_t NRF24_REG_EN_AA = 0x01;
@@ -76,12 +74,12 @@ private:
     static constexpr uint8_t NRF24_CMD_REUSE_TX_PL = 0xE3;
     static constexpr uint8_t NRF24_CMD_NOP = 0xFF;
 
-public:
+  public:
     volatile uint32_t m_lastPacketTime;
     uint8_t m_address;
-    drivers::spi::SPIDriver& spi_instance;
+    drivers::spi::SPIDriver &spi_instance;
 
-    Nrf24Recv(drivers::spi::SPIDriver& spi_instance);
+    Nrf24Recv(drivers::spi::SPIDriver &spi_instance);
 
     void init();
     int recv();
@@ -89,4 +87,4 @@ public:
 
     static int8_t u8Toi8(uint8_t x);
 };
-}
+}  // namespace devices::nrf24
