@@ -1,14 +1,12 @@
 #pragma once
-// #include <stdio.h>
-// #include <stdint.h>
-// #include <string.h>
+
 #include <inttypes.h>
 #include "stm32f4xx_hal.h"
 
-#include "nrf24.hpp"
+#include "drivers/spi/spi.hpp"
 #include "minifloat3.h"
 
-namespace drivers::nrf24
+namespace devices::nrf24
 {
 
 class Nrf24Recv : public NRF24Config
@@ -54,14 +52,9 @@ private:
 
     // Internal register operations
     int spiUpdate_reg(uint8_t reg_addr, uint8_t mask, uint8_t value);
-    int rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len);
     int readReg(uint8_t reg_addr, uint8_t *value);
     int writeReg(uint8_t reg_addr, uint8_t value);
-    int rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len);
 
-    // CE control
-    void setCe();
-    void resetCe();
 
     // NRF24L01+ Register Map
     static constexpr uint8_t NRF24_REG_CONFIG = 0x00;
@@ -86,15 +79,14 @@ private:
 public:
     volatile uint32_t m_lastPacketTime;
     uint8_t m_address;
+    drivers::spi::SPIDriver& spi_instance;
 
-    Nrf24Recv(drivers::nrf24::NRF24Config config);
+    Nrf24Recv(drivers::spi::SPIDriver& spi_instance);
 
+    void init();
     int recv();
     void send(uint8_t checker, uint8_t id);
 
     static int8_t u8Toi8(uint8_t x);
-
-    void flushTx(void);
-    void flushRx(void);
 };
 }
