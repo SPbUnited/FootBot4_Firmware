@@ -108,25 +108,27 @@ can::CanConfig can1_config = {
 
 i2c::I2cDriver i2c2(i2c2_config);
 
-nrf24::NRF24Config nrf24_config = {
+spi::SPIConfig nrf24_recv_config = {
     .instance = SPI2,
     .clk_enable =
         []()
     {
         __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        __HAL_RCC_GPIOD_CLK_ENABLE();
         __HAL_RCC_SPI2_CLK_ENABLE();
     },
-    .sckPin = GPIO_PIN_13,
+    .sckPin = GPIO_PIN_10,
     .sckPort = GPIOB,
     .sckAlternate = GPIO_AF5_SPI2,
-    .misoPin = GPIO_PIN_14,
-    .misoPort = GPIOB,
+    .misoPin = GPIO_PIN_2,
+    .misoPort = GPIOC,
     .misoAlternate = GPIO_AF5_SPI2,
-    .mosiPin = GPIO_PIN_15,
-    .mosiPort = GPIOB,
+    .mosiPin = GPIO_PIN_3,
+    .mosiPort = GPIOC,
     .mosiAlternate = GPIO_AF5_SPI2,
-    .cePin = GPIO_PIN_1,
-    .cePort = GPIOB,
+    .cePin = GPIO_PIN_8,
+    .cePort = GPIOD,
     .csPin = GPIO_PIN_12,
     .csPort = GPIOB,
     .irqPin = 0,
@@ -134,7 +136,7 @@ nrf24::NRF24Config nrf24_config = {
 };
 
 can::CanDriver can_drv(can1_config);
-nrf24::NRF24Driver nrf24_drv(nrf24_config);
+// nrf24::NRF24Driver nrf24_drv(nrf24_config);
 
 gpio::GPIOOutputDriver gpio_out;
 gpio::GPIOInputDriver gpio_in;
@@ -144,6 +146,8 @@ buzzer::Buzzer buzzer_drv;
 bootstrap::Bootstrap bootstrap_drv;
 system_clock::SystemClock system_clock_drv;
 
+// nrf24::Nrf24Recv nrf24_recv(nrf24_config);
+spi::SPIDriver spi2(nrf24_recv_config);
 gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 gpio::GPIOInputDriver in_pins[INPUT_COUNT];
 
@@ -187,7 +191,8 @@ void init()
     }
 
     drivers::can_drv.init();
-    drivers::nrf24_drv.init();
+    drivers::spi2.init();
+    
 }
 
 }  // namespace drivers
