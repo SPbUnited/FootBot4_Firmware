@@ -45,6 +45,20 @@ void new_old_and_old_format(NRFMPacket *packet, bool is_new_old_format = false)
 
     devices::robot::KickerMode kicker_mode = devices::robot::DISABLED;
 
+    // bool AF : 1;  // Прямой автокик
+    // bool AU : 1;  // Навесной автокик
+    // bool KF : 1;  // Прямой кикер
+    // bool KU : 1;  // Навесной кикер
+    // bool AS : 1;  // Angle vel or angle switch
+    // bool DE : 1;  // Dribbler enable
+    // bool HE : 1;  // High voltage enable
+
+    // kverbose("Bits: AF: %d, AU: %d, KF: %d, KU: %d, AS: %d, DE: %d, HE: %d",
+    //          packet->packet.payload.old_format.AF, packet->packet.payload.old_format.AU,
+    //          packet->packet.payload.old_format.KF, packet->packet.payload.old_format.KU,
+    //          packet->packet.payload.old_format.AS, packet->packet.payload.old_format.DE,
+    //          packet->packet.payload.old_format.HE);
+
     if (packet->packet.payload.old_format.KF)
     {
         kicker_mode = devices::robot::KICK_FRONT;

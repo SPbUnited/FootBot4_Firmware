@@ -45,7 +45,7 @@ int8_t Nrf24Recv::u8Toi8(uint8_t x)
 // Main receive function
 int Nrf24Recv::recv()
 {
-    for (size_t i = 0; i < 100; i++)
+    for (size_t i = 0; i < 1; i++)
     {
         uint8_t reg = 1;
         uint32_t time_ms = 0;       // HAL_GetTick();
@@ -102,8 +102,6 @@ int Nrf24Recv::recv()
 
         m_lastPacketTime = HAL_GetTick();
 
-        spi_instance.flushRx();
-
         devices::nrfm_decoder::nrfm_rx_callback(m_incomeArray, m_lenDbg);
 
         // m_address = m_display->adrAndCh[0];
@@ -158,6 +156,8 @@ int Nrf24Recv::recv()
         //     iVal = minif_to_float3(m_incomeArray[3]);
         // }
     }
+
+    spi_instance.flushRx();
 
     // HAL_Delay(1);
     return 0;

@@ -34,14 +34,14 @@ union NRFMPacket
                 int8_t angular_velocity_or_angle;
                 uint8_t dribbler_setting : 4;
                 uint8_t kicker_setting : 4;
-                bool reserved : 1;
-                bool AF : 1;  // Прямой автокик
-                bool AU : 1;  // Навесной автокик
-                bool KF : 1;  // Прямой кикер
-                bool KU : 1;  // Навесной кикер
-                bool AS : 1;  // Angle vel or angle switch
-                bool DE : 1;  // Dribbler enable
                 bool HE : 1;  // High voltage enable
+                bool DE : 1;  // Dribbler enable
+                bool AS : 1;  // Angle vel or angle switch
+                bool KU : 1;  // Навесной кикер
+                bool KF : 1;  // Прямой кикер
+                bool AU : 1;  // Навесной автокик
+                bool AF : 1;  // Прямой автокик
+                bool reserved : 1;
             } old_format;
             struct __attribute__((packed, aligned(1))) global_coordinate_t
             {
