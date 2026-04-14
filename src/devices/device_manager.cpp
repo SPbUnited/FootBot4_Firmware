@@ -6,8 +6,6 @@
 namespace devices
 {
 
-#define EEPROM_SIGNATURE 0x0239FABE
-
 const char init_message[] =
     "\n"
     "    ______            __  ____        __  __ __\n"
@@ -63,12 +61,12 @@ odom::Odometer odom_dev(odom_config);
 robot::RobotConfig robot_config = {.dribbler_setting_to_vel = 250.0 / 16,
                                    .kicker_setting_to_voltage = 200.0 / 16,
                                    .angle_kp = 6.0,
-                                   .max_linear_vel = 0.5,
+                                   .max_linear_vel = 4.8,
                                    .max_linear_accel = NAN,
-                                   .max_angular_vel = 2.0,
+                                   .max_angular_vel = 6.0,
                                    .max_angular_accel = NAN,
                                    .robot_id = 15,
-                                   .signature = EEPROM_SIGNATURE};
+                                   .signature = 0};
 
 robot::Robot robot_dev(robot_config);
 
@@ -105,18 +103,23 @@ void init()
     odom_dev.init();
     kinfo("Odometer initialized");
 
-    eeprom::get(0, robot_config);
+    robot_config.signature = robot::calculate_signature(robot_config);
 
-    if (robot_config.signature != EEPROM_SIGNATURE)
+    robot::RobotConfig eeprom_robot_config = {0};
+
+    eeprom::get(0, eeprom_robot_config);
+
+    if (eeprom_robot_config.signature != robot_config.signature)
     {
-        kwarning("EEPROM signature mismatch");
+        kwarning("EEPROM signature mismatch, saving config to EEPROM");
+        eeprom::put(0, robot_config);
     }
     else
     {
         kinfo("EEPROM signature match");
         kinfo("Updating robot config from EEPROM");
-        kinfo("  id: %d", robot_config.robot_id);
-        robot_dev.init(robot_config);
+        kinfo("  id: %d", eeprom_robot_config.robot_id);
+        robot_dev.init(eeprom_robot_config);
     }
 
     kinfo("Robot initialized");
