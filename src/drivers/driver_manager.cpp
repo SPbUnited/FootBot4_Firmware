@@ -168,6 +168,14 @@ gpio::GPIODescriptor in_pins_desc[] = {
     [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
 };
 
+gpio::GPIODescriptor analog_pins_desc[] = {
+    [KICKER_VOLTAGE] = {GPIOC, GPIO_PIN_1},
+};
+
+gpio::ADCDescriptor adc_desc[] = {
+    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, DISABLE, ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE}
+};  
+
 void init()
 {
     drivers::system_clock_drv.init();
@@ -178,6 +186,7 @@ void init()
     drivers::uart4.init();
     drivers::i2c2.init();
 
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOG_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
@@ -188,6 +197,10 @@ void init()
     for (int i = 0; i < INPUT_COUNT; i++)
     {
         in_pins[i].init(in_pins_desc[i]);
+    }
+    for (int i = 0; i < ANALOG_COUNT; i++)
+    {
+        analog_in_pins[i].init(analog_pins_desc[i], adc_desc[i]);
     }
 
     drivers::can_drv.init();
