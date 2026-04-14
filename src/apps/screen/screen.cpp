@@ -139,7 +139,7 @@ void screen()
     //     }
     // }
     display.flush();
-    anim = ! anim;
+    // anim = ! anim;
 }
 
 }  // namespace apps::screen
