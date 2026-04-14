@@ -4,11 +4,12 @@
 #include "chassis/chassis.hpp"
 #include "eeprom/eeprom.hpp"
 #include "logger/logger.hpp"
+#include "nrf24/nrf24.hpp"
+#include "nrfm_decoder/nrfm_decoder.hpp"
 #include "odom/odom.hpp"
 #include "oled/oled.hpp"
 #include "robot/robot.hpp"
 #include "shell/shell.hpp"
-#include "nrf24/nrf24.hpp"
 
 namespace devices
 {

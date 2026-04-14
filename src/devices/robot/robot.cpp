@@ -104,6 +104,8 @@ void Robot::sense()
     chassis_drv.getVel(&current_vel);
     odom_dev.update(current_vel);
     odom_dev.getState(&current_pos);
+
+    devices::nrf24_recv.recv();
 }
 
 void Robot::plan()
