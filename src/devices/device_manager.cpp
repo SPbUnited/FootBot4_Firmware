@@ -58,19 +58,33 @@ odom::OdometerConfig odom_config = {
 
 odom::Odometer odom_dev(odom_config);
 
-robot::RobotConfig robot_config = {.dribbler_setting_to_vel = 250.0 / 16,
-                                   .kicker_setting_to_voltage = 200.0 / 16,
-                                   .angle_kp = 6.0,
-                                   .max_linear_vel = 4.8,
-                                   .max_linear_accel = NAN,
-                                   .max_angular_vel = 6.0,
-                                   .max_angular_accel = NAN,
-                                   .robot_id = 15,
-                                   .signature = 0};
+robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 250.0 / 16,
+                                       .kicker_setting_to_voltage = 200.0 / 16,
+                                       .angle_kp = 6.0,
+                                       .max_linear_vel = 4.8,
+                                       .max_linear_accel = NAN,
+                                       .max_angular_vel = 6.0,
+                                       .max_angular_accel = NAN,
+                                       .robot_id = 15,
+                                       .signature = 0};
 
-robot::Robot robot_dev(robot_config);
+robot::RobotConfig robot_config = {
+    .odom_dev = odom_dev, .chassis_drv = chassis_drv, .bldcs_drv = bldcs_drv};
 
-nrf24::Nrf24Recv nrf24_recv(drivers::spi2);
+robot::Robot robot_dev(robot_settings, robot_config);
+
+nrfm_decoder::NRFMDecoderConfig nrfm_decoder_config = {
+    .robot_dev = robot_dev, .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_2]};
+
+nrfm_decoder::NRFMDecoder nrfm_decoder_dev(nrfm_decoder_config);
+
+nrf24::Nrf24RecvConfig nrf24_recv_config = {
+    .spi_instance = drivers::spi2,
+    .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
+    .nrfm_decoder = nrfm_decoder_dev,
+};
+
+nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
 
 kicker::KickerConfig kicker_config = {.adc_pin=&drivers::analog_in_pin,
                                       .charge_pin=&drivers::out_pins[drivers::CHARGE],
@@ -103,23 +117,23 @@ void init()
     odom_dev.init();
     kinfo("Odometer initialized");
 
-    robot_config.signature = robot::calculate_signature(robot_config);
+    robot_settings.signature = robot::calculate_signature(robot_settings);
 
-    robot::RobotConfig eeprom_robot_config = {0};
+    robot::RobotSettings eeprom_robot_settings = {0};
 
-    eeprom::get(0, eeprom_robot_config);
+    eeprom::get(0, eeprom_robot_settings);
 
-    if (eeprom_robot_config.signature != robot_config.signature)
+    if (eeprom_robot_settings.signature != robot_settings.signature)
     {
-        kwarning("EEPROM signature mismatch, saving config to EEPROM");
-        eeprom::put(0, robot_config);
+        kwarning("EEPROM signature mismatch, saving settings to EEPROM");
+        eeprom::put(0, robot_settings);
     }
     else
     {
         kinfo("EEPROM signature match");
-        kinfo("Updating robot config from EEPROM");
-        kinfo("  id: %d", eeprom_robot_config.robot_id);
-        robot_dev.init(eeprom_robot_config);
+        kinfo("Updating robot settings from EEPROM");
+        kinfo("  id: %d", eeprom_robot_settings.robot_id);
+        robot_dev.init(eeprom_robot_settings);
     }
 
     kinfo("Robot initialized");

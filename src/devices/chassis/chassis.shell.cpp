@@ -1,4 +1,5 @@
 #include "devices/device_manager.hpp"
+#include "kernel/kernel.hpp"
 
 namespace
 {

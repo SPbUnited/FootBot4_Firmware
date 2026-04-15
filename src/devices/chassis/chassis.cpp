@@ -2,7 +2,9 @@
 
 #include <math.h>
 
-#include "devices/device_manager.hpp"
+#include <cstdio>
+
+#include "kernel/kernel.hpp"
 #include "vt_linalg"
 
 namespace devices::chassis

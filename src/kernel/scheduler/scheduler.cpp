@@ -3,7 +3,9 @@
 #include "apps/mainloop/mainloop.hpp"
 #include "apps/screen/screen.hpp"
 #include "apps/setting_broadcaster/setting_broadcaster.hpp"
-#include "devices/device_manager.hpp"
+#include "devices/logger/logger.hpp"
+#include "devices/shell/shell.hpp"
+#include "drivers/system_clock/system_clock.hpp"
 
 namespace kernel::scheduler
 {

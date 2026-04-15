@@ -1,5 +1,6 @@
 #include "devices/device_manager.hpp"
 #include "devices/shell/shell.main.hpp"
+#include "kernel/kernel.hpp"
 #include "vt_kalman"
 
 int odomUpdate()

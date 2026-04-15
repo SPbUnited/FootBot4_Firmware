@@ -1,7 +1,6 @@
 #pragma once
 
 #include "FlashStorage_STM32.hpp"
-#include "drivers/driver_manager.hpp"
 
 namespace devices::eeprom
 {

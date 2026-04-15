@@ -1,6 +1,7 @@
 #include "spi.hpp"
 
-#include "drivers/driver_manager.hpp"
+#include <cstring>
+
 #include "kernel/kernel.hpp"
 
 namespace drivers::spi
