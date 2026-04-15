@@ -1,5 +1,7 @@
 #pragma once
 
+#include "devices/robot/robot.hpp"
+#include "drivers/gpio/gpio.hpp"
 #include "half_float.h"
 #include "inttypes.h"
 
@@ -53,6 +55,20 @@ union NRFMPacket
     } packet;
 };
 
-void nrfm_rx_callback(uint8_t *data, uint8_t len);
+struct NRFMDecoderConfig
+{
+    devices::robot::Robot &robot_dev;
+    drivers::gpio::GPIOOutputDriver &dts_led;
+};
+
+class NRFMDecoder : public NRFMDecoderConfig
+{
+  public:
+    NRFMDecoder(NRFMDecoderConfig &nrfm_decoder_config) : NRFMDecoderConfig(nrfm_decoder_config) {}
+
+    void nrfm_rx_callback(uint8_t *data, uint8_t len);
+
+    void new_old_and_old_format(NRFMPacket *packet, bool is_new_old_format = false);
+};
 
 }  // namespace devices::nrfm_decoder

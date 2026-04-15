@@ -1,7 +1,8 @@
 #include "bldc.hpp"
 
-#include "devices/device_manager.hpp"
 #include "half_float.h"
+#include "kernel/kernel.hpp"
+#include "vt_linalg"
 
 namespace devices::bldc
 {

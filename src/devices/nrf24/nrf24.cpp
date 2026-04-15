@@ -1,6 +1,5 @@
 #include "nrf24.hpp"
-// #include <math.h>
-#include "devices/device_manager.hpp"
+
 #include "kernel/kernel.hpp"
 
 #define NRF24_REG_RX_ADDR_P0 (uint8_t)0x0A  // Receive address data pipe 0
@@ -32,7 +31,7 @@ uint8_t Nrf24Recv::m_incomeArray[Nrf24Recv::m_incomePacketLen];
 uint8_t Nrf24Recv::m_iArray[8];
 uint8_t Nrf24Recv::m_lenDbg;
 
-Nrf24Recv::Nrf24Recv(drivers::spi::SPIDriver &spi_instance) : spi_instance(spi_instance) {}
+Nrf24Recv::Nrf24Recv(Nrf24RecvConfig &nrf24_recv_config) : Nrf24RecvConfig(nrf24_recv_config) {}
 
 // Convert unsigned 8-bit to signed 8-bit
 int8_t Nrf24Recv::u8Toi8(uint8_t x)
@@ -55,16 +54,13 @@ int Nrf24Recv::recv()
             // Error handling - could add logging here
         }
 
-        // drivers::leds.toggle(led::DRV1);
         if (!(reg & 0x40))  // RX_DR - Data Not Ready
         {
             continue;
         }
 
-        drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1].toggle();
+        dts_led.toggle();
 
-        // drivers::leds.toggle(led::DATA_TRANSFER_STATUS_1);
-        // Read payload length using R_RX_PL_WID command (0x60)
         uint32_t timeout_nrf_timer_recv = 0;            // HAL_GetTick();
         rc = spi_instance.rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command
         if (rc < 0)
@@ -87,74 +83,13 @@ int Nrf24Recv::recv()
         }
         m_packetsReceived++;
 
-        // if (m_lenDbg == 6)
-        // {
-        //     spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);  // 0x61 = R_RX_PAYLOAD
-        // }
-        // else if (m_lenDbg == 8)
-        // {
-        //     spi_instance.rawRead(0x61, m_iArray, m_lenDbg);
-        // }
-
         spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);
 
         writeReg(0x07, 0x40);  // Clear RX_DR interrupt
 
         m_lastPacketTime = HAL_GetTick();
 
-        devices::nrfm_decoder::nrfm_rx_callback(m_incomeArray, m_lenDbg);
-
-        // m_address = m_display->adrAndCh[0];
-
-        // if (m_lenDbg == 8)
-        // {
-        //     if (m_address + 0xA0 == m_iArray[m_lenDbg - 1])
-        //     {
-        //         uint8_t t_test_arr[4];
-        //         // memcpy(t_test_arr, m_iArray, 4);
-        //         // m_cannabus->sendDebugOverride(t_test_arr, m_iArray[m_lenDbg - 4] +
-        //         // (m_iArray[m_lenDbg - 3] << 8), m_lenDbg);
-        //     }
-        // }
-        // // drivers::
-        // uint8_t m_address = 6;
-        // if ((m_address != (m_incomeArray[5] & 0x0F)) ||
-        //     (((m_address + 0xF0) == (m_incomeArray[5])) &&
-        //      ((m_address + 0xF0) == (m_incomeArray[4])) &&
-        //      ((m_address + 0xF0) == (m_incomeArray[3])) &&
-        //      ((m_address + 0xF0) == (m_incomeArray[2])) &&
-        //      ((m_address + 0xF0) == (m_incomeArray[1])) &&
-        //      ((m_address + 0xF0) == (m_incomeArray[0]))))
-        // {
-        //     return 0;  // Not for this device
-        // }
-        // drivers::leds.toggle(led::DRV5);
-        // drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_2].toggle();
-        // Parse received data
-        // uint8_t flags = m_incomeArray[0];
-        // uint8_t kvlSpd = m_incomeArray[1];
-        // uint8_t kvlVal = ((kvlSpd & m_kvlMask) >> 4);
-        // uint8_t radioBarrier = (flags & 0x80) > 0 ? 1 : 0;
-
-        // uint8_t speedDribler = 0;
-        // speedDribler = (kvlSpd & m_spdMask);
-
-        // // Motion control - standard format
-        // if (0x00 == (m_incomeArray[m_lenDbg - 1] & 0xF0))
-        // {
-        //     int8_t iVal = u8Toi8(m_incomeArray[2]);
-        //     iVal = u8Toi8(m_incomeArray[4]);
-        //     iVal = u8Toi8(m_incomeArray[3]);
-        // }
-        // // Motion control - minifloat format
-        // else if (0xF0 == (m_incomeArray[m_lenDbg - 1] & 0xF0))
-        // {
-        //     float iVal = minif_to_float3(m_incomeArray[2]);
-
-        //     iVal = minif_to_float3(m_incomeArray[4]);
-
-        //     iVal = minif_to_float3(m_incomeArray[3]);
-        // }
+        nrfm_decoder.nrfm_rx_callback(m_incomeArray, m_lenDbg);
     }
 
     spi_instance.flushRx();

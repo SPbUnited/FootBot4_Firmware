@@ -1,7 +1,10 @@
 #include "kernel.hpp"
 
-#include "devices/device_manager.hpp"
-#include "drivers/driver_manager.hpp"
+// #include "devices/device_manager.hpp"
+// #include "drivers/driver_manager.hpp"
+
+#include "devices/shell/shell.hpp"
+#include "stm32f4xx_hal.h"
 
 namespace kernel
 {

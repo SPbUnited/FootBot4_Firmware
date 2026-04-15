@@ -1,6 +1,6 @@
 #include "scheduler.hpp"
 
-#include "devices/device_manager.hpp"
+#include "devices/shell/shell.hpp"
 #include "devices/shell/shell.main.hpp"
 
 int schedulerTop()

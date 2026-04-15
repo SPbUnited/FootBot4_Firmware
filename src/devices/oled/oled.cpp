@@ -1,6 +1,7 @@
 #include "oled.hpp"
 
-#include "drivers/driver_manager.hpp"
+// #include "drivers/driver_manager.hpp"
+#include "kernel/kernel.hpp"
 
 namespace devices::oled
 {
@@ -16,13 +17,11 @@ void OledDriver::init()
     {
         while (1)
         {
-            // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-            drivers::uart4.printf("OLED init error: %d %s\n", display.getLastResult(),
-                                  display.getLastError());
-            HAL_Delay(100);
+            kerror("OLED init error: %d %s\n", display.getLastResult(), display.getLastError());
+            HAL_Delay(1000);
         }
     }
-    drivers::uart4.printf("OLED init ok\n");
+    kinfo("OLED init ok\n");
     display.clear();
     display.print("Booting...");
     display.flush();
