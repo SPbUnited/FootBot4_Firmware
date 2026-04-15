@@ -2,14 +2,22 @@
 
 #include <inttypes.h>
 
+#include "devices/nrfm_decoder/nrfm_decoder.hpp"
+#include "drivers/gpio/gpio.hpp"
 #include "drivers/spi/spi.hpp"
-#include "minifloat3.h"
 #include "stm32f4xx_hal.h"
 
 namespace devices::nrf24
 {
 
-class Nrf24Recv
+struct Nrf24RecvConfig
+{
+    drivers::spi::SPIDriver &spi_instance;
+    drivers::gpio::GPIOOutputDriver &dts_led;
+    devices::nrfm_decoder::NRFMDecoder &nrfm_decoder;
+};
+
+class Nrf24Recv : public Nrf24RecvConfig
 {
   private:
     // SPI handle
@@ -77,9 +85,9 @@ class Nrf24Recv
   public:
     volatile uint32_t m_lastPacketTime;
     uint8_t m_address;
-    drivers::spi::SPIDriver &spi_instance;
+    // drivers::spi::SPIDriver &spi_instance;
 
-    Nrf24Recv(drivers::spi::SPIDriver &spi_instance);
+    Nrf24Recv(Nrf24RecvConfig &nrf24_recv_config);
 
     void init();
     int recv();

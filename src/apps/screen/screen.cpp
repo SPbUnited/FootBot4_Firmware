@@ -2,6 +2,8 @@
 
 #include "apps/mainloop/mainloop.hpp"
 #include "devices/device_manager.hpp"
+#include "drivers/driver_manager.hpp"
+#include "kernel/kernel.hpp"
 
 #define display devices::oled_drv.display
 
@@ -93,7 +95,7 @@ void screen()
         display.clear();
         display.setCursor(0, 0);
         display.setTextSize(1);
-        display.printf(" Hold the button to\nsave config to EEPROM\n");
+        display.printf("    Hold to save    \n settings to EEPROM \n");
         display.printf("     [");
         for (int i = 0; i < 10; i++)
         {
@@ -111,7 +113,7 @@ void screen()
         display.printf("Saving robot\nconfig to EEPROM and\nrebooting...");
         display.flush();
 
-        devices::eeprom::put(0, static_cast<devices::robot::RobotConfig>(devices::robot_dev));
+        devices::eeprom::put(0, static_cast<devices::robot::RobotSettings>(devices::robot_dev));
         kernel::reboot();
     }
 

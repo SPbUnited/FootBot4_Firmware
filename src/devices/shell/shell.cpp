@@ -1,5 +1,6 @@
 #include "shell.hpp"
 
+#include "drivers/driver_manager.hpp"
 #include "kernel/kernel.hpp"
 
 namespace devices::shell

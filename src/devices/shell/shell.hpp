@@ -2,7 +2,6 @@
 
 #include <inttypes.h>
 
-#include "drivers/driver_manager.hpp"
 #include "shell_cpp.h"
 
 namespace devices::shell

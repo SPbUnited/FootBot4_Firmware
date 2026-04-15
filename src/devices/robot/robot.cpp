@@ -1,16 +1,17 @@
 #include "robot.hpp"
 
-#include "devices/device_manager.hpp"
+// #include "devices/device_manager.hpp"
+#include "kernel/kernel.hpp"
 
 namespace devices::robot
 {
 
-uint8_t calculate_signature(RobotConfig config)
+uint8_t calculate_signature(RobotSettings config)
 {
     uint8_t signature = 0;
     uint8_t *data = reinterpret_cast<uint8_t *>(&config);
 
-    for (size_t i = 0; i < sizeof(RobotConfig) - 2; i++)
+    for (size_t i = 0; i < sizeof(RobotSettings) - 2; i++)
     {
         signature ^= data[i];
     }
@@ -107,9 +108,9 @@ void Robot::dec_id()
 
 void Robot::init() {}
 
-void Robot::init(RobotConfig config)
+void Robot::init(RobotSettings &settings)
 {
-    static_cast<RobotConfig &>(*this) = config;
+    static_cast<RobotSettings &>(*this) = settings;
 }
 
 void Robot::sense()
@@ -164,11 +165,11 @@ void Robot::act()
     }
 }
 
-void setTargetDangle(float angle)
-{
-    robot_dev.set_target_angular_dpos(angle);
-}
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), setTargetDangle,
-                 setTargetDangle, set target angle);
+// void setTargetDangle(float angle)
+// {
+//     robot_dev.set_target_angular_dpos(angle);
+// }
+// SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), setTargetDangle,
+//                  setTargetDangle, set target angle);
 
 }  // namespace devices::robot

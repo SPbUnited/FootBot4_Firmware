@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drivers/driver_manager.hpp"
+#include "drivers/can/can.hpp"
 
 namespace devices::bldc
 {

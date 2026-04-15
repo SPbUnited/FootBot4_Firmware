@@ -1,7 +1,5 @@
 #include "odom.hpp"
 
-#include "drivers/driver_manager.hpp"
-
 namespace devices::odom
 {
 
