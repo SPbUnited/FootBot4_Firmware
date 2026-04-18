@@ -22,6 +22,8 @@ class Odometer : public OdometerConfig
 
     void update(devices::chassis::StateVector vel);
     void getState(devices::chassis::StateVector *vel);
+
+    void thetaAntiWindup();
 };
 
 }  // namespace devices::odom
