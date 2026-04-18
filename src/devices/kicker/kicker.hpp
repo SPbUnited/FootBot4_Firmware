@@ -18,11 +18,16 @@ struct KickerConfig
 
 class Kicker: public KickerConfig
 {
+  private:
+    uint32_t target = 0;
   public:
     Kicker(KickerConfig config);
 
     void init();
 
     void update();
+    void set_target(uint16_t voltage);
+    float get_voltage();
+
 };
 }  // namespace devices::nrf24
