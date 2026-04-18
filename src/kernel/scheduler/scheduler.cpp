@@ -37,11 +37,11 @@ TaskDescriptor tasks[app_count] = {
      apps::mainloop::loop,
      0,
      Ts_us,
-     //  TPS(1),
+     //  TPS(5),
      apps::mainloop::is_loop_pending,
      idle,
      {0},
-     LOG_WRANING},
+     LOG_INFO},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
@@ -118,15 +118,15 @@ void init()
     }
 }
 
-void delay_ms(uint32_t delay_ms)
+void sleep_ms(uint32_t sleep_ms)
 {
-    delay_us(delay_ms * 1000);
+    sleep_us(sleep_ms * 1000);
 }
 
-void delay_us(uint32_t delay_us)
+void sleep_us(uint32_t sleep_us)
 {
     uint32_t start = drivers::system_clock::micros();
-    while (drivers::system_clock::micros() - start < delay_us)
+    while (drivers::system_clock::micros() - start < sleep_us)
     {
         yield();
     }

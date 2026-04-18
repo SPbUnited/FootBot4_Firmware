@@ -25,7 +25,7 @@ void nrfmTestOldPacket(int8_t velx, int8_t vely, int8_t angular_velocity_or_angl
                            },
                    }}};
 
-    // nrfm_rx_callback(packet.data, 32);
+    devices::nrfm_decoder_dev.nrfm_rx_callback(packet.data, 6);
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), nrfmTestOldPacket,
                  nrfmTestOldPacket, nrfmTestOldPacket);
@@ -55,7 +55,7 @@ void nrfmTestNewOldPacket(int8_t velx, int8_t vely, int8_t angular_velocity_or_a
                            },
                    }}};
 
-    // nrfm_rx_callback(packet.data, 32);
+    devices::nrfm_decoder_dev.nrfm_rx_callback(packet.data, 6);
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC),
                  nrfmTestNewOldPacket, nrfmTestNewOldPacket, nrfmTestNewOldPacket);

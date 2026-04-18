@@ -32,6 +32,12 @@ oled_lib::OledConfig oled_config = {
 
 oled::OledDriver oled_drv(oled_config, &drivers::i2c2.handle);
 
+imu::BNO055Config bno055_config = {
+    .uart_drv = drivers::uart1,
+};
+
+imu::BNO055 bno055_drv(bno055_config);
+
 bldc::BldcsConfig bldcs_config = {
     .can = &drivers::can_drv,
     .drive_vel_p = 0.25,
@@ -68,8 +74,10 @@ robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 250.0 / 16,
                                        .robot_id = 15,
                                        .signature = 0};
 
-robot::RobotConfig robot_config = {
-    .odom_dev = odom_dev, .chassis_drv = chassis_drv, .bldcs_drv = bldcs_drv};
+robot::RobotConfig robot_config = {.odom_dev = odom_dev,
+                                   .chassis_drv = chassis_drv,
+                                   .bldcs_drv = bldcs_drv,
+                                   .bno055_drv = bno055_drv};
 
 robot::Robot robot_dev(robot_settings, robot_config);
 
@@ -100,6 +108,28 @@ void init()
     oled_drv.init();
     kinfo("OLED initialized");
 
+    nrf24_recv.init();
+    kinfo("NRF24 initialized");
+
+    for (size_t i = 0; i < 5; i++)
+    {
+        bool bno055_init = bno055_drv.check();
+        if (!bno055_init)
+        {
+            kerror("BNO055 offline");
+            bno055_drv.reset();
+        }
+        else
+        {
+            kinfo("BNO055 online");
+            bno055_drv.set_angle_units(RADIANS);
+            bno055_drv.set_anglerate_units(RAD_PER_SEC);
+            bno055_drv.setmode(OPERATION_MODE_NDOF);
+            kinfo("BNO055 initialized");
+            break;
+        }
+    }
+
     bldcs_drv.init();
     kinfo("BLDC initialized");
 
@@ -129,9 +159,6 @@ void init()
     }
 
     kinfo("Robot initialized");
-
-    nrf24_recv.init();
-    kinfo("NRF24 initialized");
 
     kinfo("Devices initialized");
 }

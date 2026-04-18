@@ -62,8 +62,8 @@ void yield();
 
 void init();
 
-void delay_ms(uint32_t delay_ms);
-void delay_us(uint32_t delay_us);
+void sleep_ms(uint32_t sleep_ms);
+void sleep_us(uint32_t sleep_us);
 
 TaskDescriptor *get_tasks();
 size_t get_task_count();

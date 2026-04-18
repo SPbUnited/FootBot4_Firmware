@@ -118,6 +118,10 @@ void Robot::sense()
     chassis_drv.getVel(&current_vel);
     odom_dev.update(current_vel);
     odom_dev.getState(&current_pos);
+
+    bno055_drv.get_angles();
+    odom_dev.state.theta = -bno055_drv.euler.yaw;
+    odom_dev.thetaAntiWindup();
 }
 
 void Robot::plan()
@@ -138,6 +142,15 @@ void Robot::plan()
     else if (angle_mode == ANGLEPOS)
     {
         float error = target_pos.theta - current_pos.theta;
+        const float M_PI = 3.14159265358979323846;
+        while (error > M_PI)
+        {
+            error -= 2 * M_PI;
+        }
+        while (error < -M_PI)
+        {
+            error += 2 * M_PI;
+        }
         target_vel.theta = error * angle_kp;
     }
 }

@@ -176,6 +176,7 @@ void init()
     // HAL_Delay(5000);
 
     drivers::uart4.init();
+    drivers::uart1.init();
     drivers::i2c2.init();
 
     __HAL_RCC_GPIOG_CLK_ENABLE();
@@ -192,7 +193,6 @@ void init()
 
     drivers::can_drv.init();
     drivers::spi2.init();
-    
 }
 
 }  // namespace drivers
