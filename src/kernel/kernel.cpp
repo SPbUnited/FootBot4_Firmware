@@ -16,6 +16,11 @@ void reboot()
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), reboot, reboot,
                  Reboot the robot);
 
+void delay_ms(uint32_t delay_ms)
+{
+    HAL_Delay(delay_ms);
+}
+
 float current_progress = 0;
 
 void progress_start()

@@ -3,6 +3,7 @@
 #include "bldc/bldc.hpp"
 #include "chassis/chassis.hpp"
 #include "eeprom/eeprom.hpp"
+#include "imu/imu.hpp"
 #include "logger/logger.hpp"
 #include "nrf24/nrf24.hpp"
 #include "nrfm_decoder/nrfm_decoder.hpp"
@@ -22,6 +23,8 @@ extern odom::Odometer odom_dev;
 extern robot::Robot robot_dev;
 extern nrf24::Nrf24Recv nrf24_recv;
 extern kicker::Kicker kicker_drv;
+extern imu::BNO055 bno055_drv;
+extern nrfm_decoder::NRFMDecoder nrfm_decoder_dev;
 
 void init();
 
