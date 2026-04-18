@@ -83,7 +83,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor)
     static_cast<GPIODescriptor&>(*this) = pin;
 }
 
-bool GPIOAnalogInputDriver::read()
+uint32_t GPIOAnalogInputDriver::read()
 {
     uint32_t value = 0;
     HAL_StatusTypeDef status = HAL_ADC_Start(&handle);

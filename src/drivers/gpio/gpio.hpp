@@ -58,7 +58,7 @@ class GPIOAnalogInputDriver : public GPIODescriptor, public ADCDescriptor
 
     void init(GPIODescriptor pin, ADCDescriptor adc);
 
-    bool read();
+    uint32_t read();
 };
 
 }  // namespace drivers::gpio
