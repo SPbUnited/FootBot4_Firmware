@@ -10,6 +10,7 @@
 #include "oled/oled.hpp"
 #include "robot/robot.hpp"
 #include "shell/shell.hpp"
+#include "kicker/kicker.hpp"
 
 namespace devices
 {
@@ -20,6 +21,7 @@ extern chassis::Chassis chassis_drv;
 extern odom::Odometer odom_dev;
 extern robot::Robot robot_dev;
 extern nrf24::Nrf24Recv nrf24_recv;
+extern kicker::Kicker kicker_drv;
 
 void init();
 

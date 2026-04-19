@@ -104,6 +104,7 @@ void Robot::sense()
     chassis_drv.getVel(&current_vel);
     odom_dev.update(current_vel);
     odom_dev.getState(&current_pos);
+    kicker_drv.get_voltage();
 
     devices::nrf24_recv.recv();
 }
@@ -128,6 +129,8 @@ void Robot::plan()
         float error = target_pos.theta - current_pos.theta;
         target_vel.theta = error * angle_kp;
     }
+
+    kicker_drv.set_target(50);
 }
 
 void Robot::act()
@@ -151,6 +154,8 @@ void Robot::act()
         bldcs_drv.setDribblerVel(dribbler_setting * dribbler_setting_to_vel);
         dribbler_update = false;
     }
+
+    kicker_drv.update();
 }
 
 void setTargetDangle(float angle)
