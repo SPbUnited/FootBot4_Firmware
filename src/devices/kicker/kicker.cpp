@@ -19,30 +19,54 @@ void Kicker::init()
 
 float Kicker::get_voltage()
 {
-    return adc_pin.read();
+    double voltage = (adc_pin.read() * 3300) / (4096 - 1);
+    actual_voltage = actual_voltage * 0.9f + 135 * voltage * 0.001f * 0.1f;
+    return actual_voltage;
 }
+
 void Kicker::set_target(uint16_t voltage)
 {
     target = voltage;
 }
+
 void Kicker::update()
 {
-    float actual_voltage = get_voltage();
-    if (target - actual_voltage > target * 0.1)
+    if ((state == PREPARE) || !prepared)
+    {
+        straight_pin.write(false);
+        chip_pin.write(false);
+        if (target - actual_voltage > target * 0.1)
+        {
+            discharge_pin.write(false);
+            charge_pin.write(true);
+            prepared = false;
+        }
+        else if (target - actual_voltage < -target * 0.1)
+        {
+            discharge_pin.write(true);
+            charge_pin.write(false);
+            prepared = false;
+        }
+        else
+        {
+            discharge_pin.write(false);
+            charge_pin.write(false);
+            // state = KICK;
+            prepared = true;
+        }
+    }
+    else if (state == KICK)
     {
         discharge_pin.write(false);
-        charge_pin.write(true);
-
-    }
-    else if (target - actual_voltage < -target * 0.1)
-    {
-        discharge_pin.write(true);
         charge_pin.write(false);
-    }
-    else
-    {
-        discharge_pin.write(false);
-        charge_pin.write(false);
+        if (0)
+        {
+            straight_pin.write(true);
+        }
+        else if (1)
+        {
+            chip_pin.write(true);
+        }
     }
 }
 

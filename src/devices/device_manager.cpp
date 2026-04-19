@@ -74,6 +74,14 @@ robot::Robot robot_dev(robot_config);
 
 nrf24::Nrf24Recv nrf24_recv(drivers::spi2);
 
+kicker::KickerConfig kicker_config = {.adc_pin=drivers::analog_in_pins[drivers::KICKER_VOLTAGE],
+                                      .charge_pin=drivers::out_pins[drivers::CHARGE],
+                                      .discharge_pin=drivers::out_pins[drivers::DISCHARGE],
+                                      .straight_pin=drivers::out_pins[drivers::STRAIGHT],
+                                      .chip_pin=drivers::out_pins[drivers::CHIP]};
+
+kicker::Kicker kicker_drv(kicker_config);
+
 void init()
 {
     shell::my_shellInit();
@@ -115,6 +123,9 @@ void init()
 
     nrf24_recv.init();
     kinfo("NRF24 initialized");
+
+    kicker_drv.init();
+    kinfo("Kicker initialized");
 
     kinfo("Devices initialized");
 }
