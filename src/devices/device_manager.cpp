@@ -126,7 +126,7 @@ void init()
 
     kicker_drv.init();
     kinfo("Kicker initialized");
-
+    // kinfo("AUAUSDUASDUDevices initialized");
     kinfo("Devices initialized");
 }
 
