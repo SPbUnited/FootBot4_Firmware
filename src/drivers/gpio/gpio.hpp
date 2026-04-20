@@ -52,13 +52,29 @@ class GPIOInputDriver : public GPIODescriptor
 class GPIOAnalogInputDriver : public GPIODescriptor, public ADCDescriptor
 {
   private:
-  public:
     ADC_HandleTypeDef handle;
-    GPIOAnalogInputDriver() {}
+    DMA_HandleTypeDef hdma_adc;
+    uint32_t* adcDataBuffer;
+    uint32_t bufferSize;    
+    
+  public:
+    GPIOAnalogInputDriver(){}
 
-    void init(GPIODescriptor pin, ADCDescriptor adc);
+    void init(GPIODescriptor pin, ADCDescriptor adc, uint32_t* buffer = nullptr, uint32_t size = 1);
 
     uint32_t read();
+    
+    uint32_t* getBuffer() const { return adcDataBuffer; }
+    
+    uint32_t getBufferSize() const { return bufferSize; }
+    
+    void setBuffer(uint32_t* buffer) { adcDataBuffer = buffer; }
+    
+    void setBufferSize(uint32_t size) { bufferSize = size; }
+    
+    void startDMA();
+    
+    void stopDMA();
 };
 
 }  // namespace drivers::gpio

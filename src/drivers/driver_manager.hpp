@@ -58,7 +58,9 @@ enum ANALOG_INPUT
 extern gpio::GPIOInputDriver in_pins[INPUT_COUNT];
 extern gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 
-extern gpio::GPIOAnalogInputDriver analog_in_pins[1];
+// extern gpio::GPIOAnalogInputDriver analog_in_pins[1];
+
+extern gpio::GPIOAnalogInputDriver analog_in_pin;
 
 void init();
 
