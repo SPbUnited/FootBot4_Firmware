@@ -1,5 +1,5 @@
 #include "gpio.hpp"
-
+#include "kernel/kernel.hpp"
 namespace drivers::gpio
 {
 
@@ -78,7 +78,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc_config)
     if (status != HAL_OK)
     {
         uint32_t error = HAL_ADC_GetError(&handle);
-        // kerror("ADC init error: %d, error code: %lu\n", int(status), error);
+        kinfo("ADC init error: %d, error code: %lu\n", int(status), error);
     }
 
     // Configure channel
@@ -92,7 +92,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc_config)
     if (status != HAL_OK)
     {
         uint32_t error = HAL_ADC_GetError(&handle);
-        // kerr or("ADC channel config error: %d, error code: %lu\n", int(status), error);
+        kinfo("ADC channel config error: %d, error code: %lu\n", int(status), error);
     }
 
     // HAL_ADCEx_Calibration_Start(&handle);
@@ -109,7 +109,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc_config)
     if (statusasd != HAL_OK)
     {
         uint32_t error = HAL_ADC_GetError(&handle);
-        // kerror("ADC start error: %d, error code: %lu\n", int(status), error);
+        kinfo("ADC start error: %d, error code: %lu\n", int(status), error);
         // return 0;
     }
 
@@ -125,7 +125,7 @@ uint32_t GPIOAnalogInputDriver::read()
     if (status != HAL_OK)
     {
         uint32_t error = HAL_ADC_GetError(&handle);
-        // kerror("ADC conversion error: %d, error code: %lu\n", int(status), error);
+        // kinfo("ADC conversion error: %d, error code: %lu\n", int(status), error);
         // HAL_ADC_Stop(&handle);
         if (error != 0)
         {

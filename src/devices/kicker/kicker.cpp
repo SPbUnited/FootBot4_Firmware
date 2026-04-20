@@ -21,7 +21,9 @@ float Kicker::get_voltage()
 {
     double voltage = (adc_pin.read() * 3300) / (4096 - 1);
     actual_voltage = actual_voltage * 0.9f + 135 * voltage * 0.001f * 0.1f;
+    // kinfo("voltage");
     return actual_voltage;
+    
 }
 
 void Kicker::set_target(uint16_t voltage)
