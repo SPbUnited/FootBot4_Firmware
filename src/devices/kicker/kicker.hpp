@@ -15,11 +15,11 @@ enum KICKER_STATES
 
 struct KickerConfig
 {
-    drivers::gpio::GPIOAnalogInputDriver adc_pin;  // Time step in seconds
-    drivers::gpio::GPIOOutputDriver charge_pin;
-    drivers::gpio::GPIOOutputDriver discharge_pin;
-    drivers::gpio::GPIOOutputDriver straight_pin;
-    drivers::gpio::GPIOOutputDriver chip_pin;
+    drivers::gpio::GPIOAnalogInputDriver *adc_pin;  // Time step in seconds
+    drivers::gpio::GPIOOutputDriver *charge_pin;
+    drivers::gpio::GPIOOutputDriver *discharge_pin;
+    drivers::gpio::GPIOOutputDriver *straight_pin;
+    drivers::gpio::GPIOOutputDriver *chip_pin;
 };
 
 
@@ -27,7 +27,7 @@ struct KickerConfig
 class Kicker: public KickerConfig
 {
   private:
-    uint32_t target = 0;
+    double target = 0;
     double actual_voltage = 0;
     uint8_t state = PREPARE;
     bool prepared = false;
