@@ -130,7 +130,7 @@ void Robot::plan()
         target_vel.theta = error * angle_kp;
     }
 
-    kicker_drv.set_target(50);
+    // kicker_drv.set_target(100);
 }
 
 void Robot::act()

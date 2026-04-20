@@ -150,7 +150,7 @@ system_clock::SystemClock system_clock_drv;
 spi::SPIDriver spi2(nrf24_recv_config);
 gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 gpio::GPIOInputDriver in_pins[INPUT_COUNT];
-gpio::GPIOAnalogInputDriver analog_in_pins[1];
+// gpio::GPIOAnalogInputDriver analog_in_pins[1];
 
 gpio::GPIODescriptor out_pins_desc[] = {
     [LED_STM32] = {GPIOD, GPIO_PIN_15},
@@ -178,8 +178,10 @@ gpio::GPIODescriptor analog_pins_desc[] = {
 };
 
 gpio::ADCDescriptor adc_desc[] = {
-    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_LEFT, DISABLE, ENABLE, ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
-};  
+    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, ENABLE, ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
+};
+
+gpio::GPIOAnalogInputDriver analog_in_pin;
 
 void init()
 {
@@ -195,6 +197,8 @@ void init()
     __HAL_RCC_GPIOG_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
+
+    static uint32_t adcBuffer[1] = {0};
     
     for (int i = 0; i < OUT_COUNT; i++)
     {
@@ -206,7 +210,7 @@ void init()
     }
     for (int i = 0; i < 1; i++)
     {
-        analog_in_pins[i].init(analog_pins_desc[i], adc_desc[i]);
+        analog_in_pin.init(analog_pins_desc[i], adc_desc[i], adcBuffer, 1);
     }
 
     drivers::can_drv.init();
