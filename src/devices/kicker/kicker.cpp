@@ -35,8 +35,8 @@ void Kicker::update()
 {
     if ((state == PREPARE) || !prepared)
     {
-        straight_pin->write(false);
-        chip_pin->write(false);
+        straight_pin->write(true);
+        chip_pin->write(true);
         double bound = target * 0.05;
         if (bound < 5)
         {
@@ -64,20 +64,27 @@ void Kicker::update()
             charge_pin->write(true);
             // state = KICK;
             prepared = true;
+            if (devices::robot_dev.kicker_mode != devices::robot::DISABLED)
+            {
+                state = KICK;
+            }
         }
     }
     else if (state == KICK)
     {
-        discharge_pin->write(false);
-        charge_pin->write(false);
-        if (0)
+        discharge_pin->write(true);
+        charge_pin->write(true);
+        if (kick_type == STRAIGHT)
         {
-            straight_pin->write(true);
+            straight_pin->write(false);
         }
-        else if (1)
+        else if (kick_type == CHIP)
         {
-            chip_pin->write(true);
+            chip_pin->write(false);
         }
+        kernel::scheduler::delay_ms(2);
+        // if 
+        state = PREPARE;
     }
 }
 
