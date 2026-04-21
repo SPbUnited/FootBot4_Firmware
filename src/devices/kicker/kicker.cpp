@@ -20,7 +20,7 @@ void Kicker::init()
 float Kicker::get_voltage()
 {
     double voltage = (adc_pin->read() * 3300) / (4096 - 1);
-    actual_voltage = actual_voltage * 0.9f + 135 * voltage * 0.001f * 0.1f;
+    actual_voltage = actual_voltage * 0.9f + 140 * voltage * 0.001f * 0.1f;
     // kinfo("voltage");
     return actual_voltage;
     
@@ -37,13 +37,22 @@ void Kicker::update()
     {
         straight_pin->write(false);
         chip_pin->write(false);
-        if (target - actual_voltage > target * 0.05)
+        double bound = target * 0.05;
+        if (bound < 5)
+        {
+            bound = 5;
+        }
+        else if (bound > 15)
+        {
+            bound = 15;
+        }
+        if (target - actual_voltage > bound)
         {
             discharge_pin->write(true);
             charge_pin->write(false);
             prepared = false;
         }
-        else if (target - actual_voltage < -target * 0.05)
+        else if (target - actual_voltage < -bound)
         {
             discharge_pin->write(false);
             charge_pin->write(true);

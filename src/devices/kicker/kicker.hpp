@@ -27,12 +27,15 @@ struct KickerConfig
 class Kicker: public KickerConfig
 {
   private:
-    double target = 0;
-    double actual_voltage = 0;
+    
+    
     uint8_t state = PREPARE;
     bool prepared = false;
 
   public:
+    double target = 0;
+    double actual_voltage = 0;
+    
     Kicker(KickerConfig config);
 
     void init();
