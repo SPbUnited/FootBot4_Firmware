@@ -13,6 +13,12 @@ enum KICKER_STATES
   KICK,
 };
 
+enum KICK_TYPES
+{
+  STRAIGHT,
+  CHIP,
+};
+
 struct KickerConfig
 {
     drivers::gpio::GPIOAnalogInputDriver *adc_pin;  // Time step in seconds
@@ -29,10 +35,12 @@ class Kicker: public KickerConfig
   private:
     
     
-    uint8_t state = PREPARE;
+    
     bool prepared = false;
+    uint8_t kick_type = STRAIGHT;
 
   public:
+    uint8_t state = PREPARE;
     double target = 0;
     double actual_voltage = 0;
     
