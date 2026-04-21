@@ -12,6 +12,12 @@ int voltagePrint(float x)
     }
     return 0;
 }
+
+int kickPrint()
+{
+    devices::kicker_drv.state = devices::kicker::KICK;
+    return 0;
+}
 // SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), chassisPrint,
 //                  chassisPrint, write info on chassis);
 
@@ -76,6 +82,9 @@ int main_voltage_teleop(int argc, char *argv[])
                 break;
             case 's':
                 voltagePrint(-5);
+                break;
+            case 'k':
+                kickPrint();
                 break;
 
         }
