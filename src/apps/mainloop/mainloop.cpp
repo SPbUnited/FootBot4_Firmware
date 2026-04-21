@@ -34,6 +34,11 @@ void loop()
     devices::robot_dev.act();
 }
 
+void nrf24_recv()
+{
+    devices::nrf24_recv.recv();
+}
+
 }  // namespace apps::mainloop
 
 // float set_dribbler_target(float target)

@@ -1,6 +1,6 @@
 #include "scheduler.hpp"
 
-#include "devices/device_manager.hpp"
+#include "devices/shell/shell.hpp"
 #include "devices/shell/shell.main.hpp"
 
 int schedulerTop()
@@ -50,7 +50,7 @@ int schedulerTop()
 
         printf("\nPress 'q' to quit, 'r' to reset monitor.\n");
 
-        kernel::scheduler::delay_ms(250);
+        kernel::scheduler::sleep_ms(250);
     }
 
     return 0;

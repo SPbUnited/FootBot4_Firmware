@@ -1,6 +1,9 @@
 #pragma once
 
+#include "devices/bldc/bldc.hpp"
 #include "devices/chassis/chassis.hpp"
+#include "devices/imu/imu.hpp"
+#include "devices/odom/odom.hpp"
 
 namespace devices::robot
 {
@@ -28,6 +31,14 @@ enum KickerMode
 
 struct RobotConfig
 {
+    devices::odom::Odometer &odom_dev;
+    devices::chassis::Chassis &chassis_drv;
+    devices::bldc::BldcsDriver &bldcs_drv;
+    devices::imu::BNO055 &bno055_drv;
+};
+
+struct RobotSettings
+{
     float dribbler_setting_to_vel;
     float kicker_setting_to_voltage;
     float angle_kp;
@@ -39,12 +50,17 @@ struct RobotConfig
 
     uint8_t robot_id;
 
-    uint32_t signature;
+    uint8_t signature;
 };
 
-struct Robot : RobotConfig
+uint8_t calculate_signature(RobotSettings config);
+
+struct Robot : RobotSettings, RobotConfig
 {
-    Robot(RobotConfig config) : RobotConfig(config) {}
+    Robot(RobotSettings &settings, RobotConfig &config)
+        : RobotSettings(settings), RobotConfig(config)
+    {
+    }
 
     LinearControlMode linear_mode;
     AngleControlMode angle_mode;
@@ -85,7 +101,7 @@ struct Robot : RobotConfig
     void dec_id();
 
     void init();
-    void init(RobotConfig config);
+    void init(RobotSettings &settings);
     void sense();
     void plan();
     void act();

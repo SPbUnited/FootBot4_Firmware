@@ -3,7 +3,9 @@
 #include "apps/mainloop/mainloop.hpp"
 #include "apps/screen/screen.hpp"
 #include "apps/setting_broadcaster/setting_broadcaster.hpp"
-#include "devices/device_manager.hpp"
+#include "devices/logger/logger.hpp"
+#include "devices/shell/shell.hpp"
+#include "drivers/system_clock/system_clock.hpp"
 
 namespace kernel::scheduler
 {
@@ -12,6 +14,7 @@ static bool is_init = false;
 
 enum Apps
 {
+    app_nrf24,
     app_mainloop,
     app_screen,
     app_setting_broadcaster,
@@ -29,14 +32,16 @@ enum Apps
 void monitor_reset();
 
 TaskDescriptor tasks[app_count] = {
+    {"nrf24", apps::mainloop::nrf24_recv, 0, TPS(250), ksperiodic, idle, {0}, LOG_WRANING},
     {"mainloop",
      apps::mainloop::loop,
      0,
      Ts_us,
+     //  TPS(5),
      apps::mainloop::is_loop_pending,
      idle,
      {0},
-     LOG_NONE},
+     LOG_INFO},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
@@ -113,15 +118,15 @@ void init()
     }
 }
 
-void delay_ms(uint32_t delay_ms)
+void sleep_ms(uint32_t sleep_ms)
 {
-    delay_us(delay_ms * 1000);
+    sleep_us(sleep_ms * 1000);
 }
 
-void delay_us(uint32_t delay_us)
+void sleep_us(uint32_t sleep_us)
 {
     uint32_t start = drivers::system_clock::micros();
-    while (drivers::system_clock::micros() - start < delay_us)
+    while (drivers::system_clock::micros() - start < sleep_us)
     {
         yield();
     }

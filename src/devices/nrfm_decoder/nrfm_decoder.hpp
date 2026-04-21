@@ -1,5 +1,7 @@
 #pragma once
 
+#include "devices/robot/robot.hpp"
+#include "drivers/gpio/gpio.hpp"
 #include "half_float.h"
 #include "inttypes.h"
 
@@ -34,14 +36,14 @@ union NRFMPacket
                 int8_t angular_velocity_or_angle;
                 uint8_t dribbler_setting : 4;
                 uint8_t kicker_setting : 4;
-                bool reserved : 1;
-                bool AF : 1;  // Прямой автокик
-                bool AU : 1;  // Навесной автокик
-                bool KF : 1;  // Прямой кикер
-                bool KU : 1;  // Навесной кикер
-                bool AS : 1;  // Angle vel or angle switch
-                bool DE : 1;  // Dribbler enable
                 bool HE : 1;  // High voltage enable
+                bool DE : 1;  // Dribbler enable
+                bool AS : 1;  // Angle vel or angle switch
+                bool KU : 1;  // Навесной кикер
+                bool KF : 1;  // Прямой кикер
+                bool AU : 1;  // Навесной автокик
+                bool AF : 1;  // Прямой автокик
+                bool reserved : 1;
             } old_format;
             struct __attribute__((packed, aligned(1))) global_coordinate_t
             {
@@ -53,6 +55,20 @@ union NRFMPacket
     } packet;
 };
 
-void nrfm_rx_callback(uint8_t *data, uint8_t len);
+struct NRFMDecoderConfig
+{
+    devices::robot::Robot &robot_dev;
+    drivers::gpio::GPIOOutputDriver &dts_led;
+};
+
+class NRFMDecoder : public NRFMDecoderConfig
+{
+  public:
+    NRFMDecoder(NRFMDecoderConfig &nrfm_decoder_config) : NRFMDecoderConfig(nrfm_decoder_config) {}
+
+    void nrfm_rx_callback(uint8_t *data, uint8_t len);
+
+    void new_old_and_old_format(NRFMPacket *packet, bool is_new_old_format = false);
+};
 
 }  // namespace devices::nrfm_decoder

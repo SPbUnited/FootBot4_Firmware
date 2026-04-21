@@ -104,6 +104,11 @@ class UartDriver : public UartConfig
     {
         return HAL_UART_Receive(&handle, (uint8_t *)c, 1, 1);
     }
+
+    HAL_StatusTypeDef read(char *data, uint16_t size)
+    {
+        return HAL_UART_Receive(&handle, (uint8_t *)data, size, 250);
+    }
 };
 
 }  // namespace drivers::uart

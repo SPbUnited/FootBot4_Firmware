@@ -10,6 +10,8 @@ void error(const char* msg, ...);
 
 void reboot();
 
+void delay_ms(uint32_t delay_ms);
+
 void progress_start();
 float progress_tick(float progress);
 void progress_finish();

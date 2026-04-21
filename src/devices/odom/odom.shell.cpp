@@ -1,5 +1,6 @@
 #include "devices/device_manager.hpp"
 #include "devices/shell/shell.main.hpp"
+#include "kernel/kernel.hpp"
 #include "vt_kalman"
 
 int odomUpdate()
@@ -50,7 +51,7 @@ int odomUpdate()
 
         printf("%f, %f, %f\n", u, kf.state_vector[0], kf.state_vector[1]);
 
-        kernel::scheduler::delay_ms(100);
+        kernel::scheduler::sleep_ms(100);
     }
 
     return 0;

@@ -1,9 +1,23 @@
 #include "robot.hpp"
 
-#include "devices/device_manager.hpp"
+// #include "devices/device_manager.hpp"
+#include "kernel/kernel.hpp"
 
 namespace devices::robot
 {
+
+uint8_t calculate_signature(RobotSettings config)
+{
+    uint8_t signature = 0;
+    uint8_t *data = reinterpret_cast<uint8_t *>(&config);
+
+    for (size_t i = 0; i < sizeof(RobotSettings) - 2; i++)
+    {
+        signature ^= data[i];
+    }
+
+    return signature;
+}
 
 void Robot::set_target_linear_vel(float vel_x, float vel_y)
 {
@@ -94,9 +108,9 @@ void Robot::dec_id()
 
 void Robot::init() {}
 
-void Robot::init(RobotConfig config)
+void Robot::init(RobotSettings &settings)
 {
-    static_cast<RobotConfig&>(*this) = config;
+    static_cast<RobotSettings &>(*this) = settings;
 }
 
 void Robot::sense()
@@ -106,7 +120,9 @@ void Robot::sense()
     odom_dev.getState(&current_pos);
     kicker_drv.get_voltage();
 
-    devices::nrf24_recv.recv();
+    bno055_drv.get_angles();
+    odom_dev.state.theta = -bno055_drv.euler.yaw;
+    odom_dev.thetaAntiWindup();
 }
 
 void Robot::plan()
@@ -127,6 +143,15 @@ void Robot::plan()
     else if (angle_mode == ANGLEPOS)
     {
         float error = target_pos.theta - current_pos.theta;
+        const float M_PI = 3.14159265358979323846;
+        while (error > M_PI)
+        {
+            error -= 2 * M_PI;
+        }
+        while (error < -M_PI)
+        {
+            error += 2 * M_PI;
+        }
         target_vel.theta = error * angle_kp;
     }
 
@@ -158,11 +183,11 @@ void Robot::act()
     kicker_drv.update();
 }
 
-void setTargetDangle(float angle)
-{
-    robot_dev.set_target_angular_dpos(angle);
-}
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), setTargetDangle,
-                 setTargetDangle, set target angle);
+// void setTargetDangle(float angle)
+// {
+//     robot_dev.set_target_angular_dpos(angle);
+// }
+// SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), setTargetDangle,
+//                  setTargetDangle, set target angle);
 
 }  // namespace devices::robot

@@ -6,8 +6,6 @@
 namespace devices
 {
 
-#define EEPROM_SIGNATURE 0x0239FABE
-
 const char init_message[] =
     "\n"
     "    ______            __  ____        __  __ __\n"
@@ -33,6 +31,12 @@ oled_lib::OledConfig oled_config = {
 };
 
 oled::OledDriver oled_drv(oled_config, &drivers::i2c2.handle);
+
+imu::BNO055Config bno055_config = {
+    .uart_drv = drivers::uart1,
+};
+
+imu::BNO055 bno055_drv(bno055_config);
 
 bldc::BldcsConfig bldcs_config = {
     .can = &drivers::can_drv,
@@ -60,19 +64,35 @@ odom::OdometerConfig odom_config = {
 
 odom::Odometer odom_dev(odom_config);
 
-robot::RobotConfig robot_config = {.dribbler_setting_to_vel = 250.0 / 16,
-                                   .kicker_setting_to_voltage = 200.0 / 16,
-                                   .angle_kp = 6.0,
-                                   .max_linear_vel = 0.5,
-                                   .max_linear_accel = NAN,
-                                   .max_angular_vel = 2.0,
-                                   .max_angular_accel = NAN,
-                                   .robot_id = 15,
-                                   .signature = EEPROM_SIGNATURE};
+robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 250.0 / 16,
+                                       .kicker_setting_to_voltage = 200.0 / 16,
+                                       .angle_kp = 6.0,
+                                       .max_linear_vel = 4.8,
+                                       .max_linear_accel = NAN,
+                                       .max_angular_vel = 6.0,
+                                       .max_angular_accel = NAN,
+                                       .robot_id = 15,
+                                       .signature = 0};
 
-robot::Robot robot_dev(robot_config);
+robot::RobotConfig robot_config = {.odom_dev = odom_dev,
+                                   .chassis_drv = chassis_drv,
+                                   .bldcs_drv = bldcs_drv,
+                                   .bno055_drv = bno055_drv};
 
-nrf24::Nrf24Recv nrf24_recv(drivers::spi2);
+robot::Robot robot_dev(robot_settings, robot_config);
+
+nrfm_decoder::NRFMDecoderConfig nrfm_decoder_config = {
+    .robot_dev = robot_dev, .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_2]};
+
+nrfm_decoder::NRFMDecoder nrfm_decoder_dev(nrfm_decoder_config);
+
+nrf24::Nrf24RecvConfig nrf24_recv_config = {
+    .spi_instance = drivers::spi2,
+    .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
+    .nrfm_decoder = nrfm_decoder_dev,
+};
+
+nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
 
 kicker::KickerConfig kicker_config = {.adc_pin=&drivers::analog_in_pin,
                                       .charge_pin=&drivers::out_pins[drivers::CHARGE],
@@ -96,6 +116,28 @@ void init()
     oled_drv.init();
     kinfo("OLED initialized");
 
+    nrf24_recv.init();
+    kinfo("NRF24 initialized");
+
+    for (size_t i = 0; i < 5; i++)
+    {
+        bool bno055_init = bno055_drv.check();
+        if (!bno055_init)
+        {
+            kerror("BNO055 offline");
+            bno055_drv.reset();
+        }
+        else
+        {
+            kinfo("BNO055 online");
+            bno055_drv.set_angle_units(RADIANS);
+            bno055_drv.set_anglerate_units(RAD_PER_SEC);
+            bno055_drv.setmode(OPERATION_MODE_NDOF);
+            kinfo("BNO055 initialized");
+            break;
+        }
+    }
+
     bldcs_drv.init();
     kinfo("BLDC initialized");
 
@@ -105,24 +147,29 @@ void init()
     odom_dev.init();
     kinfo("Odometer initialized");
 
-    eeprom::get(0, robot_config);
+    robot_settings.signature = robot::calculate_signature(robot_settings);
 
-    if (robot_config.signature != EEPROM_SIGNATURE)
+    robot::RobotSettings eeprom_robot_settings = {0};
+
+    eeprom::get(0, eeprom_robot_settings);
+
+    if (eeprom_robot_settings.signature != robot_settings.signature)
     {
-        kwarning("EEPROM signature mismatch");
+        kwarning("EEPROM signature mismatch, saving settings to EEPROM");
+        eeprom::put(0, robot_settings);
     }
     else
     {
         kinfo("EEPROM signature match");
-        kinfo("Updating robot config from EEPROM");
-        kinfo("  id: %d", robot_config.robot_id);
-        robot_dev.init(robot_config);
+        kinfo("Updating robot settings from EEPROM");
+        kinfo("  id: %d", eeprom_robot_settings.robot_id);
+        robot_dev.init(eeprom_robot_settings);
     }
 
     kinfo("Robot initialized");
 
-    nrf24_recv.init();
-    kinfo("NRF24 initialized");
+    // nrf24_recv.init();
+    // kinfo("NRF24 initialized");
 
     kicker_drv.init();
     kinfo("Kicker initialized");

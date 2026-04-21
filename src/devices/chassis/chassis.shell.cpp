@@ -1,4 +1,5 @@
 #include "devices/device_manager.hpp"
+#include "kernel/kernel.hpp"
 
 namespace
 {
@@ -151,7 +152,7 @@ int main_chassis_teleop(int argc, char *argv[])
                 break;
         }
 
-        kernel::scheduler::delay_ms(50);
+        kernel::scheduler::sleep_ms(50);
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), chassisTeleop,
