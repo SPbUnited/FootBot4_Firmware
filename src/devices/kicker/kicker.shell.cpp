@@ -89,7 +89,7 @@ int main_voltage_teleop(int argc, char *argv[])
 
         }
 
-        kernel::scheduler::delay_ms(10);
+        kernel::delay_ms(10);
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), voltageTeleop,
