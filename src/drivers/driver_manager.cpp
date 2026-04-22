@@ -204,6 +204,11 @@ void init()
     for (int i = 0; i < OUT_COUNT; i++)
     {
         out_pins[i].init(out_pins_desc[i]);
+        if ((i==CHARGE) || (i == DISCHARGE) || (i==STRAIGHT) || (i==CHIP))
+        {
+            out_pins[CHARGE].write(true);
+        }
+        
     }
     for (int i = 0; i < INPUT_COUNT; i++)
     {

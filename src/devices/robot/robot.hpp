@@ -4,6 +4,7 @@
 #include "devices/chassis/chassis.hpp"
 #include "devices/imu/imu.hpp"
 #include "devices/odom/odom.hpp"
+#include "devices/kicker/kicker.hpp"
 
 namespace devices::robot
 {
@@ -35,6 +36,7 @@ struct RobotConfig
     devices::chassis::Chassis &chassis_drv;
     devices::bldc::BldcsDriver &bldcs_drv;
     devices::imu::BNO055 &bno055_drv;
+    devices::kicker::Kicker &kicker_drv;
 };
 
 struct RobotSettings
