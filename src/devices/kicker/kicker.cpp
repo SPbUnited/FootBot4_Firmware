@@ -33,6 +33,15 @@ void Kicker::set_target(uint16_t voltage)
 
 void Kicker::update()
 {
+    target = devices::robot_dev.kicker_setting * (300/15);
+    if (target >= 300)
+    {
+        target = 300;
+    }
+    else if (target <= 0)
+    {
+        target = 0;
+    }
     if ((state == PREPARE) || !prepared)
     {
         straight_pin->write(true);
@@ -74,15 +83,24 @@ void Kicker::update()
     {
         discharge_pin->write(true);
         charge_pin->write(true);
-        if (kick_type == STRAIGHT)
+        if (devices::robot_dev.kicker_mode == devices::robot::KICK_FRONT)
         {
             straight_pin->write(false);
         }
-        else if (kick_type == CHIP)
+        else if (devices::robot_dev.kicker_mode == devices::robot::KICK_UP)
         {
             chip_pin->write(false);
         }
-        kernel::scheduler::delay_ms(2);
+        else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
+        {
+            straight_pin->write(false);
+        }
+        else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
+        {
+            chip_pin->write(false);
+        }
+        
+        kernel::delay_ms(2);
         // if 
         state = PREPARE;
     }
