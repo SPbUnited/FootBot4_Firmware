@@ -26,6 +26,8 @@ struct KickerConfig
     drivers::gpio::GPIOOutputDriver *discharge_pin;
     drivers::gpio::GPIOOutputDriver *straight_pin;
     drivers::gpio::GPIOOutputDriver *chip_pin;
+    drivers::gpio::GPIOInputDriver *ball_checker_deep;
+    drivers::gpio::GPIOInputDriver *ball_checker_front;
 };
 
 
