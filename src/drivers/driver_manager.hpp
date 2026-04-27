@@ -38,6 +38,8 @@ enum GPIO_OUT
     DISCHARGE,
     STRAIGHT,
     CHIP,
+    DEEP_LED,
+    FRONT_LED,
     OUT_COUNT,
 };
 
@@ -46,6 +48,8 @@ enum GPIO_INPUT
     BUTTON_ADDR_UP,
     BUTTON_ADDR_DOWN,
     BUTTON_SELECT,
+    CHECKER_DEEP,
+    CHECKER_FRONT,
     INPUT_COUNT,
 };
 
