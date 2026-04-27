@@ -165,12 +165,16 @@ gpio::GPIODescriptor out_pins_desc[] = {
     [DISCHARGE] = {GPIOF, GPIO_PIN_6},
     [STRAIGHT] = {GPIOF, GPIO_PIN_11},
     [CHIP] = {GPIOF, GPIO_PIN_12},
+    [DEEP_LED] = {GPIOF, GPIO_PIN_9},
+    [FRONT_LED] = {GPIOF, GPIO_PIN_8},
 };
 
 gpio::GPIODescriptor in_pins_desc[] = {
     [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11},
     [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
     [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
+    [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
+    [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},
 };
 
 gpio::GPIODescriptor analog_pins_desc[] = {
@@ -206,7 +210,11 @@ void init()
         out_pins[i].init(out_pins_desc[i]);
         if ((i==CHARGE) || (i == DISCHARGE) || (i==STRAIGHT) || (i==CHIP))
         {
-            out_pins[CHARGE].write(true);
+            out_pins[i].write(true);
+        }
+        if ((i==DEEP_LED) || (i==FRONT_LED))
+        {
+            out_pins[i].write(true);
         }
         
     }

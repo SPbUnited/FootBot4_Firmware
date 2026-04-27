@@ -78,6 +78,21 @@ void Kicker::update()
                 state = KICK;
             }
         }
+        if (ball_checker_deep->read())
+        {
+            drivers::out_pins[drivers::LED_DRV2].write(true);
+        }
+        else{
+            drivers::out_pins[drivers::LED_DRV2].write(false);
+        }
+
+        if (ball_checker_front->read())
+        {
+            drivers::out_pins[drivers::LED_DRV3].write(true);
+        }
+        else{
+            drivers::out_pins[drivers::LED_DRV3].write(false);
+        }
     }
     else if (state == KICK)
     {
@@ -93,14 +108,20 @@ void Kicker::update()
         }
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
         {
-            straight_pin->write(false);
+            if (ball_checker_deep->read() && ball_checker_front->read())
+            {
+                straight_pin->write(false);
+            }
         }
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
         {
-            chip_pin->write(false);
+            if (ball_checker_deep->read() && ball_checker_front->read())
+            {
+                chip_pin->write(false);
+            }
         }
         
-        kernel::delay_ms(2);
+        // kernel::delay_ms(2);
         // if 
         state = PREPARE;
     }

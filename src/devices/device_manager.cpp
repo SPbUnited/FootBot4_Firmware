@@ -78,7 +78,9 @@ kicker::KickerConfig kicker_config = {.adc_pin=&drivers::analog_in_pin,
                                       .charge_pin=&drivers::out_pins[drivers::CHARGE],
                                       .discharge_pin=&drivers::out_pins[drivers::DISCHARGE],
                                       .straight_pin=&drivers::out_pins[drivers::STRAIGHT],
-                                      .chip_pin=&drivers::out_pins[drivers::CHIP]};
+                                      .chip_pin=&drivers::out_pins[drivers::CHIP],
+                                      .ball_checker_deep=&drivers::in_pins[drivers::CHECKER_DEEP],
+                                      .ball_checker_front=&drivers::in_pins[drivers::CHECKER_FRONT]};
 
 kicker::Kicker kicker_drv(kicker_config);
 
