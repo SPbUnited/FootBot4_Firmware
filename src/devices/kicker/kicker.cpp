@@ -14,7 +14,7 @@ Kicker::Kicker(KickerConfig config) : KickerConfig(config) {}
 // Main receive function
 void Kicker::init()
 {
-    target = 150;
+    target = 0;
 }
 
 float Kicker::get_voltage()
