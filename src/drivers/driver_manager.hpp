@@ -34,6 +34,12 @@ enum GPIO_OUT
     LED_DRV5,
     LED_DATA_TRANSFER_STATUS_1,
     LED_DATA_TRANSFER_STATUS_2,
+    CHARGE,
+    DISCHARGE,
+    STRAIGHT,
+    CHIP,
+    DEEP_LED,
+    FRONT_LED,
     OUT_COUNT,
 };
 
@@ -42,11 +48,23 @@ enum GPIO_INPUT
     BUTTON_ADDR_UP,
     BUTTON_ADDR_DOWN,
     BUTTON_SELECT,
+    CHECKER_DEEP,
+    CHECKER_FRONT,
     INPUT_COUNT,
+};
+
+enum ANALOG_INPUT
+{
+    KICKER_VOLTAGE,
+    // ANALOG_COUNT,
 };
 
 extern gpio::GPIOInputDriver in_pins[INPUT_COUNT];
 extern gpio::GPIOOutputDriver out_pins[OUT_COUNT];
+
+// extern gpio::GPIOAnalogInputDriver analog_in_pins[1];
+
+extern gpio::GPIOAnalogInputDriver analog_in_pin;
 
 void init();
 

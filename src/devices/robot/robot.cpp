@@ -118,6 +118,7 @@ void Robot::sense()
     chassis_drv.getVel(&current_vel);
     odom_dev.update(current_vel);
     odom_dev.getState(&current_pos);
+    kicker_drv.get_voltage();
 
     bno055_drv.get_angles();
     odom_dev.state.theta = -bno055_drv.euler.yaw;
@@ -153,6 +154,8 @@ void Robot::plan()
         }
         target_vel.theta = error * angle_kp;
     }
+
+    // kicker_drv.set_target(100);
 }
 
 void Robot::act()
@@ -176,6 +179,8 @@ void Robot::act()
         bldcs_drv.setDribblerVel(dribbler_setting * dribbler_setting_to_vel);
         dribbler_update = false;
     }
+
+    kicker_drv.update();
 }
 
 // void setTargetDangle(float angle)

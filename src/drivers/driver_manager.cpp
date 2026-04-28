@@ -150,6 +150,7 @@ system_clock::SystemClock system_clock_drv;
 spi::SPIDriver spi2(nrf24_recv_config);
 gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 gpio::GPIOInputDriver in_pins[INPUT_COUNT];
+// gpio::GPIOAnalogInputDriver analog_in_pins[1];
 
 gpio::GPIODescriptor out_pins_desc[] = {
     [LED_STM32] = {GPIOD, GPIO_PIN_15},
@@ -160,13 +161,31 @@ gpio::GPIODescriptor out_pins_desc[] = {
     [LED_DRV5] = {GPIOG, GPIO_PIN_6},
     [LED_DATA_TRANSFER_STATUS_1] = {GPIOG, GPIO_PIN_7},
     [LED_DATA_TRANSFER_STATUS_2] = {GPIOG, GPIO_PIN_8},
+    [CHARGE] = {GPIOF, GPIO_PIN_5},
+    [DISCHARGE] = {GPIOF, GPIO_PIN_6},
+    [STRAIGHT] = {GPIOF, GPIO_PIN_11},
+    [CHIP] = {GPIOF, GPIO_PIN_12},
+    [DEEP_LED] = {GPIOF, GPIO_PIN_9},
+    [FRONT_LED] = {GPIOF, GPIO_PIN_8},
 };
 
 gpio::GPIODescriptor in_pins_desc[] = {
     [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11},
     [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
     [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
+    [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
+    [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},
 };
+
+gpio::GPIODescriptor analog_pins_desc[] = {
+    [KICKER_VOLTAGE] = {GPIOC, GPIO_PIN_1},
+};
+
+gpio::ADCDescriptor adc_desc[] = {
+    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, ENABLE, ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
+};
+
+gpio::GPIOAnalogInputDriver analog_in_pin;
 
 void init()
 {
@@ -178,17 +197,34 @@ void init()
     drivers::uart4.init();
     drivers::uart1.init();
     drivers::i2c2.init();
-
+    __HAL_RCC_ADC1_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOG_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
+
+    static uint32_t adcBuffer[1] = {0};
+    
     for (int i = 0; i < OUT_COUNT; i++)
     {
         out_pins[i].init(out_pins_desc[i]);
+        if ((i==CHARGE) || (i == DISCHARGE) || (i==STRAIGHT) || (i==CHIP))
+        {
+            out_pins[i].write(true);
+        }
+        if ((i==DEEP_LED) || (i==FRONT_LED))
+        {
+            out_pins[i].write(true);
+        }
+        
     }
     for (int i = 0; i < INPUT_COUNT; i++)
     {
         in_pins[i].init(in_pins_desc[i]);
+    }
+    for (int i = 0; i < 1; i++)
+    {
+        analog_in_pin.init(analog_pins_desc[i], adc_desc[i], adcBuffer, 1);
     }
 
     drivers::can_drv.init();
