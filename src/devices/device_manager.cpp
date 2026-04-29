@@ -64,7 +64,7 @@ odom::OdometerConfig odom_config = {
 
 odom::Odometer odom_dev(odom_config);
 
-robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 250.0 / 16,
+robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 350.0 / 16,
                                        .kicker_setting_to_voltage = 200.0 / 16,
                                        .angle_kp = 6.0,
                                        .max_linear_vel = 4.8,
