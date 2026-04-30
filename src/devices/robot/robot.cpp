@@ -19,35 +19,51 @@ uint8_t calculate_signature(RobotSettings config)
     return signature;
 }
 
-void Robot::set_target_linear_vel(float vel_x, float vel_y)
+void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
+                                        bool is_velocity_local)
 {
-    linear_mode = VELOCITY;
+    linear_mode = is_velocity_local ? VELOCITY_LOCAL : VELOCITY_GLOBAL;
 
-    target_vel.x = vel_x;
-    target_vel.y = vel_y;
+    if (linear_mode == VELOCITY_LOCAL)
+    {
+        vel_global_target.x = vel_local_x;
+        vel_global_target.y = vel_local_y;
+    }
+    else
+    {
+        devices::chassis::StateVector vel_global_target_lin =
+            odom_dev.rotate({vel_local_x, vel_local_y, 0}, pos_global_current.theta);
 
-    kverbose("set_target_linear_vel(vel_x = %f, vel_y = %f): target_vel.x = %f, target_vel.y = %f",
-             vel_x, vel_y, target_vel.x, target_vel.y);
+        vel_global_target.x = vel_global_target_lin.x;
+        vel_global_target.y = vel_global_target_lin.y;
+    }
+
+    kverbose(
+        "set_target_local_linear_vel(vel_local_x = %f, vel_local_y = %f): vel_global_target.x = "
+        "%f, "
+        "vel_global_target.y = %f",
+        vel_local_x, vel_local_y, vel_global_target.x, vel_global_target.y);
 }
 
 void Robot::set_target_angular_vel(float vel_theta)
 {
     angle_mode = ANGLEVEL;
 
-    target_vel.theta = vel_theta;
+    vel_global_target.theta = vel_theta;
 
-    kverbose("set_target_angular_vel(vel_theta = %f): target_vel.theta = %f", vel_theta,
-             target_vel.theta);
+    kverbose("set_target_angular_vel(vel_theta = %f): vel_global_target.theta = %f", vel_theta,
+             vel_global_target.theta);
 }
 
 void Robot::set_target_angular_dpos(float dpos_theta)
 {
     angle_mode = ANGLEPOS;
 
-    target_pos.theta = current_pos.theta + dpos_theta;
+    vel_global_target.theta = 0;
+    pos_global_target.theta = pos_global_current.theta + dpos_theta;
 
-    kverbose("set_target_angular_dpos(dpos_theta = %f): target_pos.theta = %f", dpos_theta,
-             target_pos.theta);
+    kverbose("set_target_angular_dpos(dpos_theta = %f): pos_global_target.theta = %f", dpos_theta,
+             pos_global_target.theta);
 }
 
 void Robot::set_max_linear_vel(float max_vel)
@@ -111,25 +127,37 @@ void Robot::init() {}
 void Robot::init(RobotSettings &settings)
 {
     static_cast<RobotSettings &>(*this) = settings;
+
+    sense();
+    pos_global_target.theta = pos_global_current.theta;
 }
 
 void Robot::sense()
 {
-    chassis_drv.getVel(&current_vel);
-    odom_dev.update(current_vel);
-    odom_dev.getState(&current_pos);
-    kicker_drv.get_voltage();
+    chassis_drv.getVel(&vel_global_current);
+    odom_dev.update(vel_global_current);
 
     bno055_drv.get_angles();
     odom_dev.state.theta = -bno055_drv.euler.yaw;
     odom_dev.thetaAntiWindup();
+
+    odom_dev.getState(&pos_global_current);
+    kicker_drv.get_voltage();
 }
 
 void Robot::plan()
 {
-    if (linear_mode == VELOCITY)
+    if (linear_mode == VELOCITY_GLOBAL)
     {
-        // Just keep current target_vel
+        vel_local_output.x = vel_global_target.x;
+        vel_local_output.y = vel_global_target.y;
+
+        vel_local_output = odom_dev.rotate(vel_local_output, -pos_global_current.theta);
+    }
+    else if (linear_mode == VELOCITY_LOCAL)
+    {
+        vel_local_output.x = vel_global_target.x;
+        vel_local_output.y = vel_global_target.y;
     }
     else if (linear_mode == COORDINATE)
     {
@@ -139,40 +167,45 @@ void Robot::plan()
     if (angle_mode == ANGLEVEL)
     {
         // Just keep current target_vel
+        // vel_local_output.theta = vel_global_target.theta;
+        pos_global_target.theta += vel_global_target.theta * Ts_s;
     }
     else if (angle_mode == ANGLEPOS)
     {
-        float error = target_pos.theta - current_pos.theta;
-        const float M_PI = 3.14159265358979323846;
-        while (error > M_PI)
-        {
-            error -= 2 * M_PI;
-        }
-        while (error < -M_PI)
-        {
-            error += 2 * M_PI;
-        }
-        target_vel.theta = error * angle_kp;
     }
+
+    float error = pos_global_target.theta - pos_global_current.theta;
+    const float M_PI = 3.14159265358979323846;
+    while (error > M_PI)
+    {
+        error -= 2 * M_PI;
+    }
+    while (error < -M_PI)
+    {
+        error += 2 * M_PI;
+    }
+    vel_local_output.theta = error * angle_kp + vel_global_target.theta;
 
     // kicker_drv.set_target(100);
 }
 
 void Robot::act()
 {
-    float vel_abs = sqrt(target_vel.x * target_vel.x + target_vel.y * target_vel.y);
+    float vel_abs =
+        sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y);
     if (vel_abs > max_linear_vel)
     {
-        target_vel.x = target_vel.x / vel_abs * max_linear_vel;
-        target_vel.y = target_vel.y / vel_abs * max_linear_vel;
+        vel_local_output.x = vel_local_output.x / vel_abs * max_linear_vel;
+        vel_local_output.y = vel_local_output.y / vel_abs * max_linear_vel;
     }
 
-    if (fabs(target_vel.theta) > max_angular_vel)
+    if (fabs(vel_local_output.theta) > max_angular_vel)
     {
-        target_vel.theta = target_vel.theta / fabs(target_vel.theta) * max_angular_vel;
+        vel_local_output.theta =
+            vel_local_output.theta / fabs(vel_local_output.theta) * max_angular_vel;
     }
 
-    chassis_drv.setVel(target_vel);
+    chassis_drv.setVel(vel_local_output);
 
     if (dribbler_update)
     {

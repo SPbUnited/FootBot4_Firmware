@@ -34,4 +34,11 @@ void Odometer::thetaAntiWindup()
     }
 }
 
+devices::chassis::StateVector Odometer::rotate(devices::chassis::StateVector vec, float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+    return {vec.x * c - vec.y * s, vec.x * s + vec.y * c, vec.theta};
+}
+
 }  // namespace devices::odom

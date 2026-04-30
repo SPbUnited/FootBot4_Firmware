@@ -12,7 +12,7 @@ void BldcsDriver::init()
     kprogress_start("Awaiting BLDC initialization...");
     for (int i = 0; i < 4; i++)
     {
-        HAL_Delay(500);
+        HAL_Delay(100);
         kprogress_tick(25.0);
     }
     kprogress_finish("BLDC OK");

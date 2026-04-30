@@ -3,15 +3,16 @@
 #include "devices/bldc/bldc.hpp"
 #include "devices/chassis/chassis.hpp"
 #include "devices/imu/imu.hpp"
-#include "devices/odom/odom.hpp"
 #include "devices/kicker/kicker.hpp"
+#include "devices/odom/odom.hpp"
 
 namespace devices::robot
 {
 
 enum LinearControlMode
 {
-    VELOCITY,
+    VELOCITY_LOCAL,
+    VELOCITY_GLOBAL,
     COORDINATE,
 };
 
@@ -67,11 +68,13 @@ struct Robot : RobotSettings, RobotConfig
     LinearControlMode linear_mode;
     AngleControlMode angle_mode;
 
-    devices::chassis::StateVector target_vel;
-    devices::chassis::StateVector target_pos;
+    devices::chassis::StateVector vel_local_output;
 
-    devices::chassis::StateVector current_vel;
-    devices::chassis::StateVector current_pos;
+    devices::chassis::StateVector vel_global_target;
+    devices::chassis::StateVector pos_global_target;
+
+    devices::chassis::StateVector vel_global_current;
+    devices::chassis::StateVector pos_global_current;
 
     size_t next_waypoint;
     struct Waypoint
@@ -86,7 +89,7 @@ struct Robot : RobotSettings, RobotConfig
     uint8_t dribbler_setting;
     bool dribbler_update;
 
-    void set_target_linear_vel(float vel_x, float vel_y);
+    void set_target_local_linear_vel(float vel_x, float vel_y, bool is_velocity_local = false);
     void set_target_angular_vel(float vel_theta);
     void set_target_angular_dpos(float dpos_theta);
 

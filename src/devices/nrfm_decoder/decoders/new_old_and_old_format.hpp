@@ -28,18 +28,19 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
 
     float dangle = packet->packet.payload.old_format.angular_velocity_or_angle * pi / 128.0f;
 
-    robot_dev.set_target_linear_vel(vely, -velx);
     if (packet->packet.payload.old_format.AS)
     {
+        robot_dev.set_target_local_linear_vel(vely, -velx, false);
         robot_dev.set_target_angular_dpos(-dangle);
     }
     else
     {
+        robot_dev.set_target_local_linear_vel(vely, -velx, true);
         robot_dev.set_target_angular_vel(-angular_velocity);
     }
 
     robot_dev.set_kicker_setting(packet->packet.payload.old_format.kicker_setting);
-                                //  packet->packet.payload.old_format.HE);
+    //  packet->packet.payload.old_format.HE);
     robot_dev.set_dribbler_setting(packet->packet.payload.old_format.dribbler_setting *
                                    packet->packet.payload.old_format.DE);
 
@@ -74,7 +75,6 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
     {
         kicker_mode = devices::robot::KICK_UP;
     }
-    
 
     robot_dev.set_kicker_mode(kicker_mode);
 }

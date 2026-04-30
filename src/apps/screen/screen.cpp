@@ -48,10 +48,11 @@ void screen()
     display.rectFill(0, 0, 126, 32, false);  // Очищаем область
     display.setCursor(0, 0);
     display.setTextSize(1);
-    display.printf("robot  %2d%c|%s---------------------x: %6.3f |y: %6.3f\ntheta: %6.3f v: %6.1f",
-                   devices::robot_dev.robot_id, was_id_changed ? '*' : ' ', vbuf, offset,
-                   devices::robot_dev.current_pos.x, devices::robot_dev.current_pos.y,
-                   devices::robot_dev.current_pos.theta, devices::kicker_drv.actual_voltage);
+    display.printf(
+        "robot  %2d%c|%s---------------------x: %6.3f |y: %6.3f\ntheta: %6.3f v: %6.1f",
+        devices::robot_dev.robot_id, was_id_changed ? '*' : ' ', vbuf, offset,
+        devices::robot_dev.pos_global_current.x, devices::robot_dev.pos_global_current.y,
+        devices::robot_dev.pos_global_current.theta, devices::kicker_drv.actual_voltage);
 
     counter++;
     if (counter > a + a + t1 + t2)
