@@ -89,7 +89,7 @@ class Nrf24Recv : public Nrf24RecvConfig
 
     Nrf24Recv(Nrf24RecvConfig &nrf24_recv_config);
 
-    void init();
+    bool init();
     int recv();
     void send(uint8_t checker, uint8_t id);
 

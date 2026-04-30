@@ -106,7 +106,7 @@ void Nrf24Recv::send(uint8_t checker, uint8_t id)
 }
 
 // Constructor
-void Nrf24Recv::init()
+bool Nrf24Recv::init()
 {
     // spi.init()
 
@@ -132,6 +132,7 @@ void Nrf24Recv::init()
     if (a != 0x0E)
     {
         // Error - NRF24 not responding
+        return true;
     }
 
     w(0x00, 0x0C);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0 (TX mode)
@@ -181,6 +182,7 @@ void Nrf24Recv::init()
         volatile int a = 0;
         a++;
         // fail();
+        return true;
     }
     w(0x03, 0x01);
     w(0x06, 0x0E);
@@ -192,6 +194,7 @@ void Nrf24Recv::init()
         volatile int a = 0;
         a++;
         // fail();
+        return true;
     }
 
     uint8_t self_addr[]{0xAB, 0xAD, 0xAF};
@@ -207,6 +210,7 @@ void Nrf24Recv::init()
         volatile int a = 0;
         a++;
         // fail();
+        return true;
     }
     // if (send_or_recieve)
     //     w(0x02, 0x06);
@@ -236,6 +240,8 @@ void Nrf24Recv::init()
     for (int i = 0; i < 5000; i++)
         ;
     spi_instance.resetCS();
+
+    return false;
 }
 
 // Private methods implementation

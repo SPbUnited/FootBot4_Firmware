@@ -74,13 +74,14 @@ robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 350.0 / 16,
                                        .robot_id = 15,
                                        .signature = 0};
 
-kicker::KickerConfig kicker_config = {.adc_pin=&drivers::analog_in_pin,
-                                      .charge_pin=&drivers::out_pins[drivers::CHARGE],
-                                      .discharge_pin=&drivers::out_pins[drivers::DISCHARGE],
-                                      .straight_pin=&drivers::out_pins[drivers::STRAIGHT],
-                                      .chip_pin=&drivers::out_pins[drivers::CHIP],
-                                      .ball_checker_deep=&drivers::in_pins[drivers::CHECKER_DEEP],
-                                      .ball_checker_front=&drivers::in_pins[drivers::CHECKER_FRONT]};
+kicker::KickerConfig kicker_config = {
+    .adc_pin = &drivers::analog_in_pin,
+    .charge_pin = &drivers::out_pins[drivers::CHARGE],
+    .discharge_pin = &drivers::out_pins[drivers::DISCHARGE],
+    .straight_pin = &drivers::out_pins[drivers::STRAIGHT],
+    .chip_pin = &drivers::out_pins[drivers::CHIP],
+    .ball_checker_deep = &drivers::in_pins[drivers::CHECKER_DEEP],
+    .ball_checker_front = &drivers::in_pins[drivers::CHECKER_FRONT]};
 
 kicker::Kicker kicker_drv(kicker_config);
 
@@ -88,7 +89,7 @@ robot::RobotConfig robot_config = {.odom_dev = odom_dev,
                                    .chassis_drv = chassis_drv,
                                    .bldcs_drv = bldcs_drv,
                                    .bno055_drv = bno055_drv,
-                                   .kicker_drv=kicker_drv};
+                                   .kicker_drv = kicker_drv};
 
 robot::Robot robot_dev(robot_settings, robot_config);
 
@@ -105,8 +106,6 @@ nrf24::Nrf24RecvConfig nrf24_recv_config = {
 
 nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
 
-
-
 void init()
 {
     shell::my_shellInit();
@@ -121,8 +120,14 @@ void init()
     oled_drv.init();
     kinfo("OLED initialized");
 
-    nrf24_recv.init();
-    kinfo("NRF24 initialized");
+    if (nrf24_recv.init())
+    {
+        kerror("NRF24 initialization failed");
+    }
+    else
+    {
+        kinfo("NRF24 initialized");
+    }
 
     for (size_t i = 0; i < 5; i++)
     {
