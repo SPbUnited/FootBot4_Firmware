@@ -1,5 +1,6 @@
 #include "nrfm_decoder.hpp"
 
+#include "decoders/debug_override.hpp"
 #include "decoders/new_old_and_old_format.hpp"
 // #include "devices/device_manager.hpp"
 
