@@ -121,8 +121,6 @@ class BldcsDriver : public BldcsConfig
 
     BldcsVec target_vel;
 
-    void motorWrite(uint8_t motor_addr, uint8_t register_addr, uint8_t *data, uint8_t len);
-
   public:
     BldcsDriver(BldcsConfig config) : BldcsConfig(config) {}
 
@@ -137,6 +135,8 @@ class BldcsDriver : public BldcsConfig
     void getDribblerVel(float *vel);
 
     void setDriveRegisterFloat(uint8_t register_addr, float value);
+
+    void motorWrite(uint8_t motor_addr, uint8_t register_addr, uint8_t *data, uint8_t len);
 };
 
 }  // namespace devices::bldc
