@@ -44,7 +44,7 @@ bldc::BldcsConfig bldcs_config = {
     .drive_vel_i = 40.0,
     // .drive_vel_p = 0.1,
     // .drive_vel_i = 1.0,
-    .drive_vel_limit = 12,
+    .drive_vel_limit = 8.0,
 };
 
 bldc::BldcsDriver bldcs_drv(bldcs_config);
