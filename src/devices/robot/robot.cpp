@@ -196,7 +196,7 @@ void Robot::plan()
     {
         error += 2 * M_PI;
     }
-    vel_local_output.theta = error * angle_kp;  // + vel_global_target.theta;
+    vel_local_output.theta = error * (angle_kp+sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y)*0.001);  // динамический коэф
 
     // kicker_drv.set_target(100);
 }
