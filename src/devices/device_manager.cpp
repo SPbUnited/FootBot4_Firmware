@@ -177,9 +177,21 @@ void init()
     }
 
     kinfo("Robot initialized");
+    
+
+    
 
     kicker_drv.init();
     kinfo("Kicker initialized");
+
+    if (nrf24_recv.init())
+    {
+        kerror("NRF24 initialization failed");
+    }
+    else
+    {
+        kinfo("NRF24 initialized");
+    }
     // kinfo("AUAUSDUASDUDevices initialized");
     kinfo("Devices initialized");
 }
