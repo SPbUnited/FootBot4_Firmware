@@ -3,6 +3,7 @@
 #include "../nrfm_decoder.hpp"
 #include "half_float.h"
 #include "kernel/kernel.hpp"
+#include "math.hpp"
 
 namespace devices::nrfm_decoder
 {
@@ -12,7 +13,7 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
     kverbose("new_old_and_old_format(is_new_old_format = %d)", is_new_old_format);
 
     constexpr float cm_to_m = 0.01f;
-    constexpr float pi = 3.1415926f;
+    constexpr float pi = M_PI;
 
     float velx = is_new_old_format
                      ? fp8_to_fp32(packet->packet.payload.old_format.velx) * cm_to_m

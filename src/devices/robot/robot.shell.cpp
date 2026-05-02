@@ -4,13 +4,18 @@
 
 // Shell *shell2048 = NULL;
 
-#define SET_VEL(x, y, w)                                                         \
-    {                                                                            \
-        devices::robot_dev.set_target_local_linear_vel(x, y, is_velocity_local); \
-        devices::robot_dev.set_target_angular_dpos(w);                           \
-    }
+// #define SET_VEL(x, y, w)                                                         \
+//     {                                                                            \
+//         devices::robot_dev.set_target_local_linear_vel(x, y, false); \
+//         devices::robot_dev.set_target_angular_dpos(w);                           \
+//     }
 //     devices::robot_dev.set_target_angular_vel(w);                            \
 // }
+#define SET_VEL(x, y, w)                                            \
+    {                                                               \
+        devices::robot_dev.set_target_local_linear_vel(x, y, true); \
+        devices::robot_dev.set_target_angular_vel(w);               \
+    }
 
 int main_robot_teleop(int argc, char *argv[])
 {
@@ -25,8 +30,6 @@ int main_robot_teleop(int argc, char *argv[])
     devices::chassis::StateVector vel = {0, 0, 0};
 
     printf("\033[2J");  // Clear screen
-
-    bool is_velocity_local = false;
 
     char old_c = 0;
 

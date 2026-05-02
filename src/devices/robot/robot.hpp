@@ -69,6 +69,7 @@ struct Robot : RobotSettings, RobotConfig
     AngleControlMode angle_mode;
 
     devices::chassis::StateVector vel_local_output;
+    devices::chassis::StateVector vel_local_output_smoothed;
 
     devices::chassis::StateVector vel_global_target;
     devices::chassis::StateVector pos_global_target;

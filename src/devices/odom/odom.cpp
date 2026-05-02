@@ -1,5 +1,7 @@
 #include "odom.hpp"
 
+#include "math.hpp"
+
 namespace devices::odom
 {
 
@@ -22,8 +24,6 @@ void Odometer::getState(devices::chassis::StateVector *state)
 
 void Odometer::thetaAntiWindup()
 {
-    const float M_PI = 3.14159265358979323846;
-
     while (state.theta > M_PI)
     {
         state.theta -= 2 * M_PI;

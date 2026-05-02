@@ -44,7 +44,7 @@ bldc::BldcsConfig bldcs_config = {
     .drive_vel_i = 40.0,
     // .drive_vel_p = 0.1,
     // .drive_vel_i = 1.0,
-    .drive_vel_limit = NAN,
+    .drive_vel_limit = 12,
 };
 
 bldc::BldcsDriver bldcs_drv(bldcs_config);
@@ -66,11 +66,11 @@ odom::Odometer odom_dev(odom_config);
 
 robot::RobotSettings robot_settings = {.dribbler_setting_to_vel = 350.0 / 16,
                                        .kicker_setting_to_voltage = 200.0 / 16,
-                                       .angle_kp = 6.0,
-                                       .max_linear_vel = 4.8,
-                                       .max_linear_accel = NAN,
-                                       .max_angular_vel = 6.0,
-                                       .max_angular_accel = NAN,
+                                       .angle_kp = 9.0,
+                                       .max_linear_vel = 3.2,
+                                       .max_linear_accel = 10.0,
+                                       .max_angular_vel = 10.0,
+                                       .max_angular_accel = 100.0,
                                        .robot_id = 15,
                                        .signature = 0};
 
@@ -177,9 +177,6 @@ void init()
     }
 
     kinfo("Robot initialized");
-    
-
-    
 
     kicker_drv.init();
     kinfo("Kicker initialized");

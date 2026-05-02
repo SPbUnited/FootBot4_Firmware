@@ -4,14 +4,12 @@
 #include "devices/device_manager.hpp"
 #include "drivers/driver_manager.hpp"
 #include "kernel/kernel.hpp"
+#include "math.hpp"
 
 #define display devices::oled_drv.display
 
 namespace apps::screen
 {
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 void screen()
 {

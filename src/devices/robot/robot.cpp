@@ -2,6 +2,7 @@
 
 // #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
+#include "math.hpp"
 
 namespace devices::robot
 {
@@ -130,6 +131,7 @@ void Robot::init(RobotSettings &settings)
 
     sense();
     pos_global_target.theta = pos_global_current.theta;
+    vel_local_output_smoothed = {0, 0, 0};
 }
 
 void Robot::sense()
@@ -168,14 +170,24 @@ void Robot::plan()
     {
         // Just keep current target_vel
         // vel_local_output.theta = vel_global_target.theta;
-        pos_global_target.theta += vel_global_target.theta * Ts_s;
+        pos_global_target.theta +=
+            MIN(MAX(vel_global_target.theta, -max_angular_vel * 0.8), max_angular_vel * 0.8) *
+            Ts_s;
+
+        // if (pos_global_target.theta - pos_global_current.theta > M_PI * 0.8)
+        // {
+        //     pos_global_target.theta = pos_global_current.theta + M_PI * 0.8;
+        // }
+        // else if (pos_global_target.theta - pos_global_current.theta < -M_PI * 0.8)
+        // {
+        //     pos_global_target.theta = pos_global_current.theta - M_PI * 0.8;
+        // }
     }
     else if (angle_mode == ANGLEPOS)
     {
     }
 
     float error = pos_global_target.theta - pos_global_current.theta;
-    const float M_PI = 3.14159265358979323846;
     while (error > M_PI)
     {
         error -= 2 * M_PI;
@@ -184,7 +196,7 @@ void Robot::plan()
     {
         error += 2 * M_PI;
     }
-    vel_local_output.theta = error * angle_kp + vel_global_target.theta;
+    vel_local_output.theta = error * angle_kp;  // + vel_global_target.theta;
 
     // kicker_drv.set_target(100);
 }
@@ -205,7 +217,21 @@ void Robot::act()
             vel_local_output.theta / fabs(vel_local_output.theta) * max_angular_vel;
     }
 
-    chassis_drv.setVel(vel_local_output);
+    vel_local_output_smoothed.x +=
+        MIN(MAX((vel_local_output.x - vel_local_output_smoothed.x) / Ts_s, -max_linear_accel),
+            max_linear_accel) *
+        Ts_s;
+    vel_local_output_smoothed.y +=
+        MIN(MAX((vel_local_output.y - vel_local_output_smoothed.y) / Ts_s, -max_linear_accel),
+            max_linear_accel) *
+        Ts_s;
+    vel_local_output_smoothed.theta +=
+        MIN(MAX((vel_local_output.theta - vel_local_output_smoothed.theta) / Ts_s,
+                -max_angular_accel),
+            max_angular_accel) *
+        Ts_s;
+
+    chassis_drv.setVel(vel_local_output_smoothed);
 
     if (dribbler_update)
     {
