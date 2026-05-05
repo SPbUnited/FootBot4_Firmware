@@ -175,6 +175,7 @@ gpio::GPIODescriptor in_pins_desc[] = {
     [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
     [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
     [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},
+    [BUTTON_TURN_OFF] = {GPIOC, GPIO_PIN_11},
 };
 
 gpio::GPIODescriptor analog_pins_desc[] = {

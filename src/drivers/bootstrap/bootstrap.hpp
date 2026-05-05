@@ -22,6 +22,11 @@ class Bootstrap
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_SET);
     }
+
+    void turn_off()
+    {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
+    }
 };
 
 }  // namespace drivers::bootstrap

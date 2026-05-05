@@ -52,6 +52,8 @@ class Kicker: public KickerConfig
 
     void update();
     void set_target(uint16_t voltage);
+    bool read_deep();
+    bool read_front();
     float get_voltage();
 
 };

@@ -78,7 +78,7 @@ void Kicker::update()
                 state = KICK;
             }
         }
-        if (ball_checker_deep->read())
+        if (read_deep())
         {
             drivers::out_pins[drivers::LED_DRV2].write(true);
         }
@@ -86,7 +86,7 @@ void Kicker::update()
             drivers::out_pins[drivers::LED_DRV2].write(false);
         }
 
-        if (ball_checker_front->read())
+        if (read_front())
         {
             drivers::out_pins[drivers::LED_DRV3].write(true);
         }
@@ -108,14 +108,14 @@ void Kicker::update()
         }
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
         {
-            if (ball_checker_deep->read() && ball_checker_front->read())
+            if (read_deep() && read_front())
             {
                 straight_pin->write(false);
             }
         }
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
         {
-            if (ball_checker_deep->read() && ball_checker_front->read())
+            if (read_deep() && read_front())
             {
                 chip_pin->write(false);
             }
@@ -125,6 +125,16 @@ void Kicker::update()
         // if 
         state = PREPARE;
     }
+}
+
+bool Kicker::read_deep()
+{
+    return !ball_checker_deep->read();
+}
+
+bool Kicker::read_front()
+{
+    return !ball_checker_front->read();
 }
 
 }

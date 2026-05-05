@@ -145,6 +145,8 @@ void Robot::sense()
 
     odom_dev.getState(&pos_global_current);
     kicker_drv.get_voltage();
+
+    
 }
 
 void Robot::plan()
@@ -240,6 +242,12 @@ void Robot::act()
     }
 
     kicker_drv.update();
+
+    if (!drivers::in_pins[drivers::BUTTON_TURN_OFF].read())
+    {
+        drivers::bootstrap_drv.turn_off();
+    }
+    
 }
 
 // void setTargetDangle(float angle)
