@@ -33,10 +33,10 @@ void Kicker::set_target(uint16_t voltage)
 
 void Kicker::update()
 {
-    target = devices::robot_dev.kicker_setting * (300/15);
-    if (target >= 300)
+    target = devices::robot_dev.kicker_setting * (330/15);
+    if (target >= 330)
     {
-        target = 300;
+        target = 330;
     }
     else if (target <= 0)
     {
@@ -51,9 +51,9 @@ void Kicker::update()
         {
             bound = 5;
         }
-        else if (bound > 15)
+        else if (bound > 10)
         {
-            bound = 15;
+            bound = 10;
         }
         if (target - actual_voltage > bound)
         {
