@@ -100,30 +100,40 @@ void Kicker::update()
         charge_pin->write(true);
         if (devices::robot_dev.kicker_mode == devices::robot::KICK_FRONT)
         {
+            timer = drivers::system_clock::micros();
             straight_pin->write(false);
         }
         else if (devices::robot_dev.kicker_mode == devices::robot::KICK_UP)
         {
+            timer = drivers::system_clock::micros();
             chip_pin->write(false);
         }
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
         {
-            if (read_deep() && read_front())
+            // timer = drivers::system_clock::micros();
+            if (read_deep() || read_front())
             {
+                timer = drivers::system_clock::micros();
                 straight_pin->write(false);
             }
         }
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
         {
-            if (read_deep() && read_front())
+            
+            if (read_deep() || read_front())
             {
+                timer = drivers::system_clock::micros();
                 chip_pin->write(false);
             }
         }
-        
+        if(drivers::system_clock::micros() - timer > 5000)
+        {
+            state = PREPARE;
+        }
         // kernel::delay_ms(2);
         // if 
-        state = PREPARE;
+        // drivers::system_clock::micros()
+        
     }
 }
 

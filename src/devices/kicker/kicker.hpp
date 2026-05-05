@@ -45,7 +45,7 @@ class Kicker: public KickerConfig
     uint8_t state = PREPARE;
     double target = 0;
     double actual_voltage = 0;
-    
+    uint32_t timer = 0;
     Kicker(KickerConfig config);
 
     void init();
