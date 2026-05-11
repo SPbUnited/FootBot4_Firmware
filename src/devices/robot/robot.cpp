@@ -144,7 +144,7 @@ void Robot::sense()
     odom_dev.thetaAntiWindup();
 
     odom_dev.getState(&pos_global_current);
-    kicker_drv.get_voltage();
+    // kicker_drv.get_voltage();
 
     
 }
