@@ -11,6 +11,7 @@ enum KICKER_STATES
 {
   PREPARE,
   KICK,
+  AFTER_KICK,
 };
 
 enum KICK_TYPES

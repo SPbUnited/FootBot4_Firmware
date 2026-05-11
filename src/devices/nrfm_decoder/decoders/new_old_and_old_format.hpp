@@ -70,7 +70,14 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
     }
     else if (packet->packet.payload.old_format.AF)
     {
-        kicker_mode = devices::robot::AUTOKICK_FRONT;
+        if (packet->packet.payload.old_format.AU)
+        {
+            kicker_mode = devices::robot::AUTOKICK_MOMENTUM;
+        }
+        else
+        {
+            kicker_mode = devices::robot::AUTOKICK_FRONT;
+        }
     }
     else if (packet->packet.payload.old_format.AU)
     {

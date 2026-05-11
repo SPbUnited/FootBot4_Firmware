@@ -29,6 +29,7 @@ enum KickerMode
     KICK_UP = 0b101,
     AUTOKICK_FRONT = 0b110,
     AUTOKICK_UP = 0b111,
+    AUTOKICK_MOMENTUM = 0b1000,
 };
 
 struct RobotConfig

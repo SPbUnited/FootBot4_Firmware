@@ -111,7 +111,7 @@ void Kicker::update()
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
         {
             // timer = drivers::system_clock::micros();
-            if (read_deep() || read_front())
+            if (read_deep() && read_front())
             {
                 timer = drivers::system_clock::micros();
                 straight_pin->write(false);
@@ -120,20 +120,38 @@ void Kicker::update()
         else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
         {
             
-            if (read_deep() || read_front())
+            if (read_deep() && read_front())
             {
                 timer = drivers::system_clock::micros();
                 chip_pin->write(false);
             }
         }
+        else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_MOMENTUM)
+        {
+            // timer = drivers::system_clock::micros();
+            if (read_deep() || read_front())
+            {
+                timer = drivers::system_clock::micros();
+                straight_pin->write(false);
+            }
+        }
+
+
+        // if(drivers::system_clock::micros() - timer > 5000)
+        // {
+        //     state = PREPARE;
+        // }
+        // kernel::delay_ms(2);
+        // if 
+        // drivers::system_clock::micros()
+        state = AFTER_KICK;
+    }
+    else if (state == AFTER_KICK)
+    {
         if(drivers::system_clock::micros() - timer > 5000)
         {
             state = PREPARE;
         }
-        // kernel::delay_ms(2);
-        // if 
-        // drivers::system_clock::micros()
-        
     }
 }
 
