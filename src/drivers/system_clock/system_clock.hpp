@@ -5,6 +5,7 @@
 
 #define Ts_us 20000
 #define Ts_s (Ts_us / 1000000.0f)
+#define Tg_s 0.021
 
 namespace drivers::system_clock
 {

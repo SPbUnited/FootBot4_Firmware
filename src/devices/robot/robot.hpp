@@ -90,6 +90,8 @@ struct Robot : RobotSettings, RobotConfig
     uint8_t kicker_setting;
     uint8_t dribbler_setting;
     bool dribbler_update;
+    float old_angles[int(Tg_s / Ts_s)];
+    int i_angle = 0;
 
     void set_target_local_linear_vel(float vel_x, float vel_y, bool is_velocity_local = false);
     void set_target_angular_vel(float vel_theta);

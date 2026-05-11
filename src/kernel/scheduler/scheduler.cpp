@@ -33,7 +33,7 @@ void monitor_reset();
 
 TaskDescriptor tasks[app_count] = {
     {"nrf24", apps::mainloop::nrf24_recv, 0, TPS(250), ksperiodic, idle, {0}, LOG_WRANING},
-    {"mainloop",
+    {"mainloop",    
      apps::mainloop::loop,
      0,
      Ts_us,

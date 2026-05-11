@@ -145,23 +145,28 @@ void Robot::sense()
 
     odom_dev.getState(&pos_global_current);
     // kicker_drv.get_voltage();
-
-    
 }
 
 void Robot::plan()
 {
+    old_angles[i_angle] = pos_global_current.theta;
+    i_angle++;
+    i_angle %= sizeof(old_angles) / sizeof(old_angles[0]);
+
     if (linear_mode == VELOCITY_GLOBAL)
     {
         vel_local_output.x = vel_global_target.x;
         vel_local_output.y = vel_global_target.y;
 
-        vel_local_output = odom_dev.rotate(vel_local_output, -pos_global_current.theta);
+        vel_local_output = odom_dev.rotate(vel_local_output, -old_angles[i_angle]);
     }
     else if (linear_mode == VELOCITY_LOCAL)
     {
         vel_local_output.x = vel_global_target.x;
         vel_local_output.y = vel_global_target.y;
+
+        vel_local_output =
+            odom_dev.rotate(vel_local_output, -(pos_global_current.theta - old_angles[i_angle]));
     }
     else if (linear_mode == COORDINATE)
     {
@@ -198,7 +203,18 @@ void Robot::plan()
     {
         error += 2 * M_PI;
     }
-    vel_local_output.theta = error * (angle_kp+sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y)*0.001);  // динамический коэф
+    float ax = MIN(
+              MAX((vel_local_output.x - vel_local_output_smoothed.x) / Ts_s, -max_linear_accel),
+              max_linear_accel),
+          ay = MIN(
+              MAX((vel_local_output.y - vel_local_output_smoothed.y) / Ts_s, -max_linear_accel),
+              max_linear_accel);
+    vel_local_output.theta =
+        error *
+        (angle_kp +
+         sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y) *
+             0.001/* +
+         sqrt(ax * ax + ay * ay) * 0.001*/);  // динамический коэф
 
     // kicker_drv.set_target(100);
 }
@@ -247,7 +263,6 @@ void Robot::act()
     {
         drivers::bootstrap_drv.turn_off();
     }
-    
 }
 
 // void setTargetDangle(float angle)
