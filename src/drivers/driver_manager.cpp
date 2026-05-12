@@ -11,7 +11,14 @@ uart::UartConfig uart4_config = {
         __HAL_RCC_UART4_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_DMA1_CLK_ENABLE();
     },
+    .dma_rx_stream = DMA1_Stream2,
+    .dma_rx_irqn = DMA1_Stream2_IRQn,
+    .dma_rx_channel = DMA_CHANNEL_4,
+    .dma_tx_stream = DMA1_Stream4,
+    .dma_tx_irqn = DMA1_Stream4_IRQn,
+    .dma_tx_channel = DMA_CHANNEL_4,
     .txPin = GPIO_PIN_0,
     .txPort = GPIOA,
     .txAlternate = GPIO_AF8_UART4,
@@ -37,7 +44,14 @@ uart::UartConfig uart1_config = {
         __HAL_RCC_USART1_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_DMA2_CLK_ENABLE();
     },
+    .dma_rx_stream = DMA2_Stream5,
+    .dma_rx_irqn = DMA2_Stream5_IRQn,
+    .dma_rx_channel = DMA_CHANNEL_4,
+    .dma_tx_stream = DMA2_Stream7,
+    .dma_tx_irqn = DMA2_Stream7_IRQn,
+    .dma_tx_channel = DMA_CHANNEL_4,
     .txPin = GPIO_PIN_9,
     .txPort = GPIOA,
     .txAlternate = GPIO_AF7_USART1,

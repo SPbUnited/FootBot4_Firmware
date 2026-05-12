@@ -15,6 +15,7 @@ signed short shellWrite(char *data, unsigned short len)
         kernel::scheduler::yield();
         drivers::uart4.putc(data[i]);
     }
+    drivers::uart4.flush_tx();
     return len;
 }
 

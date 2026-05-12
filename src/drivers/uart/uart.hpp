@@ -11,19 +11,27 @@
 namespace drivers::uart
 {
 
+/** STM32F429: UART4 RX DMA1 Stream2 Ch4, TX Stream4 Ch4; USART1 RX DMA2 Stream5 Ch4, TX Stream7 Ch4. */
 struct UartConfig
 {
     USART_TypeDef *instance;
-    //
     void (*clk_enable)();
-    //
+
+    DMA_Stream_TypeDef *dma_rx_stream;
+    IRQn_Type dma_rx_irqn;
+    uint32_t dma_rx_channel;
+
+    DMA_Stream_TypeDef *dma_tx_stream;
+    IRQn_Type dma_tx_irqn;
+    uint32_t dma_tx_channel;
+
     uint32_t txPin;
     GPIO_TypeDef *txPort;
     uint32_t txAlternate;
     uint32_t rxPin;
     GPIO_TypeDef *rxPort;
     uint32_t rxAlternate;
-    //
+
     uint32_t baudrate;
     uint32_t wordLength;
     uint32_t stopBits;
@@ -35,80 +43,54 @@ struct UartConfig
 
 class UartDriver : public UartConfig
 {
+  public:
+    static constexpr size_t kTxRingSize = 512;
+    static constexpr size_t kTxDmaChunk = 64;
+    static constexpr size_t kRxDmaBufSize = 512;
+
   private:
-    UART_HandleTypeDef handle;
+    UART_HandleTypeDef handle{};
+    DMA_HandleTypeDef hdma_rx_{};
+    DMA_HandleTypeDef hdma_tx_{};
+
+    uint8_t rx_dma_buf_[kRxDmaBufSize]{};
+    volatile uint32_t rx_dma_tail_{0};
+
+    uint8_t tx_ring_[kTxRingSize]{};
+    volatile uint32_t tx_head_{0};
+    volatile uint32_t tx_tail_{0};
+    uint8_t tx_dma_chunk_[kTxDmaChunk]{};
+    volatile bool tx_dma_busy_{false};
+
+    void tx_try_start_();
+    void tx_push_bytes_(const uint8_t *data, uint16_t size);
+    uint32_t rx_dma_head_() const;
+    HAL_StatusTypeDef read_dma_(uint8_t *out, uint16_t size, uint32_t timeout_us);
+    void restart_rx_dma_();
 
   public:
-    UartDriver(UartConfig config) : UartConfig(config) {}
+    explicit UartDriver(UartConfig config) : UartConfig(config) {}
 
-    void init()
-    {
-        clk_enable();
+    void init();
 
-        GPIO_InitTypeDef GPIO_InitStruct;
+    void hal_msp_init();
 
-        GPIO_InitStruct.Pin = txPin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_PULLUP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-        GPIO_InitStruct.Alternate = txAlternate;
+    void flush_tx();
 
-        HAL_GPIO_Init(txPort, &GPIO_InitStruct);
+    void irq();
+    void dma_rx_irq();
+    void dma_tx_irq();
 
-        GPIO_InitStruct.Pin = rxPin;
-        GPIO_InitStruct.Alternate = rxAlternate;
+    void putc(char c);
+    void write(const char *data, uint16_t size);
+    void printf(const char *fmt, ...);
+    void vprintf(const char *fmt, va_list args);
 
-        HAL_GPIO_Init(rxPort, &GPIO_InitStruct);
+    HAL_StatusTypeDef getc(char *c);
+    HAL_StatusTypeDef read(char *data, uint16_t size);
 
-        handle.Instance = instance;
-
-        handle.Init.BaudRate = baudrate;
-        handle.Init.WordLength = wordLength;
-        handle.Init.StopBits = stopBits;
-        handle.Init.Parity = parity;
-        handle.Init.HwFlowCtl = hwFlowControl;
-        handle.Init.Mode = mode;
-        handle.Init.OverSampling = overSampling;
-
-        HAL_UART_Init(&handle);
-    }
-
-    void putc(char c)
-    {
-        HAL_UART_Transmit(&handle, (uint8_t *)(&c), 1, 100);
-    }
-
-    void write(const char *data, uint16_t size)
-    {
-        HAL_UART_Transmit(&handle, (uint8_t *)data, size, 100);
-    }
-
-    void printf(const char *fmt, ...)
-    {
-        va_list args;
-        va_start(args, fmt);
-        char buffer[128];
-        vsnprintf(buffer, sizeof(buffer), fmt, args);
-        va_end(args);
-        HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 100);
-    }
-
-    void vprintf(const char *fmt, va_list args)
-    {
-        char buffer[128];
-        vsnprintf(buffer, sizeof(buffer), fmt, args);
-        HAL_UART_Transmit(&handle, (uint8_t *)(&buffer), strlen(buffer), 1000);
-    }
-
-    HAL_StatusTypeDef getc(char *c)
-    {
-        return HAL_UART_Receive(&handle, (uint8_t *)c, 1, 1);
-    }
-
-    HAL_StatusTypeDef read(char *data, uint16_t size)
-    {
-        return HAL_UART_Receive(&handle, (uint8_t *)data, size, 250);
-    }
+    void hal_tx_cplt(UART_HandleTypeDef *huart);
+    void hal_error(UART_HandleTypeDef *huart);
 };
 
 }  // namespace drivers::uart
