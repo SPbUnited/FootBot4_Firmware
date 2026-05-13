@@ -7,10 +7,10 @@
 #include "i2c/i2c.hpp"
 // #include "led/led.hpp"
 
+#include "spi/spi.hpp"
 #include "stm32f4xx_hal.h"
 #include "system_clock/system_clock.hpp"
 #include "uart/uart.hpp"
-#include "spi/spi.hpp"
 
 namespace drivers
 {
@@ -40,6 +40,7 @@ enum GPIO_OUT
     CHIP,
     DEEP_LED,
     FRONT_LED,
+    BUZZER,
     OUT_COUNT,
 };
 

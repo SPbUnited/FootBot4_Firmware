@@ -1,32 +1,40 @@
 #pragma once
 
+#include "drivers/gpio/gpio.hpp"
+#include "drivers/system_clock/system_clock.hpp"
 #include "stm32f4xx_hal.h"
 
 namespace drivers::buzzer
 {
 
-class Buzzer
+struct BuzzerConfig
+{
+    drivers::gpio::GPIOOutputDriver *buzzer_pin;
+};
+
+class Buzzer : public BuzzerConfig
 {
   private:
   public:
-    Buzzer() {}
+    Buzzer(BuzzerConfig config) : BuzzerConfig(config) {}
 
-    void init()
-    {
-        __HAL_RCC_GPIOF_CLK_ENABLE();
-        GPIO_InitTypeDef GPIO_InitStruct = {0};
-        GPIO_InitStruct.Pin = GPIO_PIN_13;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-        HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-    }
+    void init() {}
 
-    void buzz()
+    void buzz(uint32_t freq, uint32_t dur)
     {
-        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_SET);
-        HAL_Delay(1000);
-        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_RESET);
+        // buzzer_pin->write(1);
+        // HAL_Delay(500);
+        // buzzer_pin->write(0);
+        // uint32_t period = 1000000 / freq;
+
+        // for (uint32_t eta = 0; eta < dur; eta += period)
+        // {
+        //     uint32_t time = system_clock::micros();
+        //     buzzer_pin->toggle();
+
+        //     while (system_clock::micros() - time < period)
+        //         ;
+        // }
     }
 };
 

@@ -155,8 +155,6 @@ can::CanDriver can_drv(can1_config);
 gpio::GPIOOutputDriver gpio_out;
 gpio::GPIOInputDriver gpio_in;
 
-buzzer::Buzzer buzzer_drv;
-
 bootstrap::Bootstrap bootstrap_drv;
 system_clock::SystemClock system_clock_drv;
 
@@ -181,15 +179,13 @@ gpio::GPIODescriptor out_pins_desc[] = {
     [CHIP] = {GPIOF, GPIO_PIN_12},
     [DEEP_LED] = {GPIOF, GPIO_PIN_9},
     [FRONT_LED] = {GPIOF, GPIO_PIN_8},
+    [BUZZER] = {GPIOF, GPIO_PIN_13},
 };
 
 gpio::GPIODescriptor in_pins_desc[] = {
-    [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11},
-    [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
-    [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
-    [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
-    [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},
-    [BUTTON_TURN_OFF] = {GPIOC, GPIO_PIN_11},
+    [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11}, [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
+    [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},   [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
+    [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},   [BUTTON_TURN_OFF] = {GPIOC, GPIO_PIN_11},
 };
 
 gpio::GPIODescriptor analog_pins_desc[] = {
@@ -197,10 +193,15 @@ gpio::GPIODescriptor analog_pins_desc[] = {
 };
 
 gpio::ADCDescriptor adc_desc[] = {
-    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, ENABLE, ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
+    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, ENABLE,
+                        ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
 };
 
 gpio::GPIOAnalogInputDriver analog_in_pin;
+
+buzzer::BuzzerConfig buzzer_config = {.buzzer_pin = &out_pins[BUZZER]};
+
+buzzer::Buzzer buzzer_drv(buzzer_config);
 
 void init()
 {
@@ -219,19 +220,18 @@ void init()
     __HAL_RCC_GPIOE_CLK_ENABLE();
 
     static uint32_t adcBuffer[1] = {0};
-    
+
     for (int i = 0; i < OUT_COUNT; i++)
     {
         out_pins[i].init(out_pins_desc[i]);
-        if ((i==CHARGE) || (i == DISCHARGE) || (i==STRAIGHT) || (i==CHIP))
+        if ((i == CHARGE) || (i == DISCHARGE) || (i == STRAIGHT) || (i == CHIP))
         {
             out_pins[i].write(true);
         }
-        if ((i==DEEP_LED) || (i==FRONT_LED))
+        if ((i == DEEP_LED) || (i == FRONT_LED))
         {
             out_pins[i].write(true);
         }
-        
     }
     for (int i = 0; i < INPUT_COUNT; i++)
     {
@@ -244,6 +244,10 @@ void init()
 
     drivers::can_drv.init();
     drivers::spi2.init();
+
+    drivers::buzzer_drv.init();
+
+    drivers::buzzer_drv.buzz(110, 500000);
 }
 
 }  // namespace drivers
