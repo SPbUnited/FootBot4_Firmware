@@ -31,11 +31,22 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
 
     if (packet->packet.payload.old_format.AS)
     {
-        robot_dev.set_target_local_linear_vel(vely, -velx, false);
-        robot_dev.set_target_angular_dpos(-dangle);
+        if (!packet->packet.payload.old_format.GL)
+        {
+            // local linear velocity + delta angle
+            robot_dev.set_target_local_linear_vel(vely, -velx, false);
+            robot_dev.set_target_angular_dpos(-dangle);
+        }
+        else
+        {
+            // global velocity
+            robot_dev.set_target_global_linear_vel(velx, vely);
+            robot_dev.set_target_angle(dangle);
+        }
     }
     else
     {
+        // local velocity
         robot_dev.set_target_local_linear_vel(vely, -velx, true);
         robot_dev.set_target_angular_vel(-angular_velocity);
     }

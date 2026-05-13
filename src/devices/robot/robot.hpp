@@ -91,8 +91,10 @@ struct Robot : RobotSettings, RobotConfig
     bool dribbler_update;
 
     void set_target_local_linear_vel(float vel_x, float vel_y, bool is_velocity_local = false);
+    void set_target_global_linear_vel(float vel_global_x, float vel_global_y);
     void set_target_angular_vel(float vel_theta);
     void set_target_angular_dpos(float dpos_theta);
+    void set_target_angle(float theta);
 
     void set_max_linear_vel(float max_vel);
     void set_max_linear_accel(float max_accel);

@@ -46,6 +46,20 @@ void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
         vel_local_x, vel_local_y, vel_global_target.x, vel_global_target.y);
 }
 
+void Robot::set_target_global_linear_vel(float vel_global_x, float vel_global_y)
+{
+    linear_mode = VELOCITY_GLOBAL;
+
+    vel_global_target.x = vel_global_x;
+    vel_global_target.y = vel_global_y;
+
+    kverbose(
+        "set_target_global_linear_vel(vel_global_x = %f, vel_global_y = %f): vel_global_target.x "
+        "= %f, "
+        "vel_global_target.y = %f",
+        vel_global_x, vel_global_y, vel_global_target.x, vel_global_target.y);
+}
+
 void Robot::set_target_angular_vel(float vel_theta)
 {
     angle_mode = ANGLEVEL;
@@ -64,6 +78,17 @@ void Robot::set_target_angular_dpos(float dpos_theta)
     pos_global_target.theta = pos_global_current.theta + dpos_theta;
 
     kverbose("set_target_angular_dpos(dpos_theta = %f): pos_global_target.theta = %f", dpos_theta,
+             pos_global_target.theta);
+}
+
+void Robot::set_target_angle(float theta)
+{
+    angle_mode = ANGLEPOS;
+
+    vel_global_target.theta = 0;
+    pos_global_target.theta = theta;
+
+    kverbose("set_target_angle(theta = %f): pos_global_target.theta = %f", theta,
              pos_global_target.theta);
 }
 

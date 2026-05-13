@@ -43,12 +43,11 @@ union NRFMPacket
                 bool AF : 1;  // Прямой автокик
                 bool KU : 1;  // Навесной кикер
                 bool KF : 1;  // Прямой кикер
-                bool reserved : 1;
+                bool GL : 1;  // is global control
             } old_format;
             struct __attribute__((packed, aligned(1))) global_coordinate_t
             {
-                int16_t coorx : 12;
-                int16_t coory : 12;
+                uint32_t coorxy : 24;  // 12 bits per coordinate
                 int8_t angle : 8;
             } global_coordinate;
             struct __attribute__((packed, aligned(1))) debug_override_t
