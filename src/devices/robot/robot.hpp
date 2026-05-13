@@ -91,6 +91,11 @@ struct Robot : RobotSettings, RobotConfig
     uint8_t dribbler_setting;
     bool dribbler_update;
 
+    uint32_t nonidle_timer;
+    bool is_idle;
+
+    void update_nonidle_timer();
+
     void set_target_local_linear_vel(float vel_x, float vel_y, bool is_velocity_local = false);
     void set_target_angular_vel(float vel_theta);
     void set_target_angular_dpos(float dpos_theta);

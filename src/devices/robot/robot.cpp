@@ -20,9 +20,19 @@ uint8_t calculate_signature(RobotSettings config)
     return signature;
 }
 
+void Robot::update_nonidle_timer()
+{
+    nonidle_timer = drivers::system_clock::micros();
+}
+
 void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
                                         bool is_velocity_local)
 {
+    if (vel_local_x != 0.0 || vel_local_y != 0.0)
+    {
+        update_nonidle_timer();
+    }
+
     linear_mode = is_velocity_local ? VELOCITY_LOCAL : VELOCITY_GLOBAL;
 
     if (linear_mode == VELOCITY_LOCAL)
@@ -145,8 +155,6 @@ void Robot::sense()
 
     odom_dev.getState(&pos_global_current);
     // kicker_drv.get_voltage();
-
-    
 }
 
 void Robot::plan()
@@ -198,7 +206,9 @@ void Robot::plan()
     {
         error += 2 * M_PI;
     }
-    vel_local_output.theta = error * (angle_kp+sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y)*0.001);  // динамический коэф
+    vel_local_output.theta = error * (angle_kp + sqrt(vel_local_output.x * vel_local_output.x +
+                                                      vel_local_output.y * vel_local_output.y) *
+                                                     0.001);  // динамический коэф
 
     // kicker_drv.set_target(100);
 }
@@ -235,6 +245,8 @@ void Robot::act()
 
     chassis_drv.setVel(vel_local_output_smoothed);
 
+    is_idle = drivers::system_clock::micros() - nonidle_timer > 10000000;
+
     if (dribbler_update)
     {
         bldcs_drv.setDribblerVel(dribbler_setting * dribbler_setting_to_vel);
@@ -247,7 +259,6 @@ void Robot::act()
     {
         drivers::bootstrap_drv.turn_off();
     }
-    
 }
 
 // void setTargetDangle(float angle)
