@@ -159,7 +159,7 @@ void Kicker::update()
     }
     else if (state == AFTER_KICK)
     {
-        if (drivers::system_clock::micros() - timer > 5000)
+        if((drivers::system_clock::micros() - timer > 10000) && (actual_voltage < 10))
         {
             state = PREPARE;
         }
