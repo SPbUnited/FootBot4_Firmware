@@ -169,8 +169,8 @@ void Robot::plan()
     if (angle_mode == ANGLEVEL)
     {
         // Just keep current target_vel
-        // vel_local_output.theta = vel_global_target.theta;
-        pos_global_target.theta = pos_global_target.theta;
+        vel_local_output.theta = vel_global_target.theta;
+        // pos_global_target.theta = pos_global_target.theta
 
         // if (pos_global_target.theta - pos_global_current.theta > M_PI * 0.8)
         // {
