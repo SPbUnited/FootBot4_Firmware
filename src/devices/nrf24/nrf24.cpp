@@ -51,10 +51,10 @@ void Nrf24Recv::recv_irq()
         // Error handling - could add logging here
     }
 
-    // if (!(reg & 0x40))  // RX_DR - Data Not Ready
-    // {
-    //     return;
-    // }
+    if (!(reg & 0x40))  // RX_DR - Data Not Ready
+    {
+        return;
+    }
 
     dts_led.toggle();
 

@@ -26,6 +26,7 @@ void loop()
 
     // Sense
     devices::robot_dev.sense();
+    devices::nrf24_recv.recv_irq();
     devices::nrf24_recv.fetch();
 
     // Plan
