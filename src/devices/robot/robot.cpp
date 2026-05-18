@@ -20,9 +20,19 @@ uint8_t calculate_signature(RobotSettings config)
     return signature;
 }
 
+void Robot::update_nonidle_timer()
+{
+    nonidle_timer = drivers::system_clock::micros();
+}
+
 void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
                                         bool is_velocity_local)
 {
+    if (vel_local_x != 0.0 || vel_local_y != 0.0)
+    {
+        update_nonidle_timer();
+    }
+
     linear_mode = is_velocity_local ? VELOCITY_LOCAL : VELOCITY_GLOBAL;
 
     if (linear_mode == VELOCITY_LOCAL)
@@ -232,6 +242,8 @@ void Robot::act()
         Ts_s;
 
     chassis_drv.setVel(vel_local_output_smoothed);
+
+    is_idle = drivers::system_clock::micros() - nonidle_timer > 10000000;
 
     if (dribbler_update)
     {

@@ -20,7 +20,7 @@ void BldcsDriver::init()
     setDriveSettings(true);
 }
 
-void BldcsDriver::setDriveSettings(bool is_verbose)
+void BldcsDriver::setDriveSettings(bool is_verbose, bool is_idle)
 {
     if (!isnan(drive_vel_p))
     {
@@ -38,9 +38,10 @@ void BldcsDriver::setDriveSettings(bool is_verbose)
             kinfo("Set PID_VELOCITY_I_RW: %f", drive_vel_i);
         }
     }
-    if (!isnan(drive_vel_limit))
+    if (!isnan(drive_vel_limit) && !isnan(drive_vel_limit_idle))
     {
-        setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_LIMIT_RW, drive_vel_limit);
+        setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_LIMIT_RW,
+                              is_idle ? drive_vel_limit_idle : drive_vel_limit);
         if (is_verbose)
         {
             kinfo("Set PID_VELOCITY_LIMIT_RW: %f", drive_vel_limit);

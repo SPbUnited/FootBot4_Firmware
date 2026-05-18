@@ -110,6 +110,7 @@ struct BldcsConfig
     float drive_vel_p;
     float drive_vel_i;
     float drive_vel_limit;
+    float drive_vel_limit_idle;
 };
 
 class BldcsDriver : public BldcsConfig
@@ -126,7 +127,7 @@ class BldcsDriver : public BldcsConfig
 
     void init();
 
-    void setDriveSettings(bool is_verbose = false);
+    void setDriveSettings(bool is_verbose = false, bool is_idle = false);
 
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);
