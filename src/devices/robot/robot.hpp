@@ -13,7 +13,7 @@ namespace devices::robot
 
 enum CANFuocoRegisterMap
 {
-    ANGLE_KP = 0,
+    ANGLE_KP = 1,
 };
 
 enum LinearControlMode
