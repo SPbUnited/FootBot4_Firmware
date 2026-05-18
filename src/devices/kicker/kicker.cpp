@@ -17,7 +17,7 @@ void Kicker::init()
 float Kicker::get_voltage()
 {
     double voltage = (adc_pin->read() * 3300) / (4096 - 1);
-    actual_voltage = actual_voltage * 0.9f + 140 * voltage * 0.001f * 0.1f;
+    actual_voltage = 140 * voltage * 0.001f;
     // kinfo("voltage");
     return actual_voltage;
 }
@@ -111,15 +111,20 @@ void Kicker::update()
     {
         discharge_pin->write(true);
         charge_pin->write(true);
+
+        state = PREPARE;
+        
         if (devices::robot_dev.kicker_mode == devices::robot::KICK_FRONT)
         {
             timer = drivers::system_clock::micros();
             straight_pin->write(false);
+            state = AFTER_KICK;
         }
         else if (devices::robot_dev.kicker_mode == devices::robot::KICK_UP)
         {
             timer = drivers::system_clock::micros();
             chip_pin->write(false);
+            state = AFTER_KICK;
         }
         else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
         {
@@ -128,6 +133,7 @@ void Kicker::update()
             {
                 timer = drivers::system_clock::micros();
                 straight_pin->write(false);
+                state = AFTER_KICK;
             }
         }
         else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
@@ -136,6 +142,7 @@ void Kicker::update()
             {
                 timer = drivers::system_clock::micros();
                 chip_pin->write(false);
+                state = AFTER_KICK;
             }
         }
         else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_MOMENTUM)
@@ -145,6 +152,7 @@ void Kicker::update()
             {
                 timer = drivers::system_clock::micros();
                 straight_pin->write(false);
+                state = AFTER_KICK;
             }
         }
 
@@ -155,7 +163,7 @@ void Kicker::update()
         // kernel::delay_ms(2);
         // if
         // drivers::system_clock::micros()
-        state = AFTER_KICK;
+        
     }
     else if (state == AFTER_KICK)
     {

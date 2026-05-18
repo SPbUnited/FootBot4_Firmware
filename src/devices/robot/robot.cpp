@@ -179,10 +179,8 @@ void Robot::plan()
     if (angle_mode == ANGLEVEL)
     {
         // Just keep current target_vel
-        // vel_local_output.theta = vel_global_target.theta;
-        pos_global_target.theta +=
-            MIN(MAX(vel_global_target.theta, -max_angular_vel * 0.8), max_angular_vel * 0.8) *
-            Ts_s;
+        vel_local_output.theta = vel_global_target.theta;
+        // pos_global_target.theta = pos_global_target.theta
 
         // if (pos_global_target.theta - pos_global_current.theta > M_PI * 0.8)
         // {
@@ -195,20 +193,20 @@ void Robot::plan()
     }
     else if (angle_mode == ANGLEPOS)
     {
+        float error = pos_global_target.theta - pos_global_current.theta;
+        while (error > M_PI)
+        {
+            error -= 2 * M_PI;
+        }
+        while (error < -M_PI)
+        {
+            error += 2 * M_PI;
+        }
+        vel_local_output.theta =
+            error * (angle_kp + sqrt(vel_local_output.x * vel_local_output.x +
+                                     vel_local_output.y * vel_local_output.y) *
+                                    0.001);  // динамический коэф
     }
-
-    float error = pos_global_target.theta - pos_global_current.theta;
-    while (error > M_PI)
-    {
-        error -= 2 * M_PI;
-    }
-    while (error < -M_PI)
-    {
-        error += 2 * M_PI;
-    }
-    vel_local_output.theta = error * (angle_kp + sqrt(vel_local_output.x * vel_local_output.x +
-                                                      vel_local_output.y * vel_local_output.y) *
-                                                     0.001);  // динамический коэф
 
     // kicker_drv.set_target(100);
 }
