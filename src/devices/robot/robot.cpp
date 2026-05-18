@@ -3,21 +3,15 @@
 // #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 #include "math.hpp"
+#include <map>
 
 namespace devices::robot
 {
 
-Robot::Robot(RobotSettings &settings, RobotConfig &config)
-    : RobotSettings(settings), RobotConfig(config)
+Robot::Robot(RobotSettings &settings, RobotConfig &config) : RobotSettings(settings), RobotConfig(config)
 {
-    play_mode = PLAY;
-    square_side = 0;
-    square_running = false;
-    square_turning = false;
-    imu_heading_valid = false;
     CANFuocoRegisterMapNames = std::map<CANFuocoRegisterMap, uint8_t *>{
-        {ANGLE_K, reinterpret_cast<uint8_t *>(&this->angle_k)},
-        {ANGLE_B, reinterpret_cast<uint8_t *>(&this->angle_b)},
+        {ANGLE_KP, reinterpret_cast<uint8_t *>(&this->angle_kp)},
     };
 }
 
@@ -399,14 +393,14 @@ void Robot::nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len)
     CANFuocoRegisterMap id = static_cast<CANFuocoRegisterMap>(m_id);
     switch (id)
     {
-        case CANFuocoRegisterMap::ANGLE_K:
-        case CANFuocoRegisterMap::ANGLE_B:
+        case CANFuocoRegisterMap::ANGLE_KP:
             memcpy(CANFuocoRegisterMapNames.at(id), buf, len);
             break;
-
+        
         default:
             break;
     }
 }
+
 
 }  // namespace devices::robot
