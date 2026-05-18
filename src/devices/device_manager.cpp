@@ -108,6 +108,37 @@ nrf24::Nrf24RecvConfig nrf24_recv_config = {
 
 nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
 
+extern "C" void EXTI15_10_IRQHandler(void)
+{
+    nrf24_recv.recv_irq();
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
+}
+
+void IRQ_Init(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    /* USER CODE BEGIN MX_GPIO_Init_1 */
+
+    /* USER CODE END MX_GPIO_Init_1 */
+
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /*Configure GPIO pin : PB15 */
+    GPIO_InitStruct.Pin = GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* EXTI interrupt init*/
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+    /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+    /* USER CODE END MX_GPIO_Init_2 */
+}
+
 void init()
 {
     shell::my_shellInit();
@@ -192,6 +223,9 @@ void init()
         kinfo("NRF24 initialized");
     }
     // kinfo("AUAUSDUASDUDevices initialized");
+
+    IRQ_Init();
+    nrf24_recv.recv_irq();
     kinfo("Devices initialized");
 }
 

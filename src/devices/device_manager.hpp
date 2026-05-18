@@ -4,6 +4,7 @@
 #include "chassis/chassis.hpp"
 #include "eeprom/eeprom.hpp"
 #include "imu/imu.hpp"
+#include "kicker/kicker.hpp"
 #include "logger/logger.hpp"
 #include "nrf24/nrf24.hpp"
 #include "nrfm_decoder/nrfm_decoder.hpp"
@@ -11,7 +12,6 @@
 #include "oled/oled.hpp"
 #include "robot/robot.hpp"
 #include "shell/shell.hpp"
-#include "kicker/kicker.hpp"
 
 namespace devices
 {
@@ -27,5 +27,7 @@ extern imu::BNO055 bno055_drv;
 extern nrfm_decoder::NRFMDecoder nrfm_decoder_dev;
 
 void init();
+
+extern "C" void EXTI15_10_IRQHandler(void);
 
 }  // namespace devices

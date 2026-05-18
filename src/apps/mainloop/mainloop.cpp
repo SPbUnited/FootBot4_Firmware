@@ -26,17 +26,13 @@ void loop()
 
     // Sense
     devices::robot_dev.sense();
+    devices::nrf24_recv.fetch();
 
     // Plan
     devices::robot_dev.plan();
 
     // Act
     devices::robot_dev.act();
-}
-
-void nrf24_recv()
-{
-    devices::nrf24_recv.recv();
 }
 
 }  // namespace apps::mainloop

@@ -5,6 +5,7 @@
 #include "devices/nrfm_decoder/nrfm_decoder.hpp"
 #include "drivers/gpio/gpio.hpp"
 #include "drivers/spi/spi.hpp"
+#include "math.hpp"
 #include "stm32f4xx_hal.h"
 
 namespace devices::nrf24
@@ -15,6 +16,12 @@ struct Nrf24RecvConfig
     drivers::spi::SPIDriver &spi_instance;
     drivers::gpio::GPIOOutputDriver &dts_led;
     devices::nrfm_decoder::NRFMDecoder &nrfm_decoder;
+};
+
+struct Nrf24Packet
+{
+    uint8_t data[32];
+    uint8_t len;
 };
 
 class Nrf24Recv : public Nrf24RecvConfig
@@ -82,6 +89,8 @@ class Nrf24Recv : public Nrf24RecvConfig
     static constexpr uint8_t NRF24_CMD_REUSE_TX_PL = 0xE3;
     static constexpr uint8_t NRF24_CMD_NOP = 0xFF;
 
+    Queue<Nrf24Packet, 1024> m_rx_queue;
+
   public:
     volatile uint32_t m_lastPacketTime;
     uint8_t m_address;
@@ -90,7 +99,8 @@ class Nrf24Recv : public Nrf24RecvConfig
     Nrf24Recv(Nrf24RecvConfig &nrf24_recv_config);
 
     bool init();
-    int recv();
+    void recv_irq();
+    int fetch();
     void send(uint8_t checker, uint8_t id);
 
     static int8_t u8Toi8(uint8_t x);

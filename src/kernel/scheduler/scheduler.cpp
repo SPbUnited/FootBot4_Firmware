@@ -14,7 +14,6 @@ static bool is_init = false;
 
 enum Apps
 {
-    app_nrf24,
     app_mainloop,
     app_screen,
     app_setting_broadcaster,
@@ -32,7 +31,6 @@ enum Apps
 void monitor_reset();
 
 TaskDescriptor tasks[app_count] = {
-    {"nrf24", apps::mainloop::nrf24_recv, 0, TPS(250), ksperiodic, idle, {0}, LOG_WRANING},
     {"mainloop",
      apps::mainloop::loop,
      0,
