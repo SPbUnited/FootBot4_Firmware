@@ -6,6 +6,8 @@
 #include "devices/kicker/kicker.hpp"
 #include "devices/odom/odom.hpp"
 
+#include <map>
+
 namespace devices::robot
 {
 

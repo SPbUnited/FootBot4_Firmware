@@ -13,7 +13,9 @@ void NRFMDecoder::debug_override(NRFMPacket *packet, uint8_t len)
 
     switch (packet->data[1])
     {
+        default:
         case 0x0A:
+        {
             // Motherboard
             uint8_t REG_ID = packet->packet.payload.debug_override.data[2];
             uint8_t *PAYLOAD = &packet->packet.payload.debug_override.data[3];
@@ -21,6 +23,7 @@ void NRFMDecoder::debug_override(NRFMPacket *packet, uint8_t len)
             // robot_dev.angle_kp = PAYLOAD;
             robot_dev.nrfm_callback(REG_ID, PAYLOAD, PAYLOAD_LEN);
             break;
+        }
         case 0x0C:
         {
             uint8_t DRV_ID = packet->packet.payload.debug_override.data[2];
@@ -32,8 +35,7 @@ void NRFMDecoder::debug_override(NRFMPacket *packet, uint8_t len)
                      PAYLOAD_LEN);
             break;
         }
-        default:
-            break;
+        
     }
 }
 
