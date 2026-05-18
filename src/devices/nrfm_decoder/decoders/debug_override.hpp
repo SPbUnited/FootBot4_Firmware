@@ -15,6 +15,11 @@ void NRFMDecoder::debug_override(NRFMPacket *packet, uint8_t len)
     {
         case 0x0A:
             // Motherboard
+            uint8_t REG_ID = packet->packet.payload.debug_override.data[2];
+            uint8_t *PAYLOAD = &packet->packet.payload.debug_override.data[3];
+            uint8_t PAYLOAD_LEN = len - 3;
+            // robot_dev.angle_kp = PAYLOAD;
+            robot_dev.nrfm_callback(REG_ID, PAYLOAD, PAYLOAD_LEN);
             break;
         case 0x0C:
         {
