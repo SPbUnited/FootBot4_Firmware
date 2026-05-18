@@ -84,11 +84,18 @@ jobs:
             .pio/build/disco_f429zi/firmware.elf \
             .pio/build/disco_f429zi/firmware.hex
 
+      - name: Prepare versioned firmware files
+        run: |
+          mkdir -p dist
+          cp .pio/build/disco_f429zi/firmware.bin "dist/firmware-${{ steps.version.outputs.tag }}.bin"
+          cp .pio/build/disco_f429zi/firmware.elf "dist/firmware-${{ steps.version.outputs.tag }}.elf"
+          cp .pio/build/disco_f429zi/firmware.hex "dist/firmware-${{ steps.version.outputs.tag }}.hex"
+
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ steps.version.outputs.tag }}
-          path: .pio/build/disco_f429zi/firmware.*
+          path: dist/firmware-${{ steps.version.outputs.tag }}.*
 
       - name: Create Git tag
         run: |
@@ -104,8 +111,8 @@ jobs:
           name: ${{ steps.version.outputs.tag }}
           body_path: release_notes.md
           files: |
-            .pio/build/disco_f429zi/firmware.bin
-            .pio/build/disco_f429zi/firmware.elf
-            .pio/build/disco_f429zi/firmware.hex
+            dist/firmware-${{ steps.version.outputs.tag }}.bin
+            dist/firmware-${{ steps.version.outputs.tag }}.elf
+            dist/firmware-${{ steps.version.outputs.tag }}.hex
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
