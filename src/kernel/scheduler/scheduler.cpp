@@ -6,6 +6,7 @@
 #include "devices/logger/logger.hpp"
 #include "devices/shell/shell.hpp"
 #include "drivers/system_clock/system_clock.hpp"
+#include "devices/device_manager.hpp"
 
 namespace kernel::scheduler
 {
@@ -96,7 +97,7 @@ void yield()
         return;
     }
 
-    for (size_t app = 0; app < app_count; app++)
+    for (size_t app = 0; app < (devices::robot_dev.play_mode == devices::robot::PLAY ? app_setting_broadcaster : app_count); app++)
     {
         uint32_t elapsed_time = drivers::system_clock::micros() - tasks[app].last_exec;
         if (tasks[app].is_pending(elapsed_time, tasks[app].period))
