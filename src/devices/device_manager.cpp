@@ -68,7 +68,8 @@ odom::Odometer odom_dev(odom_config);
 robot::RobotSettings robot_settings = {
     .dribbler_setting_to_vel = 600.0 / 16,
     .kicker_setting_to_voltage = 200.0 / 16,
-    .angle_kp = 6.0,  // щас тут динамический коэф
+    .angle_k = 0.001,
+    .angle_b = 6.0,  // щас тут динамический коэф
     .max_linear_vel = 3.2,
     .max_linear_accel = 100.0,  // убрали ограничение по ускорению локальному
     .max_angular_vel = 10.0,

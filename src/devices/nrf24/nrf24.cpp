@@ -1,6 +1,7 @@
 #include "nrf24.hpp"
 
 #include "kernel/kernel.hpp"
+#include "devices/device_manager.hpp"
 
 #define NRF24_REG_RX_ADDR_P0 (uint8_t)0x0A  // Receive address data pipe 0
 #define NRF24_REG_RX_ADDR_P1 (uint8_t)0x0B  // Receive address data pipe 1
@@ -182,8 +183,15 @@ bool Nrf24Recv::init()
     spi_instance.rawWrite(0x10, default_addr_0, 5);
 
     w(0x03, 0x03);
-
-    w(0x05, 0x34);  // channel set
+    if (devices::robot_dev.robot_id <= 7)
+    {
+        w(0x05, 0x34);  // channel set
+    }
+    else
+    {
+        w(0x05, 0x43);  // channel set
+    }
+    
     w(0x00, 0x0D);
     spi_instance.flushRx();
     w(0x00, 0x0C);

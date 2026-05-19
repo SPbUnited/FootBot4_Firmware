@@ -13,7 +13,8 @@ namespace devices::robot
 
 enum CANFuocoRegisterMap
 {
-    ANGLE_KP = 1,
+    ANGLE_K = 1,
+    ANGLE_B = 2,
 };
 
 enum LinearControlMode
@@ -52,7 +53,8 @@ struct RobotSettings
 {
     float dribbler_setting_to_vel;
     float kicker_setting_to_voltage;
-    float angle_kp;
+    float angle_k;
+    float angle_b;
 
     float max_linear_vel;
     float max_linear_accel;
