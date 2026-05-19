@@ -11,7 +11,8 @@ namespace devices::robot
 Robot::Robot(RobotSettings &settings, RobotConfig &config) : RobotSettings(settings), RobotConfig(config)
 {
     CANFuocoRegisterMapNames = std::map<CANFuocoRegisterMap, uint8_t *>{
-        {ANGLE_KP, reinterpret_cast<uint8_t *>(&this->angle_kp)},
+        {ANGLE_K, reinterpret_cast<uint8_t *>(&this->angle_k)},
+        {ANGLE_B, reinterpret_cast<uint8_t *>(&this->angle_b)},
     };
 }
 
@@ -211,9 +212,9 @@ void Robot::plan()
             error += 2 * M_PI;
         }
         vel_local_output.theta =
-            error * (angle_kp + sqrt(vel_local_output.x * vel_local_output.x +
+            error * (angle_k + sqrt(vel_local_output.x * vel_local_output.x +
                                      vel_local_output.y * vel_local_output.y) *
-                                    0.001);  // динамический коэф
+                                    angle_b);  // динамический коэф
     }
 
     // kicker_drv.set_target(100);
@@ -279,7 +280,8 @@ void Robot::nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len)
     CANFuocoRegisterMap id = static_cast<CANFuocoRegisterMap>(m_id);
     switch (id)
     {
-        case CANFuocoRegisterMap::ANGLE_KP:
+        case CANFuocoRegisterMap::ANGLE_K:
+        case CANFuocoRegisterMap::ANGLE_B:
             memcpy(CANFuocoRegisterMapNames.at(id), buf, len);
             break;
         
