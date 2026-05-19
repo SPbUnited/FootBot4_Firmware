@@ -3,6 +3,7 @@
 #include "FlashStorage_STM32.h"
 #include "apps/screen/screen.hpp"
 #include "drivers/driver_manager.hpp"
+#include "apps/screen/screen.hpp"
 
 namespace devices
 {
@@ -73,8 +74,8 @@ odom::Odometer odom_dev(odom_config);
 robot::RobotSettings robot_settings = {
     .dribbler_setting_to_vel = 600.0 / 16,
     .kicker_setting_to_voltage = 200.0 / 16,
-    .angle_k = 0.001,
-    .angle_b = 6.0,  // щас тут динамический коэф
+    .angle_k = 0.002,
+    .angle_b = 3.5,  // щас тут динамический коэф
     .max_linear_vel = 3.2,
     .max_linear_accel = 100.0,  // убрали ограничение по ускорению локальному
     .max_angular_vel = 10.0,
@@ -303,7 +304,6 @@ void init(drivers::InitStatus driver_status)
     IRQ_Init();
     nrf24_recv.recv_irq();
     kinfo("Devices initialized");
-    apps::screen::finish_boot_report();
     apps::screen::screen();
 }
 
