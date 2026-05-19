@@ -219,7 +219,7 @@ void Robot::plan()
     }
 
     // kicker_drv.set_target(100);
-    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() && drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() && drivers::in_pins[drivers::BUTTON_SELECT].read())
+    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() || drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() || drivers::in_pins[drivers::BUTTON_SELECT].read())
     {
         if (play_mode == PLAY)
         {
@@ -227,6 +227,16 @@ void Robot::plan()
             test_timer = drivers::system_clock::micros();
         }
     }
+    if (play_mode == TEST)
+    {
+        if (drivers::system_clock::micros() - test_timer > 10000000)
+        {
+            play_mode = PLAY;
+        }
+    }
+    
+
+
 }
 
 void Robot::act()
