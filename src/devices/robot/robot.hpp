@@ -6,8 +6,15 @@
 #include "devices/kicker/kicker.hpp"
 #include "devices/odom/odom.hpp"
 
+#include <map>
+
 namespace devices::robot
 {
+
+enum CANFuocoRegisterMap
+{
+    ANGLE_KP = 1,
+};
 
 enum LinearControlMode
 {
@@ -61,10 +68,7 @@ uint8_t calculate_signature(RobotSettings config);
 
 struct Robot : RobotSettings, RobotConfig
 {
-    Robot(RobotSettings &settings, RobotConfig &config)
-        : RobotSettings(settings), RobotConfig(config)
-    {
-    }
+    Robot(RobotSettings &settings, RobotConfig &config);
 
     LinearControlMode linear_mode;
     AngleControlMode angle_mode;
@@ -117,6 +121,10 @@ struct Robot : RobotSettings, RobotConfig
     void sense();
     void plan();
     void act();
+
+
+    void nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len);
+    std::map<CANFuocoRegisterMap, uint8_t *> CANFuocoRegisterMapNames;
 };
 
 }  // namespace devices::robot
