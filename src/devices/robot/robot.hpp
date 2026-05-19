@@ -11,10 +11,16 @@
 namespace devices::robot
 {
 
+enum MODES
+{
+    PLAY = 0,
+    TEST = 1,
+};
+
 enum CANFuocoRegisterMap
 {
-    ANGLE_K = 1,
-    ANGLE_B = 2,
+    ANGLE_B = 1,
+    ANGLE_K = 2,
 };
 
 enum LinearControlMode
@@ -124,6 +130,8 @@ struct Robot : RobotSettings, RobotConfig
     void plan();
     void act();
 
+    uint8_t play_mode;
+    uint32_t test_timer;
 
     void nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len);
     std::map<CANFuocoRegisterMap, uint8_t *> CANFuocoRegisterMapNames;

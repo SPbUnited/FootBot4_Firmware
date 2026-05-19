@@ -10,6 +10,7 @@ namespace devices::robot
 
 Robot::Robot(RobotSettings &settings, RobotConfig &config) : RobotSettings(settings), RobotConfig(config)
 {
+    play_mode = PLAY;
     CANFuocoRegisterMapNames = std::map<CANFuocoRegisterMap, uint8_t *>{
         {ANGLE_K, reinterpret_cast<uint8_t *>(&this->angle_k)},
         {ANGLE_B, reinterpret_cast<uint8_t *>(&this->angle_b)},
@@ -212,12 +213,20 @@ void Robot::plan()
             error += 2 * M_PI;
         }
         vel_local_output.theta =
-            error * (angle_k + sqrt(vel_local_output.x * vel_local_output.x +
+            error * (angle_b + sqrt(vel_local_output.x * vel_local_output.x +
                                      vel_local_output.y * vel_local_output.y) *
-                                    angle_b);  // динамический коэф
+                                    angle_k);  // динамический коэф
     }
 
     // kicker_drv.set_target(100);
+    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() && drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() && drivers::in_pins[drivers::BUTTON_SELECT].read())
+    {
+        if (play_mode == PLAY)
+        {
+            play_mode = TEST;
+            test_timer = drivers::system_clock::micros();
+        }
+    }
 }
 
 void Robot::act()
