@@ -185,7 +185,7 @@ bool Nrf24Recv::init()
     w(0x03, 0x03);
     if (devices::robot_dev.robot_id <= 7)
     {
-        w(0x05, 124);  // channel set
+        w(0x05, 111);  // channel set
     }
     else
     {
