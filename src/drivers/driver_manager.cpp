@@ -199,7 +199,8 @@ gpio::ADCDescriptor adc_desc[] = {
 
 gpio::GPIOAnalogInputDriver analog_in_pin;
 
-buzzer::BuzzerConfig buzzer_config = {.buzzer_pin = &out_pins[BUZZER]};
+buzzer::BuzzerConfig buzzer_config = {.buzzer_pin = &out_pins[BUZZER],
+                                      .buzzer_pin2 = &out_pins[LED_DRV5]};
 
 buzzer::Buzzer buzzer_drv(buzzer_config);
 
@@ -247,7 +248,29 @@ void init()
 
     drivers::buzzer_drv.init();
 
-    drivers::buzzer_drv.buzz(110, 500000);
+    int A = 440, As = 466, B = 494, C = 523, Cs = 554, D = 587, Ds = 622, E = 659, F = 698,
+        Fs = 740, G = 784, Gs = 831;
+    // int beat = 150;
+    // int melody[] = {G, C, Fs, G,     A, G,     E,      C, Fs,     G,    A,
+    //                 G, D, G,  D * 2, D, D * 2, Cs * 2, B, Cs * 2, D * 2};
+    // int noteDurations[] = {4 * beat, 4 * beat, 6 * beat, beat,     beat,     2 * beat, 2 * beat,
+    //                        2 * beat, 4 * beat, beat,     beat,     2 * beat, 2 * beat, 2 * beat,
+    //                        beat,     beat,     4 * beat, 3 * beat, beat,     beat,     6 *
+    //                        beat};
+
+    int beat = 200;
+    int melody[] = {C * 2, G, C * 2, G * 2, D * 2};
+    int noteDurations[] = {3 * beat, beat, beat, beat, 6 * beat};
+
+    // drivers::buzzer_drv.buzz(A, 100);
+
+    for (size_t i = 0; i < sizeof(melody) / sizeof(melody[0]); i++)
+    {
+        drivers::buzzer_drv.buzz(melody[i] * 2, noteDurations[i]);
+    }
+
+    while (1)
+        ;
 }
 
 }  // namespace drivers
