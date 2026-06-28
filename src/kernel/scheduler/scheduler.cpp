@@ -51,7 +51,7 @@ TaskDescriptor tasks[app_count] = {
      LOG_NONE},
     {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"monitor_reset", monitor_reset, 0, TPS(1), ksperiodic, idle, {0}, LOG_DEBUG},
-    {"shell", devices::shell::my_shellLoop, 0, 0, kspersistent, idle, {0}, LOG_DEBUG},
+    // {"shell", devices::shell::my_shellLoop, 0, 0, kspersistent, idle, {0}, LOG_DEBUG},
 };
 
 void monitor_reset()

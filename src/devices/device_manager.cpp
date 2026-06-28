@@ -102,17 +102,23 @@ nrfm_decoder::NRFMDecoderConfig nrfm_decoder_config = {
 
 nrfm_decoder::NRFMDecoder nrfm_decoder_dev(nrfm_decoder_config);
 
-nrf24::Nrf24RecvConfig nrf24_recv_config = {
-    .spi_instance = drivers::spi2,
-    .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
-    .nrfm_decoder = nrfm_decoder_dev,
+// nrf24::Nrf24RecvConfig nrf24_recv_config = {
+//     .spi_instance = drivers::spi2,
+//     .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
+//     .nrfm_decoder = nrfm_decoder_dev,
+// };
+
+// nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
+
+uart_control::UartControlConfig uart_control_config = {
+    .uart_instance = drivers::uart4,
 };
 
-nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
+uart_control::UartControl uart_control_dev(uart_control_config);
 
 extern "C" void EXTI15_10_IRQHandler(void)
 {
-    nrf24_recv.recv_irq();
+    // nrf24_recv.recv_irq();
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
 }
 
@@ -143,25 +149,34 @@ void IRQ_Init(void)
 
 void init()
 {
-    shell::my_shellInit();
+    // shell::my_shellInit();
     logger::init();
     // char buffer[128];
     // int rem = sizeof(init_message) % sizeof(buffer);
     // snprintf(buffer, sizeof(buffer), "%s", init_message);
     // logPrintln("%s", buffer);
-    shellWriteString(&shell::shell, init_message);
+    // shellWriteString(&shell::shell, init_message);
     kinfo("Shell initialized");
     kinfo("Logger initialized");
     oled_drv.init();
     kinfo("OLED initialized");
 
-    if (nrf24_recv.init())
+    // if (nrf24_recv.init())
+    // {
+    //     kerror("NRF24 initialization failed");
+    // }
+    // else
+    // {
+    //     kinfo("NRF24 initialized");
+    // }
+
+    if (uart_control_dev.init())
     {
-        kerror("NRF24 initialization failed");
+        kerror("UART Control initialization failed");
     }
     else
     {
-        kinfo("NRF24 initialized");
+        kinfo("UART Control initialized");
     }
 
     for (size_t i = 0; i < 5; i++)
@@ -216,18 +231,19 @@ void init()
     kicker_drv.init();
     kinfo("Kicker initialized");
 
-    if (nrf24_recv.init())
-    {
-        kerror("NRF24 initialization failed");
-    }
-    else
-    {
-        kinfo("NRF24 initialized");
-    }
+    // if (nrf24_recv.init())
+    // {
+    //     kerror("NRF24 initialization failed");
+    // }
+    // else
+    // {
+    //     kinfo("NRF24 initialized");
+    // }
     // kinfo("AUAUSDUASDUDevices initialized");
 
     IRQ_Init();
-    nrf24_recv.recv_irq();
+    // nrf24_recv.recv_irq();
+    uart_control_dev.recv_irq();
     kinfo("Devices initialized");
     apps::screen::screen();
 }

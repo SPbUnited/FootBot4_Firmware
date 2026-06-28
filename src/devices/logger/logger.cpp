@@ -24,7 +24,7 @@ void init()
     asm(".global _printf_float");  // To enable float support in printf
     // https://github.com/platformio/platform-ststm32/issues/616
 
-    logRegister(&uartLog, &shell::shell);
+    // logRegister(&uartLog, &shell::shell);
 }
 
 }  // namespace devices::logger

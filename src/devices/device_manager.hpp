@@ -8,6 +8,7 @@
 #include "logger/logger.hpp"
 #include "nrf24/nrf24.hpp"
 #include "nrfm_decoder/nrfm_decoder.hpp"
+#include "uart_control/uart_control.hpp"
 #include "odom/odom.hpp"
 #include "oled/oled.hpp"
 #include "robot/robot.hpp"
@@ -25,6 +26,7 @@ extern nrf24::Nrf24Recv nrf24_recv;
 extern kicker::Kicker kicker_drv;
 extern imu::BNO055 bno055_drv;
 extern nrfm_decoder::NRFMDecoder nrfm_decoder_dev;
+extern uart_control::UartControl uart_control_dev;
 
 void init();
 

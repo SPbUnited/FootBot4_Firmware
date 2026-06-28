@@ -26,14 +26,19 @@ void loop()
 
     // Sense
     devices::robot_dev.sense();
-    devices::nrf24_recv.recv_irq();
-    devices::nrf24_recv.fetch();
+    // devices::nrf24_recv.recv_irq();
+    // devices::nrf24_recv.fetch();
+    devices::uart_control_dev.recv_irq();
+    devices::uart_control_dev.fetch();
 
     // Plan
     devices::robot_dev.plan();
 
     // Act
     devices::robot_dev.act();
+
+    // Send telemetry
+    devices::uart_control_dev.send_telemetry();
 }
 
 }  // namespace apps::mainloop
