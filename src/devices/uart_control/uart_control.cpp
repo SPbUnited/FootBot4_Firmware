@@ -21,7 +21,7 @@ UartControl::UartControl(UartControlConfig &uart_control_config) : UartControlCo
 
 void UartControl::recv_irq()
 {
-    uint8_t buf[64];
+    uint8_t buf[512];
     uint16_t available = 0;
 
     while (uart_instance.getc(reinterpret_cast<char *>(&buf[available])) == HAL_OK && available < sizeof(buf))
@@ -194,14 +194,16 @@ void UartControl::send_telemetry()
 
     char json[256];
     snprintf(json, sizeof(json),
-        "{\"imu\":{\"yaw\":%.2f,\"pitch\":%.2f,\"roll\":%.2f},"
+        "{\"id\":%i,"
         "\"voltage\":%.1f,"
-        "\"odom\":{\"x\":%.3f,\"y\":%.3f,\"theta\":%.3f},"
-        "\"ball\":{\"deep\":%d,\"front\":%d}}",
-        yaw, pitch, roll,
+        "\"ball\":{\"deep\":%d,\"front\":%d},"
+        "\"wvel_tgt\":%.2f,"
+        "\"wvel_out\":%.2f}",
+        devices::robot_dev.robot_id,
         voltage,
-        odom_x, odom_y, odom_theta,
-        ball_deep, ball_front);
+        ball_deep, ball_front,
+        devices::robot_dev.vel_global_target.theta,
+        devices::robot_dev.vel_local_output_smoothed.theta);
 
     for (uint16_t i = 0; i < strlen(json); i++)
     {

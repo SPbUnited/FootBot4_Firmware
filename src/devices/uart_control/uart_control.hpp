@@ -45,7 +45,7 @@ class UartControl : public UartControlConfig
     static uint8_t m_incomeArray[m_incomePacketLen];
     static uint8_t m_lenDbg;
 
-    Queue<UartPacket, 1024> m_rx_queue;
+    Queue<UartPacket, 8> m_rx_queue;
 
     void process_command(const char *json);
 
