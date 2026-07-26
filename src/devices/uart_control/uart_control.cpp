@@ -9,27 +9,24 @@
 namespace devices::uart_control
 {
 
-// Static member definitions
 uint32_t UartControl::m_prevTime_ms = 0;
 uint32_t UartControl::m_packetsReceived = 0;
 uint32_t UartControl::m_packetsReceived_1s = 0;
 
-uint8_t UartControl::m_incomeArray[UartControl::m_incomePacketLen];
-uint8_t UartControl::m_lenDbg;
+uint8_t UartControl::m_rx_acc_buf[UartControl::kRxBufSize];
+uint32_t UartControl::m_rx_acc_len = 0;
 
 UartControl::UartControl(UartControlConfig &uart_control_config) : UartControlConfig(uart_control_config) {}
 
 void UartControl::recv_irq()
 {
-    uint8_t buf[512];
-    uint16_t available = 0;
-
-    while (uart_instance.getc(reinterpret_cast<char *>(&buf[available])) == HAL_OK && available < sizeof(buf))
+    while (m_rx_acc_len < kRxBufSize &&
+           uart_instance.getc(reinterpret_cast<char *>(&m_rx_acc_buf[m_rx_acc_len])) == HAL_OK)
     {
-        available++;
+        m_rx_acc_len++;
     }
 
-    if (available == 0)
+    if (m_rx_acc_len == 0)
     {
         return;
     }
@@ -45,129 +42,53 @@ void UartControl::recv_irq()
         m_packetsReceived = 0;
     }
 
-    UartPacket packet = {{}, static_cast<uint8_t>(available)};
-
-    for (size_t i = 0; i < available; i++)
+    while (m_rx_acc_len >= kPacketLen)
     {
-        packet.data[i] = buf[i];
-    }
+        RxPacket pkt;
+        memcpy(&pkt, m_rx_acc_buf, kPacketLen);
+        m_rx_queue.push_back(pkt);
 
-    m_rx_queue.push_back(packet);
+        m_rx_acc_len -= kPacketLen;
+        if (m_rx_acc_len > 0)
+        {
+            memmove(m_rx_acc_buf, m_rx_acc_buf + kPacketLen, m_rx_acc_len);
+        }
+    }
 }
 
 int UartControl::fetch()
 {
     while (!m_rx_queue.isEmpty())
     {
-        UartPacket packet = m_rx_queue.pop_front();
-
-        char json[256];
-        memcpy(json, packet.data, packet.len);
-        json[packet.len] = '\0';
-
-        process_command(json);
+        RxPacket pkt = m_rx_queue.pop_front();
+        process_command(pkt);
     }
 
     return 0;
 }
 
-void UartControl::process_command(const char *json)
+void UartControl::process_command(const RxPacket &pkt)
 {
-    CommandData cmd = {};
+    float vel_x = fp16_to_fp32(pkt.vel_x);
+    float vel_y = fp16_to_fp32(pkt.vel_y);
+    float w = fp16_to_fp32(pkt.w);
+    float dribbler = fp16_to_fp32(pkt.dribbler);
+    float kicker = fp16_to_fp32(pkt.kicker);
 
-    const char *p = json;
+    robot_dev.set_target_local_linear_vel(vel_x, vel_y, true);
 
-    auto find_int = [&]() -> int {
-        while (*p && !(*p >= '0' && *p <= '9') && *p != '-') p++;
-        return atoi(p);
-    };
-
-    auto find_float = [&]() -> float {
-        while (*p && !(*p >= '0' && *p <= '9') && *p != '-') p++;
-        return atof(p);
-    };
-
-    auto find_bool = [&]() -> uint8_t {
-        while (*p && *p != ':') p++;
-        p++;
-        while (*p == ' ') p++;
-        if (*p == 't') return 1;
-        if (*p == '1') return 1;
-        return 0;
-    };
-
-    p = strstr(json, "\"xvel\"");
-    if (p) { p += 6; cmd.xvel = find_float(); }
-
-    p = strstr(json, "\"yvel\"");
-    if (p) { p += 6; cmd.yvel = find_float(); }
-
-    p = strstr(json, "\"wvel\"");
-    if (p) { p += 6; cmd.wvel = find_float(); }
-
-    p = strstr(json, "\"dribbler\"");
-    if (p) { p += 10; cmd.dribbler = find_int(); }
-
-    p = strstr(json, "\"voltage\"");
-    if (p) { p += 9; cmd.voltage = find_int(); }
-
-    p = strstr(json, "\"kick_lower\"");
-    if (p) { cmd.kick_lower = find_bool(); }
-
-    p = strstr(json, "\"kick_upper\"");
-    if (p) { cmd.kick_upper = find_bool(); }
-
-    p = strstr(json, "\"autokick_lower\"");
-    if (p) { cmd.autokick_lower = find_bool(); }
-
-    p = strstr(json, "\"autokick_upper\"");
-    if (p) { cmd.autokick_upper = find_bool(); }
-
-    p = strstr(json, "\"autokick_momentum\"");
-    if (p) { cmd.autokick_momentum = find_bool(); }
-
-    p = strstr(json, "\"angle_mode\"");
-    if (p) { cmd.angle_mode = find_bool(); }
-
-    robot_dev.set_target_local_linear_vel(cmd.xvel, cmd.yvel, true);
-    if (cmd.angle_mode)
+    if (pkt.angle_mode)
     {
-        robot_dev.set_target_angular_dpos(cmd.wvel);
+        robot_dev.set_target_angular_dpos(w);
     }
     else
     {
-        robot_dev.set_target_angular_vel(cmd.wvel);
-    }
-    robot_dev.set_dribbler_setting(cmd.dribbler);
-    robot_dev.set_kicker_setting(cmd.voltage);
-
-    robot::KickerMode kicker_mode = robot::DISABLED;
-
-    if (cmd.kick_lower)
-    {
-        kicker_mode = robot::KICK_FRONT;
-    }
-    else if (cmd.kick_upper)
-    {
-        kicker_mode = robot::KICK_UP;
-    }
-    else if (cmd.autokick_lower)
-    {
-        if (cmd.autokick_upper)
-        {
-            kicker_mode = robot::AUTOKICK_MOMENTUM;
-        }
-        else
-        {
-            kicker_mode = robot::AUTOKICK_FRONT;
-        }
-    }
-    else if (cmd.autokick_upper)
-    {
-        kicker_mode = robot::AUTOKICK_UP;
+        robot_dev.set_target_angular_vel(w);
     }
 
-    robot_dev.set_kicker_mode(kicker_mode);
+    robot_dev.set_dribbler_setting(static_cast<uint8_t>(dribbler));
+    robot_dev.set_kicker_setting(static_cast<uint8_t>(kicker));
+    robot_dev.set_kicker_mode(static_cast<robot::KickerMode>(pkt.kicker_mode));
 }
 
 bool UartControl::init()
@@ -178,38 +99,13 @@ bool UartControl::init()
 
 void UartControl::send_telemetry()
 {
-    devices::bno055_drv.get_angles();
-    float yaw = devices::bno055_drv.euler.yaw;
-    float pitch = devices::bno055_drv.euler.pitch;
-    float roll = devices::bno055_drv.euler.roll;
+    TxTelemetry tel = {};
+    tel.robot_id = devices::robot_dev.robot_id;
+    tel.voltage = fp32_to_fp16(devices::kicker_drv.get_voltage());
+    tel.ball_deep = devices::kicker_drv.read_deep();
+    tel.ball_front = devices::kicker_drv.read_front();
 
-    float voltage = devices::kicker_drv.get_voltage();
-
-    float odom_x = devices::odom_dev.state.x;
-    float odom_y = devices::odom_dev.state.y;
-    float odom_theta = devices::odom_dev.state.theta;
-
-    uint8_t ball_deep = devices::kicker_drv.read_deep();
-    uint8_t ball_front = devices::kicker_drv.read_front();
-
-    char json[256];
-    snprintf(json, sizeof(json),
-        "{\"id\":%i,"
-        "\"voltage\":%.1f,"
-        "\"ball\":{\"deep\":%d,\"front\":%d},"
-        "\"wvel_tgt\":%.2f,"
-        "\"wvel_out\":%.2f}",
-        devices::robot_dev.robot_id,
-        voltage,
-        ball_deep, ball_front,
-        devices::robot_dev.vel_global_target.theta,
-        devices::robot_dev.vel_local_output_smoothed.theta);
-
-    for (uint16_t i = 0; i < strlen(json); i++)
-    {
-        uart_instance.putc(json[i]);
-    }
-    uart_instance.putc('\n');
+    uart_instance.write(reinterpret_cast<const char *>(&tel), sizeof(tel));
 }
 
 }  // namespace devices::uart_control

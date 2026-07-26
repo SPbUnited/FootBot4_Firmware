@@ -1,5 +1,5 @@
 import serial
-import json
+import struct
 import time
 
 PORT = "/dev/ttyACM0"
@@ -7,34 +7,41 @@ BAUD = 115200
 
 ser = serial.Serial(PORT, BAUD, timeout=0.1)
 
-cmd = {
-    "xvel": 0.0,
-    "yvel": 0.0,
-    "wvel": 10,
-    "dribbler": 0,
-    "voltage": 0,
-    "kick_lower": False,
-    "kick_upper": False,
-    "autokick_lower": False,
-    "autokick_upper": False,
-    "autokick_momentum": False,
-    "angle_mode": False,
-}
+# RX packet: <5eB? = 5 half-floats + 1 byte + 1 bool = 12 bytes
+# TX telemetry: <Be?? = 5 bytes
+
+def send_command(vel_x, vel_y, w, dribbler, kicker, kicker_mode, angle_mode):
+    """Send command packet in new binary format."""
+    packet = struct.pack('<5eB?',
+                         vel_x, vel_y, w,
+                         dribbler, kicker,
+                         kicker_mode, angle_mode)
+    ser.write(packet)
+
+def read_telemetry():
+    """Read and unpack a telemetry packet."""
+    data = ser.read(5)
+    if len(data) != 5:
+        return None
+    robot_id, voltage, ball_deep, ball_front = struct.unpack('<Be??', data)
+    return {
+        'robot_id': robot_id,
+        'voltage': voltage,
+        'ball_deep': ball_deep,
+        'ball_front': ball_front,
+    }
 
 print(f"Sending commands on {PORT} @ {BAUD}")
 last_sent = time.time()
 try:
     while True:
-        # Send command
-        payload = json.dumps(cmd, separators=(",", ":")) + "\n"
-        ser.write(payload.encode())
-        print("sent TX! in",(time.time()-last_sent))
+        send_command(0.0, 0.0, 0.0, 0.0, 0.0, 0, False)
+        print("sent TX! in", time.time() - last_sent)
         last_sent = time.time()
-        # Read telemetry
-        if ser.in_waiting:
-            line = ser.readline().decode("utf-8", errors="replace").strip()
-            if line:
-                print(f"RX: {line}")
+
+        tel = read_telemetry()
+        if tel:
+            print(f"RX: {tel}")
 
         time.sleep(0.01)
 except KeyboardInterrupt:

@@ -217,7 +217,7 @@ void Robot::plan()
                                      vel_local_output.y * vel_local_output.y) *
                                     angle_k);  // динамический коэф
     }
-    vel_local_output.theta =10;
+    
     // kicker_drv.set_target(100);
     if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() || drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() || drivers::in_pins[drivers::BUTTON_SELECT].read())
     {

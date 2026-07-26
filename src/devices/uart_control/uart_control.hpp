@@ -1,8 +1,10 @@
 #pragma once
 
 #include <inttypes.h>
+#include <cstring>
 
 #include "drivers/uart/uart.hpp"
+#include "half_float.h"
 #include "math.hpp"
 
 namespace devices::uart_control
@@ -13,41 +15,47 @@ struct UartControlConfig
     drivers::uart::UartDriver &uart_instance;
 };
 
-struct UartPacket
+// RX packet: <5eB? = 5 half-floats + 1 byte + 1 bool = 12 bytes
+#pragma pack(push, 1)
+struct RxPacket
 {
-    uint8_t data[256];
-    uint8_t len;
-};
-
-struct CommandData
-{
-    float xvel;
-    float yvel;
-    float wvel;
-    uint8_t dribbler;
-    uint8_t voltage;
-    uint8_t kick_lower;
-    uint8_t kick_upper;
-    uint8_t autokick_lower;
-    uint8_t autokick_upper;
-    uint8_t autokick_momentum;
+    uint16_t vel_x;
+    uint16_t vel_y;
+    uint16_t w;
+    uint16_t dribbler;
+    uint16_t kicker;
+    uint8_t kicker_mode;
     uint8_t angle_mode;
 };
+#pragma pack(pop)
+
+// TX telemetry packet: <Be?? = 5 bytes
+#pragma pack(push, 1)
+struct TxTelemetry
+{
+    uint8_t robot_id;
+    uint16_t voltage;
+    uint8_t ball_deep;
+    uint8_t ball_front;
+};
+#pragma pack(pop)
 
 class UartControl : public UartControlConfig
 {
   private:
+    static constexpr uint32_t kPacketLen = sizeof(RxPacket);
+    static constexpr uint32_t kRxBufSize = 256;
+
     static uint32_t m_prevTime_ms;
     static uint32_t m_packetsReceived;
     static uint32_t m_packetsReceived_1s;
 
-    static const uint32_t m_incomePacketLen = 256;
-    static uint8_t m_incomeArray[m_incomePacketLen];
-    static uint8_t m_lenDbg;
+    static uint8_t m_rx_acc_buf[kRxBufSize];
+    static uint32_t m_rx_acc_len;
 
-    Queue<UartPacket, 8> m_rx_queue;
+    Queue<RxPacket, 8> m_rx_queue;
 
-    void process_command(const char *json);
+    void process_command(const RxPacket &pkt);
 
   public:
     volatile uint32_t m_lastPacketTime;
