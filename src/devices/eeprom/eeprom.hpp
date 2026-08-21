@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef BARE_METAL
+
 #include "FlashStorage_STM32.hpp"
 
 namespace devices::eeprom
@@ -19,3 +21,5 @@ void get(uint8_t id, T &value)
 }
 
 }  // namespace devices::eeprom
+
+#endif

@@ -1,23 +1,25 @@
 #pragma once
 
+#ifdef BARE_METAL
+
 #include <inttypes.h>
+
 #include "drivers/driver_manager.hpp"
-#include "stm32f4xx_hal.h"
 
 namespace devices::kicker
 {
 
 enum KICKER_STATES
 {
-  PREPARE,
-  KICK,
-  AFTER_KICK,
+    PREPARE,
+    KICK,
+    AFTER_KICK,
 };
 
 enum KICK_TYPES
 {
-  STRAIGHT,
-  CHIP,
+    STRAIGHT,
+    CHIP,
 };
 
 struct KickerConfig
@@ -31,14 +33,9 @@ struct KickerConfig
     drivers::gpio::GPIOInputDriver *ball_checker_front;
 };
 
-
-
-class Kicker: public KickerConfig
+class Kicker : public KickerConfig
 {
   private:
-    
-    
-    
     bool prepared = false;
     uint8_t kick_type = STRAIGHT;
 
@@ -56,6 +53,7 @@ class Kicker: public KickerConfig
     bool read_deep();
     bool read_front();
     float get_voltage();
-
 };
-}  // namespace devices::nrf24
+}  // namespace devices::kicker
+
+#endif

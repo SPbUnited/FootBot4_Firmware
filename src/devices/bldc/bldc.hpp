@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef BARE_METAL
+
 #include "drivers/can/can.hpp"
 
 namespace devices::bldc
@@ -141,3 +143,5 @@ class BldcsDriver : public BldcsConfig
 };
 
 }  // namespace devices::bldc
+
+#endif

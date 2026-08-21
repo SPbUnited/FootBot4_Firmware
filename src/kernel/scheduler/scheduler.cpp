@@ -80,10 +80,10 @@ static void run(Apps app)
     tasks[app].state = running;
     tasks[app].monitor.period_time.update(drivers::system_clock::micros() - tasks[app].last_exec);
     tasks[app].last_exec = drivers::system_clock::micros();
-    LogLevel old_log_level = logGetLevel(&devices::logger::uartLog);
-    logSetLevel(&devices::logger::uartLog, tasks[app].log_level);
+    int old_log_level = devices::logger::get_loglevel();
+    devices::logger::set_loglevel(tasks[app].log_level);
     tasks[app].function();
-    logSetLevel(&devices::logger::uartLog, old_log_level);
+    devices::logger::set_loglevel(old_log_level);
     tasks[app].monitor.exec_time.update(drivers::system_clock::micros() - tasks[app].last_exec);
     tasks[app].monitor.counter++;
     tasks[app].state = idle;

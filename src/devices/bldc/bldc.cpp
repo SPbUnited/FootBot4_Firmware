@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "bldc.hpp"
 
 #include "half_float.h"
@@ -104,3 +106,5 @@ void BldcsDriver::getDribblerVel(float *vel)
 }
 
 }  // namespace devices::bldc
+
+#endif

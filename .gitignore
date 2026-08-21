@@ -1,5 +1,8 @@
 cubemx
+build
 *.pdf
+
+fb4_controller
 
 .pio
 .vscode/.browse.c_cpp.db*

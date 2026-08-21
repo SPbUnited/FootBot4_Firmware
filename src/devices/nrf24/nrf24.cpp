@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "nrf24.hpp"
 
 #include "kernel/kernel.hpp"
@@ -288,3 +290,5 @@ int Nrf24Recv::writeReg(uint8_t reg_addr, uint8_t value)
 }
 
 }  // namespace devices::nrf24
+
+#endif

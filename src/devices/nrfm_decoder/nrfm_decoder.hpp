@@ -1,7 +1,6 @@
 #pragma once
 
 #include "devices/robot/robot.hpp"
-#include "drivers/gpio/gpio.hpp"
 #include "half_float.h"
 #include "inttypes.h"
 

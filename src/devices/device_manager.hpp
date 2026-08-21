@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef BARE_METAL
+
 #include "bldc/bldc.hpp"
 #include "chassis/chassis.hpp"
 #include "eeprom/eeprom.hpp"
@@ -31,3 +33,16 @@ void init();
 extern "C" void EXTI15_10_IRQHandler(void);
 
 }  // namespace devices
+
+#endif
+
+#ifdef WEBOTS_INTEGRATION
+
+namespace devices
+{
+
+void init();
+
+}
+
+#endif

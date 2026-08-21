@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "kicker.hpp"
 // #include <math.h>
 #include "devices/device_manager.hpp"
@@ -113,7 +115,7 @@ void Kicker::update()
         charge_pin->write(true);
 
         state = PREPARE;
-        
+
         if (devices::robot_dev.kicker_mode == devices::robot::KICK_FRONT)
         {
             timer = drivers::system_clock::micros();
@@ -163,11 +165,10 @@ void Kicker::update()
         // kernel::delay_ms(2);
         // if
         // drivers::system_clock::micros()
-        
     }
     else if (state == AFTER_KICK)
     {
-        if((drivers::system_clock::micros() - timer > 10000) && (actual_voltage < 10))
+        if ((drivers::system_clock::micros() - timer > 10000) && (actual_voltage < 10))
         {
             state = PREPARE;
         }
@@ -185,3 +186,5 @@ bool Kicker::read_front()
 }
 
 }  // namespace devices::kicker
+
+#endif

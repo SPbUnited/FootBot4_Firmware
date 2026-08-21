@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef BARE_METAL
+
 #include <inttypes.h>
 
 #include "devices/nrfm_decoder/nrfm_decoder.hpp"
@@ -106,3 +108,5 @@ class Nrf24Recv : public Nrf24RecvConfig
     static int8_t u8Toi8(uint8_t x);
 };
 }  // namespace devices::nrf24
+
+#endif

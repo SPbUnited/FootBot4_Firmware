@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "chassis.hpp"
 
 #include <math.h>
@@ -98,3 +100,5 @@ void Chassis::getVel(StateVector *vel, bldc::BldcsVec wheel_vels)
 }
 
 }  // namespace devices::chassis
+
+#endif

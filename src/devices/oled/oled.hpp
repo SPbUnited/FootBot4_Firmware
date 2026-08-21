@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef BARE_METAL
+
 #include <oled/OledSsd1315.hpp>
 
 namespace devices::oled
@@ -16,3 +18,5 @@ class OledDriver : public oled_lib::OledConfig
 };
 
 }  // namespace devices::oled
+
+#endif

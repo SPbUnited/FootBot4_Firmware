@@ -1,6 +1,8 @@
 #ifndef BNO055_H
 #define BNO055_H
 
+#ifdef BARE_METAL
+
 #include "drivers/uart/uart.hpp"
 #include "kernel/kernel.hpp"
 
@@ -380,5 +382,7 @@ class BNO055 : public BNO055Config
 };
 
 }  // namespace devices::imu
+
+#endif
 
 #endif

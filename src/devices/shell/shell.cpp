@@ -1,6 +1,13 @@
 #include "shell.hpp"
 
+#ifdef BARE_METAL
 #include "drivers/driver_manager.hpp"
+#endif
+
+#ifdef WEBOTS_INTEGRATION
+#include "iostream"
+#endif
+
 #include "kernel/kernel.hpp"
 
 namespace devices::shell
@@ -8,6 +15,7 @@ namespace devices::shell
 
 Shell shell;
 
+#ifdef BARE_METAL
 signed short shellWrite(char *data, unsigned short len)
 {
     for (unsigned short i = 0; i < len; i++)
@@ -33,6 +41,20 @@ signed short shellRead(char *data, unsigned short len)
     }
     return recv;
 }
+#endif
+
+#ifdef WEBOTS_INTEGRATION
+signed short shellWrite(char *data, unsigned short len)
+{
+    std::cout.write(data, len);
+    return len;
+}
+
+signed short shellRead(char *data, unsigned short len)
+{
+    return 0;
+}
+#endif
 
 char shellBuffer[512];
 
@@ -50,14 +72,15 @@ void my_shellLoop()
 
 }  // namespace devices::shell
 
-int func(int argc, char *argv[])
-{
-    drivers::uart4.printf("%dparameter(s)\r\n", argc);
-    for (int i = 1; i < argc; i++)
-    {
-        drivers::uart4.printf("%s\r\n", argv[i]);
-    }
+// int func(int argc, char *argv[])
+// {
+//     drivers::uart4.printf("%dparameter(s)\r\n", argc);
+//     for (int i = 1; i < argc; i++)
+//     {
+//         drivers::uart4.printf("%s\r\n", argv[i]);
+//     }
 
-    return 0;
-}
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), func, func, test);
+//     return 0;
+// }
+// SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), func, func,
+// test);

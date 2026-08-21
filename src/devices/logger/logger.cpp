@@ -1,6 +1,9 @@
+#ifdef BARE_METAL
+
 #include "logger.hpp"
 
 #include "devices/shell/shell.hpp"
+#include "log.h"
 
 namespace devices::logger
 {
@@ -27,4 +30,16 @@ void init()
     logRegister(&uartLog, &shell::shell);
 }
 
+int get_loglevel()
+{
+    return logGetLevel(&uartLog);
+}
+
+void set_loglevel(int level)
+{
+    logSetLevel(&uartLog, static_cast<LogLevel>(level));
+}
+
 }  // namespace devices::logger
+
+#endif

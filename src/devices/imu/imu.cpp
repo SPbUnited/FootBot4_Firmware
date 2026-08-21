@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "imu.hpp"
 
 namespace devices::imu
@@ -381,3 +383,5 @@ void BNO055::set_mapping(char orient)
 }
 
 }  // namespace devices::imu
+
+#endif

@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "device_manager.hpp"
 
 #include "FlashStorage_STM32.h"
@@ -230,3 +232,5 @@ void init()
 }
 
 }  // namespace devices
+
+#endif

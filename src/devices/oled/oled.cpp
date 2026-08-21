@@ -1,3 +1,5 @@
+#ifdef BARE_METAL
+
 #include "oled.hpp"
 
 // #include "drivers/driver_manager.hpp"
@@ -28,3 +30,5 @@ void OledDriver::init()
 }
 
 }  // namespace devices::oled
+
+#endif
