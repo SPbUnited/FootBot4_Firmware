@@ -5,6 +5,7 @@
 #include <inttypes.h>
 
 #include "drivers/driver_manager.hpp"
+#include "robot_core/types.hpp"
 
 namespace devices::kicker
 {
@@ -35,10 +36,6 @@ struct KickerConfig
 
 class Kicker : public KickerConfig
 {
-  private:
-    bool prepared = false;
-    uint8_t kick_type = STRAIGHT;
-
   public:
     uint8_t state = PREPARE;
     double target = 0;
@@ -48,7 +45,7 @@ class Kicker : public KickerConfig
 
     void init();
 
-    void update();
+    void apply(const robot_core::KickerOutput &output);
     void set_target(uint16_t voltage);
     bool read_deep();
     bool read_front();

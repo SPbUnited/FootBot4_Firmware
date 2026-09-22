@@ -202,6 +202,7 @@ void init()
     {
         kwarning("EEPROM signature mismatch, saving settings to EEPROM");
         eeprom::put(0, robot_settings);
+        robot_dev.init(robot_settings);
     }
     else
     {

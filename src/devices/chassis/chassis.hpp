@@ -1,21 +1,12 @@
 #pragma once
 
 #include "devices/bldc/bldc.hpp"
-#include "vt_linalg"
+#include "robot_core/kinematics.hpp"
 
 namespace devices::chassis
 {
 
-union StateVector
-{
-    float vec[3];
-    struct
-    {
-        float x;
-        float y;
-        float theta;
-    };
-};
+using StateVector = robot_core::StateVector;
 
 struct ChassisConfig
 {
@@ -28,8 +19,7 @@ struct ChassisConfig
 class Chassis : public ChassisConfig
 {
   private:
-    vt::numeric_matrix<4, 3> J;
-    vt::numeric_matrix<3, 4> Jinv;
+    robot_core::Kinematics kinematics;
 
   public:
     Chassis(ChassisConfig config);

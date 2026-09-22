@@ -15,7 +15,7 @@ int voltagePrint(float x)
 
 int kickPrint()
 {
-    devices::kicker_drv.state = devices::kicker::KICK;
+    devices::robot_dev.kicker.state = robot_core::KICK;
     return 0;
 }
 // SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), chassisPrint,
@@ -30,7 +30,8 @@ int kickPrint()
 
 //     return 0;
 // }
-// SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC), chassisGetVelPrint,
+// SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC),
+// chassisGetVelPrint,
 //                  chassisGetVelPrint, get vel from wheel_vels);
 
 }  // namespace
@@ -64,7 +65,8 @@ int main_voltage_teleop(int argc, char *argv[])
 
         // devices::chassis_drv.getVel(&vel);
 
-        printf("\033[H\nControl voltage with keyboard w up, s down \n Current voltage: %6.3f", devices::kicker_drv.target);
+        printf("\033[H\nControl voltage with keyboard w up, s down \n Current voltage: %6.3f",
+               devices::kicker_drv.target);
 
         char c = getchar();
         if (c == -1)
@@ -86,7 +88,6 @@ int main_voltage_teleop(int argc, char *argv[])
             case 'k':
                 kickPrint();
                 break;
-
         }
 
         kernel::delay_ms(10);

@@ -35,14 +35,3 @@ extern "C" void EXTI15_10_IRQHandler(void);
 }  // namespace devices
 
 #endif
-
-#ifdef WEBOTS_INTEGRATION
-
-namespace devices
-{
-
-void init();
-
-}
-
-#endif

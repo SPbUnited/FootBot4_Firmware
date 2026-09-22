@@ -3,6 +3,7 @@
 #ifdef BARE_METAL
 
 #include "drivers/can/can.hpp"
+#include "robot_core/types.hpp"
 
 namespace devices::bldc
 {
@@ -94,17 +95,7 @@ enum CANFuocoRegisterMap
     SAVE_TO_EEPROM_W = 127,
 };
 
-union BldcsVec
-{
-    float vec[4];
-    struct
-    {
-        float fl;
-        float rl;
-        float rr;
-        float fr;
-    };
-};
+using BldcsVec = robot_core::WheelVector;
 
 struct BldcsConfig
 {

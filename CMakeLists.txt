@@ -1,72 +1,46 @@
 cmake_minimum_required(VERSION 3.16)
-
 project(fb4_firmware LANGUAGES CXX)
-
-# Set your C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D WEBOTS_INTEGRATION -D FIRMWARE_VERSION='\"webots\"'")
-
-
-if(NOT DEFINED WEBOTS_HOME OR WEBOTS_HOME STREQUAL "")
-  set(WEBOTS_HOME "$ENV{WEBOTS_HOME}")
+include(CTest)
+option(BUILD_WEBOTS "Build the Webots controller" OFF)
+option(RUN_WEBOTS_TESTS "Register Webots runtime smoke test (requires a working Webots installation)" OFF)
+add_subdirectory(lib/robot_core)
+if(BUILD_TESTING)
+    add_executable(robot_core_tests test/core/control_test.cpp)
+    target_link_libraries(robot_core_tests PRIVATE robot_core)
+    add_test(NAME robot_core COMMAND robot_core_tests)
 endif()
-
-# Let user/system override this:
-# if(NOT DEFINED WEBOTS_HOME)
-#   set(WEBOTS_HOME "" CACHE PATH "Path to Webots installation")
-# endif()
-
-# if(NOT WEBOTS_HOME OR NOT EXISTS "${WEBOTS_HOME}")
-#   message(FATAL_ERROR "Set WEBOTS_HOME to your Webots install path, e.g. -DWEBOTS_HOME=/opt/webots")
-# endif()
-
-message(STATUS "Webots home: ${WEBOTS_HOME}")
-
-# Where to find headers like #include "..."
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/lib/vt-linalg/include)
-include_directories(${CMAKE_SOURCE_DIR}/lib/half_float)
-include_directories(${CMAKE_SOURCE_DIR}/lib/letter-shell/src)
-include_directories(${CMAKE_SOURCE_DIR}/lib/letter-shell/src/extensions/cpp_support)
-include_directories(${CMAKE_SOURCE_DIR}/lib/letter-shell/src/extensions/log)
-include_directories(${WEBOTS_HOME}/include/controller/cpp)
-
-# Source files
-file(GLOB SOURCES
-  ${CMAKE_SOURCE_DIR}/src/main.cpp
-  ${CMAKE_SOURCE_DIR}/src/*.cpp
-  ${CMAKE_SOURCE_DIR}/src/devices/*.cpp
-  ${CMAKE_SOURCE_DIR}/lib/*.cpp
-)
-
-# Build a native executable (host compiler)
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-# If you later add libraries, you’d link them here, e.g.:
-# target_link_libraries(${PROJECT_NAME} PRIVATE someLib)
-
-
-# --- Link Webots controller library ---
-# Common library locations (platform-dependent):
-#   Linux:   ${WEBOTS_HOME}/lib/controller/libcontroller.so (or similar)
-#   macOS:   ${WEBOTS_HOME}/lib/controller/libcontroller.dylib
-#   Windows: ${WEBOTS_HOME}/lib/controller/controller.lib / .dll import lib
-#
-# Update this line after checking your Webots install for the exact filename.
-# target_link_libraries(MyController PRIVATE controller)
-
-# If CMake cannot resolve "controller", explicitly use the full path:
-# target_link_libraries(MyController PRIVATE
-#   "${WEBOTS_HOME}/lib/controller/libcontroller.so"
-# )
-target_link_libraries(${PROJECT_NAME} PRIVATE
-  "${WEBOTS_HOME}/lib/controller/libCppController.so"
-)
-
-# Optional: put the binary into build/release (nice for your structure)
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/release"
-)
+if(BUILD_WEBOTS)
+    set(WEBOTS_HOME "$ENV{WEBOTS_HOME}" CACHE PATH "Webots installation root")
+    find_path(WEBOTS_INCLUDE_DIR webots/Robot.hpp
+        HINTS "${WEBOTS_HOME}/include/controller/cpp"
+              "${WEBOTS_HOME}/../share/webots/include/controller/cpp")
+    find_library(WEBOTS_CPP_LIBRARY CppController HINTS "${WEBOTS_HOME}/lib/controller")
+    find_library(WEBOTS_C_LIBRARY Controller HINTS "${WEBOTS_HOME}/lib/controller")
+    if(NOT WEBOTS_INCLUDE_DIR OR NOT WEBOTS_CPP_LIBRARY OR NOT WEBOTS_C_LIBRARY)
+        message(FATAL_ERROR "Set WEBOTS_HOME to the Webots SDK root (include/ and lib/).")
+    endif()
+    add_executable(fb4_firmware sim/webots/main.cpp sim/webots/adapter.cpp)
+    target_include_directories(fb4_firmware PRIVATE ${WEBOTS_INCLUDE_DIR})
+    target_link_libraries(fb4_firmware PRIVATE robot_core ${WEBOTS_CPP_LIBRARY} ${WEBOTS_C_LIBRARY})
+    set_target_properties(fb4_firmware PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/release")
+    if(BUILD_TESTING)
+        add_executable(fb4_smoke test/integration/webots_smoke.cpp sim/webots/adapter.cpp)
+        target_include_directories(fb4_smoke PRIVATE sim/webots ${WEBOTS_INCLUDE_DIR})
+        target_link_libraries(fb4_smoke PRIVATE robot_core ${WEBOTS_CPP_LIBRARY} ${WEBOTS_C_LIBRARY})
+        set_target_properties(fb4_smoke PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/webots_test/controllers/fb4_smoke")
+        configure_file(test/integration/worlds/adapter_smoke.wbt
+            "${CMAKE_BINARY_DIR}/webots_test/worlds/adapter_smoke.wbt" COPYONLY)
+        if(RUN_WEBOTS_TESTS)
+            find_program(WEBOTS_EXECUTABLE webots HINTS "${WEBOTS_HOME}" "${WEBOTS_HOME}/bin")
+            if(NOT WEBOTS_EXECUTABLE)
+                message(FATAL_ERROR "Webots executable required for RUN_WEBOTS_TESTS")
+            endif()
+            add_test(NAME webots_adapter COMMAND ${WEBOTS_EXECUTABLE}
+                --batch --mode=fast --no-rendering --stdout --stderr
+                "${CMAKE_BINARY_DIR}/webots_test/worlds/adapter_smoke.wbt")
+            set_tests_properties(webots_adapter PROPERTIES TIMEOUT 90
+                PASS_REGULAR_EXPRESSION "Webots adapter smoke checks passed")
+        endif()
+    endif()
+endif()

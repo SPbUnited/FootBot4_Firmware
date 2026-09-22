@@ -1,4 +1,6 @@
 # Прошивка для FootBot 4
+
+Shared control logic now lives in `lib/robot_core`. See [MCU builds, host tests, and Webots integration](docs/simulator-integration.md) for architecture, commands, device mappings, and current simulator limitations.
 Программатор JLink. Чтобы поменять на ST-Link, надо изменить параметр в platformio.ini
 
 ## Важные моменты

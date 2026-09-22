@@ -67,9 +67,11 @@ void Nrf24Recv::recv_irq()
         // Error handling
     }
 
-    if (m_lenDbg < 6)
+    if (m_lenDbg == 0 || m_lenDbg > 32)
     {
-        // Log error - could add logging here
+        spi_instance.flushRx();
+        writeReg(0x07, 0x40);
+        return;
     }
 
     if (time_ms - m_prevTime_ms > 1000)

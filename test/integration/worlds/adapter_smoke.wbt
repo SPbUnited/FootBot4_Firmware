@@ -1,0 +1,65 @@
+#VRML_SIM R2025a utf8
+WorldInfo { basicTimeStep 10 }
+Viewpoint { position 1 1 1 orientation -0.3 0.9 0.3 1.5 }
+Robot {
+  supervisor TRUE
+  controller "fb4_smoke"
+  children [
+    HingeJoint {
+      jointParameters HingeJointParameters { axis 0 0 1 anchor 0.0 0 0 }
+      device [
+        RotationalMotor { name "wheel0_motor" maxVelocity 140 maxTorque 10 }
+        PositionSensor { name "wheel0_encoder" }
+      ]
+      endPoint Solid {
+        name "rotor0"
+        translation 0.0 0 0
+        children [ Shape { geometry Cylinder { radius 0.0272 height 0.01 } } ]
+        boundingObject Cylinder { radius 0.0272 height 0.01 }
+        physics Physics { density -1 mass 0.01 }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters { axis 0 0 1 anchor 0.1 0 0 }
+      device [
+        RotationalMotor { name "wheel1_motor" maxVelocity 140 maxTorque 10 }
+        PositionSensor { name "wheel1_encoder" }
+      ]
+      endPoint Solid {
+        name "rotor1"
+        translation 0.1 0 0
+        children [ Shape { geometry Cylinder { radius 0.0272 height 0.01 } } ]
+        boundingObject Cylinder { radius 0.0272 height 0.01 }
+        physics Physics { density -1 mass 0.01 }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters { axis 0 0 1 anchor 0.2 0 0 }
+      device [
+        RotationalMotor { name "wheel2_motor" maxVelocity 140 maxTorque 10 }
+        PositionSensor { name "wheel2_encoder" }
+      ]
+      endPoint Solid {
+        name "rotor2"
+        translation 0.2 0 0
+        children [ Shape { geometry Cylinder { radius 0.0272 height 0.01 } } ]
+        boundingObject Cylinder { radius 0.0272 height 0.01 }
+        physics Physics { density -1 mass 0.01 }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters { axis 0 0 1 anchor 0.30000000000000004 0 0 }
+      device [
+        RotationalMotor { name "wheel3_motor" maxVelocity 140 maxTorque 10 }
+        PositionSensor { name "wheel3_encoder" }
+      ]
+      endPoint Solid {
+        name "rotor3"
+        translation 0.30000000000000004 0 0
+        children [ Shape { geometry Cylinder { radius 0.0272 height 0.01 } } ]
+        boundingObject Cylinder { radius 0.0272 height 0.01 }
+        physics Physics { density -1 mass 0.01 }
+      }
+    }
+  ]
+}

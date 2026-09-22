@@ -1,10 +1,10 @@
 #pragma once
 
 #include "kernel/kernel.hpp"
+#include "robot_core/types.hpp"
 #include "stm32f4xx_hal.h"
-
-#define Ts_us 10000
-#define Ts_s (Ts_us / 1000000.0f)
+inline constexpr auto Ts_us = robot_core::control_period_us;
+inline constexpr auto Ts_s = robot_core::control_period_s;
 
 namespace drivers::system_clock
 {
