@@ -15,11 +15,12 @@ static bool is_init = false;
 
 enum Apps
 {
+    // Order must match tasks[] below
     app_mainloop,
     app_screen,
     app_setting_broadcaster,
-    app_shell,
     app_monitor_reset,
+    // app_shell,
     app_count,
 };
 
@@ -41,6 +42,7 @@ TaskDescriptor tasks[app_count] = {
      idle,
      {0},
      LOG_INFO},
+    {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
@@ -49,7 +51,6 @@ TaskDescriptor tasks[app_count] = {
      idle,
      {0},
      LOG_NONE},
-    {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"monitor_reset", monitor_reset, 0, TPS(1), ksperiodic, idle, {0}, LOG_DEBUG},
     // {"shell", devices::shell::my_shellLoop, 0, 0, kspersistent, idle, {0}, LOG_DEBUG},
 };
@@ -69,7 +70,7 @@ void monitor_reset()
 
 static void run(Apps app)
 {
-    if (app >= app_count)
+    if (app >= app_count || tasks[app].function == nullptr)
     {
         return;
     }
@@ -99,6 +100,10 @@ void yield()
 
     for (size_t app = 0; app < (devices::robot_dev.play_mode == devices::robot::PLAY ? app_setting_broadcaster : app_count); app++)
     {
+        if (tasks[app].is_pending == nullptr)
+        {
+            continue;
+        }
         uint32_t elapsed_time = drivers::system_clock::micros() - tasks[app].last_exec;
         if (tasks[app].is_pending(elapsed_time, tasks[app].period))
         {

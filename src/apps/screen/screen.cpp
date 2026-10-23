@@ -67,12 +67,12 @@ void screen()
     static bool old_down = false;
     static bool old_select = false;
 
-    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read())
+    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() && !old_up)
     {
         was_id_changed = true;
         devices::robot_dev.inc_id();
     }
-    if (drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read())
+    if (drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() && !old_down)
     {
         was_id_changed = true;
         devices::robot_dev.dec_id();
