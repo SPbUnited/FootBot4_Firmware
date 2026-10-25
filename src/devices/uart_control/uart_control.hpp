@@ -15,7 +15,10 @@ struct UartControlConfig
     drivers::uart::UartDriver &uart_instance;
 };
 
-// RX packet: <5eB? = 5 half-floats + 1 byte + 1 bool = 12 bytes
+// Frame format (both directions): [SYNC 0xA5][payload][XOR checksum of SYNC+payload]
+constexpr uint8_t kSyncByte = 0xA5;
+
+// RX payload: <5eB? = 5 half-floats + 1 byte + 1 bool = 12 bytes (frame = 14 bytes)
 #pragma pack(push, 1)
 struct RxPacket
 {
@@ -29,7 +32,7 @@ struct RxPacket
 };
 #pragma pack(pop)
 
-// TX telemetry packet: <Be?? = 5 bytes
+// TX telemetry payload: <Be?? = 5 bytes (frame = 7 bytes)
 #pragma pack(push, 1)
 struct TxTelemetry
 {
@@ -43,7 +46,8 @@ struct TxTelemetry
 class UartControl : public UartControlConfig
 {
   private:
-    static constexpr uint32_t kPacketLen = sizeof(RxPacket);
+    static constexpr uint32_t kRxFrameLen = 1 + sizeof(RxPacket) + 1;
+    static constexpr uint32_t kTxFrameLen = 1 + sizeof(TxTelemetry) + 1;
     static constexpr uint32_t kRxBufSize = 256;
 
     static uint32_t m_prevTime_ms;
@@ -53,7 +57,9 @@ class UartControl : public UartControlConfig
     static uint8_t m_rx_acc_buf[kRxBufSize];
     static uint32_t m_rx_acc_len;
 
-    Queue<RxPacket, 8> m_rx_queue;
+    // Only the latest command matters, so keep one slot instead of a queue
+    RxPacket m_last_pkt{};
+    bool m_has_pkt = false;
 
     void process_command(const RxPacket &pkt);
 

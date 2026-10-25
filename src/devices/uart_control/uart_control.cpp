@@ -18,6 +18,16 @@ uint32_t UartControl::m_rx_acc_len = 0;
 
 UartControl::UartControl(UartControlConfig &uart_control_config) : UartControlConfig(uart_control_config) {}
 
+static uint8_t compute_checksum(const uint8_t *data, size_t length)
+{
+    uint8_t checksum = 0;
+    for (size_t i = 0; i < length; ++i)
+    {
+        checksum ^= data[i];
+    }
+    return checksum;
+}
+
 void UartControl::recv_irq()
 {
     while (m_rx_acc_len < kRxBufSize &&
@@ -26,42 +36,48 @@ void UartControl::recv_irq()
         m_rx_acc_len++;
     }
 
-    if (m_rx_acc_len == 0)
+    uint32_t parse_idx = 0;
+    while (m_rx_acc_len - parse_idx >= kRxFrameLen)
     {
-        return;
+        const uint8_t *frame = &m_rx_acc_buf[parse_idx];
+        if (frame[0] != kSyncByte || compute_checksum(frame, kRxFrameLen - 1) != frame[kRxFrameLen - 1])
+        {
+            parse_idx++;
+            continue;
+        }
+
+        memcpy(&m_last_pkt, frame + 1, sizeof(RxPacket));
+        m_has_pkt = true;
+        m_lastPacketTime = HAL_GetTick();
+
+        m_packetsReceived++;
+        uint32_t time_ms = HAL_GetTick();
+        if (time_ms - m_prevTime_ms > 1000)
+        {
+            m_prevTime_ms = time_ms;
+            m_packetsReceived_1s = m_packetsReceived;
+            m_packetsReceived = 0;
+        }
+
+        parse_idx += kRxFrameLen;
     }
 
-    m_lastPacketTime = HAL_GetTick();
-    m_packetsReceived++;
-
-    uint32_t time_ms = HAL_GetTick();
-    if (time_ms - m_prevTime_ms > 1000)
+    if (parse_idx > 0)
     {
-        m_prevTime_ms = time_ms;
-        m_packetsReceived_1s = m_packetsReceived;
-        m_packetsReceived = 0;
-    }
-
-    while (m_rx_acc_len >= kPacketLen)
-    {
-        RxPacket pkt;
-        memcpy(&pkt, m_rx_acc_buf, kPacketLen);
-        m_rx_queue.push_back(pkt);
-
-        m_rx_acc_len -= kPacketLen;
+        m_rx_acc_len -= parse_idx;
         if (m_rx_acc_len > 0)
         {
-            memmove(m_rx_acc_buf, m_rx_acc_buf + kPacketLen, m_rx_acc_len);
+            memmove(m_rx_acc_buf, m_rx_acc_buf + parse_idx, m_rx_acc_len);
         }
     }
 }
 
 int UartControl::fetch()
 {
-    while (!m_rx_queue.isEmpty())
+    if (m_has_pkt)
     {
-        RxPacket pkt = m_rx_queue.pop_front();
-        process_command(pkt);
+        m_has_pkt = false;
+        process_command(m_last_pkt);
     }
 
     return 0;
@@ -105,7 +121,12 @@ void UartControl::send_telemetry()
     tel.ball_deep = devices::kicker_drv.read_deep();
     tel.ball_front = devices::kicker_drv.read_front();
 
-    uart_instance.write(reinterpret_cast<const char *>(&tel), sizeof(tel));
+    uint8_t frame[kTxFrameLen];
+    frame[0] = kSyncByte;
+    memcpy(frame + 1, &tel, sizeof(tel));
+    frame[kTxFrameLen - 1] = compute_checksum(frame, kTxFrameLen - 1);
+
+    uart_instance.write(reinterpret_cast<const char *>(frame), sizeof(frame));
 }
 
 }  // namespace devices::uart_control
