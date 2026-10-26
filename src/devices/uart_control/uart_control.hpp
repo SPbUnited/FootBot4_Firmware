@@ -53,6 +53,8 @@ class UartControl : public UartControlConfig
     static constexpr uint32_t kRxBufSize = 256;
     // Toggling on every frame (100 Hz) just looks dimly lit, so blink at ~5 Hz instead
     static constexpr uint32_t kLedTogglePackets = 10;
+    // Stop the robot if no valid command arrived for this long
+    static constexpr uint32_t kLinkTimeout_ms = 200;
 
     static uint32_t m_prevTime_ms;
     static uint32_t m_packetsReceived;
@@ -64,11 +66,13 @@ class UartControl : public UartControlConfig
     // Only the latest command matters, so keep one slot instead of a queue
     RxPacket m_last_pkt{};
     bool m_has_pkt = false;
+    bool m_link_active = false;
 
     void process_command(const RxPacket &pkt);
+    void stop_robot();
 
   public:
-    volatile uint32_t m_lastPacketTime;
+    volatile uint32_t m_lastPacketTime = 0;
 
     UartControl(UartControlConfig &uart_control_config);
 

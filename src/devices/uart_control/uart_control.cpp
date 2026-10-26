@@ -76,15 +76,49 @@ void UartControl::recv_irq()
     }
 }
 
+// KickerMode values on the wire follow robot/control.proto, not robot::KickerMode
+static robot::KickerMode to_kicker_mode(uint8_t proto_mode)
+{
+    switch (proto_mode)
+    {
+        case 1:
+            return robot::KICK_FRONT;
+        case 2:
+            return robot::KICK_UP;
+        case 3:
+            return robot::AUTOKICK_FRONT;
+        case 4:
+            return robot::AUTOKICK_UP;
+        case 5:
+            return robot::AUTOKICK_MOMENTUM;
+        default:
+            return robot::DISABLED;
+    }
+}
+
 int UartControl::fetch()
 {
     if (m_has_pkt)
     {
         m_has_pkt = false;
+        m_link_active = true;
         process_command(m_last_pkt);
+    }
+    else if (m_link_active && HAL_GetTick() - m_lastPacketTime > kLinkTimeout_ms)
+    {
+        m_link_active = false;
+        stop_robot();
     }
 
     return 0;
+}
+
+void UartControl::stop_robot()
+{
+    robot_dev.set_target_local_linear_vel(0, 0, true);
+    robot_dev.set_target_angular_vel(0);
+    robot_dev.set_dribbler_setting(0);
+    robot_dev.set_kicker_mode(robot::DISABLED);
 }
 
 void UartControl::process_command(const RxPacket &pkt)
@@ -108,7 +142,7 @@ void UartControl::process_command(const RxPacket &pkt)
 
     robot_dev.set_dribbler_setting(static_cast<uint8_t>(dribbler));
     robot_dev.set_kicker_setting(static_cast<uint8_t>(kicker));
-    robot_dev.set_kicker_mode(static_cast<robot::KickerMode>(pkt.kicker_mode));
+    robot_dev.set_kicker_mode(to_kicker_mode(pkt.kicker_mode));
 }
 
 bool UartControl::init()
