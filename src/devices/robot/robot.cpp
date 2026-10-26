@@ -68,6 +68,11 @@ void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
 
 void Robot::set_target_angular_vel(float vel_theta)
 {
+    if (fabs(vel_theta) > kNonidleAngularVel)
+    {
+        update_nonidle_timer();
+    }
+
     angle_mode = ANGLEVEL;
 
     vel_global_target.theta = vel_theta;
@@ -78,6 +83,11 @@ void Robot::set_target_angular_vel(float vel_theta)
 
 void Robot::set_target_angular_dpos(float dpos_theta)
 {
+    if (fabs(dpos_theta) > kNonidleAngularDpos)
+    {
+        update_nonidle_timer();
+    }
+
     angle_mode = ANGLEPOS;
 
     vel_global_target.theta = 0;

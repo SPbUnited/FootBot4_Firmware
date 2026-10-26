@@ -104,6 +104,9 @@ struct Robot : RobotSettings, RobotConfig
     bool dribbler_update;
 
     uint32_t nonidle_timer;
+    // Angular commands below these keep the robot idle, so heading-hold jitter doesn't wake it
+    static constexpr float kNonidleAngularVel = 0.05;   // rad/s
+    static constexpr float kNonidleAngularDpos = 0.05;  // rad
     bool is_idle;
 
     void update_nonidle_timer();
