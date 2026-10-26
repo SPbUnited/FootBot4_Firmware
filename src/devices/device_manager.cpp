@@ -112,6 +112,7 @@ nrfm_decoder::NRFMDecoder nrfm_decoder_dev(nrfm_decoder_config);
 
 uart_control::UartControlConfig uart_control_config = {
     .uart_instance = drivers::uart4,
+    .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
 };
 
 uart_control::UartControl uart_control_dev(uart_control_config);

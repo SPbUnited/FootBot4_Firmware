@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <cstring>
 
+#include "drivers/gpio/gpio.hpp"
 #include "drivers/uart/uart.hpp"
 #include "half_float.h"
 #include "math.hpp"
@@ -13,6 +14,7 @@ namespace devices::uart_control
 struct UartControlConfig
 {
     drivers::uart::UartDriver &uart_instance;
+    drivers::gpio::GPIOOutputDriver &dts_led;
 };
 
 // Frame format (both directions): [SYNC 0xA5][payload][XOR checksum of SYNC+payload]
@@ -49,6 +51,8 @@ class UartControl : public UartControlConfig
     static constexpr uint32_t kRxFrameLen = 1 + sizeof(RxPacket) + 1;
     static constexpr uint32_t kTxFrameLen = 1 + sizeof(TxTelemetry) + 1;
     static constexpr uint32_t kRxBufSize = 256;
+    // Toggling on every frame (100 Hz) just looks dimly lit, so blink at ~5 Hz instead
+    static constexpr uint32_t kLedTogglePackets = 10;
 
     static uint32_t m_prevTime_ms;
     static uint32_t m_packetsReceived;

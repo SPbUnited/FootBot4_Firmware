@@ -51,6 +51,10 @@ void UartControl::recv_irq()
         m_lastPacketTime = HAL_GetTick();
 
         m_packetsReceived++;
+        if (m_packetsReceived % kLedTogglePackets == 0)
+        {
+            dts_led.toggle();
+        }
         uint32_t time_ms = HAL_GetTick();
         if (time_ms - m_prevTime_ms > 1000)
         {
