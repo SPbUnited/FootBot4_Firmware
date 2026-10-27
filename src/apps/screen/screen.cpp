@@ -19,8 +19,14 @@ void screen()
     static bool was_id_changed = false;
 
     static int counter = 0;
+    // Robot id in the largest font that fits the 32 px height (5x7 font x4 = 20x28 px) on the left,
+    // everything else in the default font in a column on the right
+    constexpr int id_scale = 4;
+    constexpr int right_x = 50;
+    constexpr int line_h = 8;
+    constexpr int version_field_width = 13;  // (128 - right_x) / 6 px per char
+
     int version_len = strlen(FIRMWARE_VERSION);
-    int version_field_width = 10;
     char vbuf[version_field_width + 1] = {' '};
 
     // https://www.desmos.com/calculator/goy31sxinl
@@ -43,14 +49,26 @@ void screen()
     }
     vbuf[version_field_width] = '\0';
 
-    display.rectFill(0, 0, 126, 32, false);  // Очищаем область
-    display.setCursor(0, 0);
+    display.rectFill(0, 0, 128, 32, false);  // Очищаем область
+
+    display.setTextSize(id_scale);
+    display.setCursor(0, 2);
+    display.printf("%d", devices::robot_dev.robot_id);
+
     display.setTextSize(1);
-    display.printf(
-        "robot  %2d%c|%s---------------------x: %6.3f |y: %6.3f\ntheta: %6.3f v: %6.1f",
-        devices::robot_dev.robot_id, was_id_changed ? '*' : ' ', vbuf, offset,
-        devices::robot_dev.pos_global_current.x, devices::robot_dev.pos_global_current.y,
-        devices::robot_dev.pos_global_current.theta, devices::kicker_drv.actual_voltage);
+    if (was_id_changed)
+    {
+        display.setCursor(right_x - 6, 0);
+        display.printf("*");
+    }
+    display.setCursor(right_x, 0);
+    display.printf("%s", vbuf);
+    display.setCursor(right_x, line_h);
+    display.printf("x:%7.3f", devices::robot_dev.pos_global_current.x);
+    display.setCursor(right_x, 2 * line_h);
+    display.printf("y:%7.3f", devices::robot_dev.pos_global_current.y);
+    display.setCursor(right_x, 3 * line_h);
+    display.printf("t%6.2f v%4.0f", devices::robot_dev.pos_global_current.theta, devices::kicker_drv.actual_voltage);
 
     counter++;
     if (counter > a + a + t1 + t2)
