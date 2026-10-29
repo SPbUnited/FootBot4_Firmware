@@ -5,6 +5,7 @@
 
 #include "kernel/kernel.hpp"
 #include "devices/device_manager.hpp"
+#include "drivers/driver_manager.hpp"
 
 namespace devices::uart_control
 {
@@ -98,11 +99,37 @@ static robot::KickerMode to_kicker_mode(uint8_t proto_mode)
 
 int UartControl::fetch()
 {
+    // The screen app changes robot_dev.robot_id when the id buttons are pressed
+    if (robot_dev.robot_id != m_known_id)
+    {
+        m_id_from_buttons = m_known_id != kNoRobotId;  // not on the first call
+        m_known_id = robot_dev.robot_id;
+    }
+
+    if (m_id_save_pending)
+    {
+        // Erasing the EEPROM flash sector stalls the main loop for a second or two; the robot
+        // got a stop on the previous cycle
+        m_id_save_pending = false;
+        kinfo("Saving robot id %d to EEPROM", robot_dev.robot_id);
+        eeprom::put(0, static_cast<robot::RobotSettings>(robot_dev));
+        m_has_pkt = false;  // stale by now
+        return 0;
+    }
+
     if (m_has_pkt)
     {
         m_has_pkt = false;
         m_link_active = true;
-        process_command(m_last_pkt);
+        sync_robot_id(m_last_pkt.robot_id);
+        if (m_id_save_pending)
+        {
+            stop_robot();
+        }
+        else
+        {
+            process_command(m_last_pkt);
+        }
     }
     else if (m_link_active && HAL_GetTick() - m_lastPacketTime > kLinkTimeout_ms)
     {
@@ -113,12 +140,43 @@ int UartControl::fetch()
     return 0;
 }
 
+// Both sides send their id in every frame. An id changed with the buttons wins: it is kept
+// until the RPi takes it (the RPi adopts our id after it has differed for a while). Otherwise
+// the RPi's id wins, so a robot with a new RPi or a renamed RPi follows it. An id agreed with
+// the RPi is saved to the EEPROM.
+void UartControl::sync_robot_id(uint8_t rpi_id)
+{
+    uint8_t own_id = robot_dev.robot_id;
+    if (rpi_id > kMaxRobotId)
+    {
+        return;
+    }
+    if (rpi_id == own_id)
+    {
+        if (m_id_from_buttons)
+        {
+            m_id_from_buttons = false;
+            m_id_save_pending = true;
+        }
+        return;
+    }
+    if (m_id_from_buttons)
+    {
+        return;
+    }
+    kinfo("Robot id %d -> %d from the RPi", own_id, rpi_id);
+    robot_dev.robot_id = rpi_id;
+    m_known_id = rpi_id;
+    m_id_save_pending = true;
+}
+
 void UartControl::stop_robot()
 {
     robot_dev.set_target_local_linear_vel(0, 0, true);
     robot_dev.set_target_angular_vel(0);
     robot_dev.set_dribbler_setting(0);
     robot_dev.set_kicker_mode(robot::DISABLED);
+    drivers::buzzer_drv.set(false);
 }
 
 void UartControl::process_command(const RxPacket &pkt)
@@ -143,6 +201,7 @@ void UartControl::process_command(const RxPacket &pkt)
     robot_dev.set_dribbler_setting(static_cast<uint8_t>(dribbler));
     robot_dev.set_kicker_setting(static_cast<uint8_t>(kicker));
     robot_dev.set_kicker_mode(to_kicker_mode(pkt.kicker_mode));
+    drivers::buzzer_drv.set(pkt.beep);
 }
 
 bool UartControl::init()

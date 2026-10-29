@@ -5,29 +5,20 @@
 namespace drivers::buzzer
 {
 
+// Passive buzzer on PF13: it sounds only while the pin is toggled, so TIM7 toggles it from
+// an interrupt and the main loop just switches the tone on and off
 class Buzzer
 {
   private:
+    static constexpr uint32_t kToneFreq_Hz = 2000;
+
+    bool m_on = false;
+
   public:
     Buzzer() {}
 
-    void init()
-    {
-        __HAL_RCC_GPIOF_CLK_ENABLE();
-        GPIO_InitTypeDef GPIO_InitStruct = {0};
-        GPIO_InitStruct.Pin = GPIO_PIN_13;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-        HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-    }
-
-    void buzz()
-    {
-        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_SET);
-        HAL_Delay(1000);
-        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_RESET);
-    }
+    void init();
+    void set(bool on);
 };
 
 }  // namespace drivers::buzzer

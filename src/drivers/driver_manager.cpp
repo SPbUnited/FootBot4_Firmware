@@ -244,6 +244,7 @@ void init()
 
     drivers::can_drv.init();
     drivers::spi2.init();
+    drivers::buzzer_drv.init();
 }
 
 }  // namespace drivers
