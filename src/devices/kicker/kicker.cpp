@@ -31,28 +31,7 @@ void Kicker::update()
 {
     get_voltage();
 
-    float MIN_VOLTAGE = 100;
-    float MAX_VOLTAGE = 330;
-
-    if (devices::robot_dev.kicker_setting == 0)
-    {
-        target = 0;
-    }
-    else
-    {
-        target =
-            (devices::robot_dev.kicker_setting - 1) / (15.0 - 1) * (MAX_VOLTAGE - MIN_VOLTAGE) +
-            MIN_VOLTAGE;
-    }
-
-    if (target >= 330)
-    {
-        target = 330;
-    }
-    else if (target <= 0)
-    {
-        target = 0;
-    }
+    target = devices::robot_dev.kicker_voltage;  // already within 0..MAX_VOLTAGE
     if ((state == PREPARE) || !prepared)
     {
         straight_pin->write(true);

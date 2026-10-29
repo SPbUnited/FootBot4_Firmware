@@ -125,11 +125,23 @@ void Robot::set_dribbler_setting(uint8_t setting)
              dribbler_setting);
 }
 
+void Robot::set_kicker_voltage(float voltage)
+{
+    kicker_voltage = MIN(MAX(voltage, 0.0f), kicker::MAX_VOLTAGE);
+
+    kverbose("set_kicker_voltage(voltage = %f): kicker_voltage = %f", voltage, kicker_voltage);
+}
+
+// Level of the radio protocol: 0 - don't charge, 1..15 - MIN_SETTING_VOLTAGE..MAX_VOLTAGE
 void Robot::set_kicker_setting(uint8_t setting)
 {
-    kicker_setting = setting;
-
-    kverbose("set_kicker_setting(setting = %d): kicker_setting = %d", setting, kicker_setting);
+    if (setting == 0)
+    {
+        set_kicker_voltage(0);
+        return;
+    }
+    set_kicker_voltage(kicker::MIN_SETTING_VOLTAGE + (MIN(setting, 15) - 1) / (15.0f - 1) *
+                                                        (kicker::MAX_VOLTAGE - kicker::MIN_SETTING_VOLTAGE));
 }
 
 void Robot::set_kicker_mode(KickerMode mode)

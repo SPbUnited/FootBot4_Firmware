@@ -185,7 +185,7 @@ void UartControl::process_command(const RxPacket &pkt)
     float vel_y = fp16_to_fp32(pkt.vel_y);
     float w = fp16_to_fp32(pkt.w);
     float dribbler = fp16_to_fp32(pkt.dribbler);
-    float kicker = fp16_to_fp32(pkt.kicker);
+    float kicker = fp16_to_fp32(pkt.kicker);  // [V]
 
     robot_dev.set_target_local_linear_vel(vel_x, vel_y, true);
 
@@ -199,7 +199,7 @@ void UartControl::process_command(const RxPacket &pkt)
     }
 
     robot_dev.set_dribbler_setting(static_cast<uint8_t>(dribbler));
-    robot_dev.set_kicker_setting(static_cast<uint8_t>(kicker));
+    robot_dev.set_kicker_voltage(kicker);
     robot_dev.set_kicker_mode(to_kicker_mode(pkt.kicker_mode));
     drivers::buzzer_drv.set(pkt.beep);
 }

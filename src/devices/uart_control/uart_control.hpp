@@ -30,7 +30,7 @@ struct RxPacket
     uint16_t vel_y;
     uint16_t w;
     uint16_t dribbler;
-    uint16_t kicker;
+    uint16_t kicker;  // [V] capacitor target 0..330, 0 - don't charge
     uint8_t kicker_mode;
     uint8_t angle_mode;
     uint8_t beep;

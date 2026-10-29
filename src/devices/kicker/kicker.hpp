@@ -7,6 +7,9 @@
 namespace devices::kicker
 {
 
+constexpr float MAX_VOLTAGE = 330;          // [V] the highest charge the capacitors may get
+constexpr float MIN_SETTING_VOLTAGE = 100;  // [V] level 1 of the radio protocol's kicker setting
+
 enum KICKER_STATES
 {
   PREPARE,

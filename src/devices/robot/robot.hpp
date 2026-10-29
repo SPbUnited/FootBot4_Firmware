@@ -99,7 +99,7 @@ struct Robot : RobotSettings, RobotConfig
     Waypoint waypoints[16];
 
     KickerMode kicker_mode;
-    uint8_t kicker_setting;
+    float kicker_voltage;  // [V] capacitor target, 0 - don't charge
     uint8_t dribbler_setting;
     bool dribbler_update;
 
@@ -121,6 +121,7 @@ struct Robot : RobotSettings, RobotConfig
     void set_max_angular_accel(float max_accel);
 
     void set_dribbler_setting(uint8_t setting);
+    void set_kicker_voltage(float voltage);
     void set_kicker_setting(uint8_t setting);
     void set_kicker_mode(KickerMode mode);
 
