@@ -88,10 +88,15 @@ void Robot::set_target_angular_dpos(float dpos_theta)
         update_nonidle_timer();
     }
 
-    angle_mode = ANGLEPOS;
-
     vel_global_target.theta = 0;
-    pos_global_target.theta = pos_global_current.theta + dpos_theta;
+    // Zero means "keep the heading": commands repeat every cycle, so re-latching the target to
+    // the current heading would let it drift. The heading is latched when angle control starts.
+    if (angle_mode != ANGLEPOS || dpos_theta != 0)
+    {
+        pos_global_target.theta = pos_global_current.theta + dpos_theta;
+    }
+
+    angle_mode = ANGLEPOS;
 
     kverbose("set_target_angular_dpos(dpos_theta = %f): pos_global_target.theta = %f", dpos_theta,
              pos_global_target.theta);
