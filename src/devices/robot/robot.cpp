@@ -158,15 +158,14 @@ void Robot::set_kicker_mode(KickerMode mode)
 
 void Robot::inc_id()
 {
-    robot_id++;
+    robot_id++;  // no id (0xFF) wraps to 0
     robot_id %= 16;
     kverbose("inc_id(): robot_id = %d", robot_id);
 }
 
 void Robot::dec_id()
 {
-    robot_id--;
-    robot_id %= 16;
+    robot_id = robot_id < 16 ? (robot_id + 15) % 16 : 15;  // from no id (0xFF) to the last one
     kverbose("dec_id(): robot_id = %d", robot_id);
 }
 

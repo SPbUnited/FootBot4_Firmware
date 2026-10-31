@@ -102,19 +102,8 @@ int UartControl::fetch()
     // The screen app changes robot_dev.robot_id when the id buttons are pressed
     if (robot_dev.robot_id != m_known_id)
     {
-        m_id_from_buttons = m_known_id != kNoRobotId;  // not on the first call
+        m_id_from_buttons = true;
         m_known_id = robot_dev.robot_id;
-    }
-
-    if (m_id_save_pending)
-    {
-        // Erasing the EEPROM flash sector stalls the main loop for a second or two; the robot
-        // got a stop on the previous cycle
-        m_id_save_pending = false;
-        kinfo("Saving robot id %d to EEPROM", robot_dev.robot_id);
-        eeprom::put(0, static_cast<robot::RobotSettings>(robot_dev));
-        m_has_pkt = false;  // stale by now
-        return 0;
     }
 
     if (m_has_pkt)
@@ -122,14 +111,7 @@ int UartControl::fetch()
         m_has_pkt = false;
         m_link_active = true;
         sync_robot_id(m_last_pkt.robot_id);
-        if (m_id_save_pending)
-        {
-            stop_robot();
-        }
-        else
-        {
-            process_command(m_last_pkt);
-        }
+        process_command(m_last_pkt);
     }
     else if (m_link_active && HAL_GetTick() - m_lastPacketTime > kLinkTimeout_ms)
     {
@@ -140,10 +122,10 @@ int UartControl::fetch()
     return 0;
 }
 
+// The id lives in the RPi hostname (fb4-NN); the STM32 starts without one and takes the RPi's.
 // Both sides send their id in every frame. An id changed with the buttons wins: it is kept
-// until the RPi takes it (the RPi adopts our id after it has differed for a while). Otherwise
-// the RPi's id wins, so a robot with a new RPi or a renamed RPi follows it. An id agreed with
-// the RPi is saved to the EEPROM.
+// until the RPi takes it (the RPi adopts our id after it has differed for a while and renames
+// itself). Otherwise the RPi's id wins.
 void UartControl::sync_robot_id(uint8_t rpi_id)
 {
     uint8_t own_id = robot_dev.robot_id;
@@ -153,11 +135,7 @@ void UartControl::sync_robot_id(uint8_t rpi_id)
     }
     if (rpi_id == own_id)
     {
-        if (m_id_from_buttons)
-        {
-            m_id_from_buttons = false;
-            m_id_save_pending = true;
-        }
+        m_id_from_buttons = false;
         return;
     }
     if (m_id_from_buttons)
@@ -167,7 +145,6 @@ void UartControl::sync_robot_id(uint8_t rpi_id)
     kinfo("Robot id %d -> %d from the RPi", own_id, rpi_id);
     robot_dev.robot_id = rpi_id;
     m_known_id = rpi_id;
-    m_id_save_pending = true;
 }
 
 void UartControl::stop_robot()

@@ -218,14 +218,16 @@ void init()
     {
         kwarning("EEPROM signature mismatch, saving settings to EEPROM");
         eeprom::put(0, robot_settings);
+        robot_dev.init(robot_settings);  // with the signature: later saves of robot_dev must match on boot
     }
     else
     {
         kinfo("EEPROM signature match");
         kinfo("Updating robot settings from EEPROM");
-        kinfo("  id: %d", eeprom_robot_settings.robot_id);
         robot_dev.init(eeprom_robot_settings);
     }
+    // The id comes from the RPi (its hostname) over UART, the one in the EEPROM is not used
+    robot_dev.robot_id = uart_control::kNoRobotId;
 
     kinfo("Robot initialized");
 

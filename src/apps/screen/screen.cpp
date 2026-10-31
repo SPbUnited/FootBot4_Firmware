@@ -53,7 +53,14 @@ void screen()
 
     display.setTextSize(id_scale);
     display.setCursor(0, 2);
-    display.printf("%d", devices::robot_dev.robot_id);
+    if (devices::robot_dev.robot_id <= devices::uart_control::kMaxRobotId)
+    {
+        display.printf("%d", devices::robot_dev.robot_id);
+    }
+    else
+    {
+        display.printf("--");  // not received from the RPi yet
+    }
 
     display.setTextSize(1);
     if (was_id_changed)

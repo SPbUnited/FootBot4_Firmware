@@ -19,7 +19,7 @@ struct UartControlConfig
 
 // Frame format (both directions): [SYNC 0xA5][payload][XOR checksum of SYNC+payload]
 constexpr uint8_t kSyncByte = 0xA5;
-constexpr uint8_t kNoRobotId = 0xFF;
+constexpr uint8_t kNoRobotId = 0xFF;  // the id is not known yet: the RPi gives it, it is not kept over resets
 constexpr uint8_t kMaxRobotId = 15;  // the id buttons wrap at 16
 
 // RX payload: <5eB??B = 5 half-floats + 1 byte + 2 bools + 1 byte = 14 bytes (frame = 16 bytes)
@@ -34,7 +34,7 @@ struct RxPacket
     uint8_t kicker_mode;
     uint8_t angle_mode;
     uint8_t beep;
-    uint8_t robot_id;  // kNoRobotId: the RPi doesn't know its id yet
+    uint8_t robot_id;  // kNoRobotId: no id (teleop over UART)
 };
 #pragma pack(pop)
 static_assert(sizeof(RxPacket) == 14, "must match CMD_FMT in fb4-runner/src/protocol/uart.py");
@@ -76,7 +76,6 @@ class UartControl : public UartControlConfig
     // Robot id agreement with the RPi, see sync_robot_id()
     uint8_t m_known_id = kNoRobotId;  // robot_dev.robot_id as of the last check
     bool m_id_from_buttons = false;   // changed with the buttons, the RPi hasn't taken it yet
-    bool m_id_save_pending = false;
 
     void process_command(const RxPacket &pkt);
     void sync_robot_id(uint8_t rpi_id);
