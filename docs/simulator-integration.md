@@ -24,6 +24,17 @@ ctest --test-dir build/host --output-on-failure
 
 Webots controller:
 
+From PlatformIO (also available under **Project Tasks → disco_f429zi → Custom → Build Webots controller**):
+
+```sh
+export WEBOTS_HOME=/path/to/webots
+pio run -e disco_f429zi -t webots
+```
+
+The custom script `scripts/build_webots.py` configures CMake in `build/platformio-webots`, builds the host controller in Release mode, and copies it to `fb4_controller` in the project root. It requires CMake, a host C++17 compiler, and a CMake build tool (such as Make or Ninja) on PATH. Set `CMAKE_COMMAND` to an absolute CMake executable path if needed. This target does not compile or upload MCU firmware; ordinary `pio run` still builds the MCU. PlatformIO still loads the STM32 environment to register the custom task.
+
+Or invoke CMake directly:
+
 ```sh
 cmake -S . -B build/webots -DBUILD_WEBOTS=ON -DWEBOTS_HOME=/path/to/webots
 cmake --build build/webots --parallel
