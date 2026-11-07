@@ -5,6 +5,11 @@
 namespace drivers::can
 {
 
+namespace
+{
+CanDriver *can1_driver = nullptr;
+}
+
 CanDriver::CanDriver(CanConfig config) : CanConfig(config) {}
 
 void CanDriver::init()
@@ -42,6 +47,8 @@ void CanDriver::init()
     handle.Init.ReceiveFifoLocked = receiveFifoLocked;
     handle.Init.TransmitFifoPriority = transmitFifoPriority;
 
+    can1_driver = this;
+
     HAL_StatusTypeDef status = HAL_CAN_Init(&handle);
     if (status != HAL_OK)
     {
@@ -49,15 +56,7 @@ void CanDriver::init()
         kerror("CAN init error: %d, error code: %lu\n", int(status), error);
     }
 
-    // Start the CAN peripheral
-    status = HAL_CAN_Start(&handle);
-    if (status != HAL_OK)
-    {
-        uint32_t error = HAL_CAN_GetError(&handle);
-        kerror("CAN start error: %d, error code: %lu\n", int(status), error);
-    }
-
-    // Configure and activate a filter to allow all messages (standard ID)
+    // Configure a filter to allow all messages (standard ID)
     CAN_FilterTypeDef sFilterConfig;
     sFilterConfig.FilterBank = 0;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -75,6 +74,25 @@ void CanDriver::init()
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kerror("CAN filter config error: %d, error code: %lu\n", int(status), error);
+    }
+
+    status = HAL_CAN_Start(&handle);
+    if (status != HAL_OK)
+    {
+        uint32_t error = HAL_CAN_GetError(&handle);
+        kerror("CAN start error: %d, error code: %lu\n", int(status), error);
+        return;
+    }
+
+    HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+
+    status = HAL_CAN_ActivateNotification(&handle,
+                                          CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO0_OVERRUN);
+    if (status != HAL_OK)
+    {
+        uint32_t error = HAL_CAN_GetError(&handle);
+        kerror("CAN RX notification error: %d, error code: %lu\n", int(status), error);
     }
 }
 
@@ -122,35 +140,124 @@ bool CanDriver::write(uint32_t id, const uint8_t *data, uint8_t len)
 
 bool CanDriver::read(uint32_t *id, uint8_t *data, uint8_t *len)
 {
-    if (id == nullptr || data == nullptr || len == nullptr ||
-        HAL_CAN_GetRxFifoFillLevel(&handle, CAN_RX_FIFO0) == 0)
+    if (id == nullptr || data == nullptr || len == nullptr)
     {
         return false;
     }
 
-    CAN_RxHeaderTypeDef RxHeader;
-    uint8_t RxData[8];
-
-    HAL_StatusTypeDef status = HAL_CAN_GetRxMessage(&handle, CAN_RX_FIFO0, &RxHeader, RxData);
-    if (status == HAL_OK)
+    const uint8_t tail = rx_tail_;
+    if (tail == rx_head_)
     {
-        if (RxHeader.IDE != CAN_ID_STD || RxHeader.RTR != CAN_RTR_DATA || RxHeader.DLC > 8)
-        {
-            return false;
-        }
-        *id = RxHeader.StdId;
-        *len = RxHeader.DLC;
-        for (uint8_t i = 0; i < *len; i++)
-        {
-            data[i] = RxData[i];
-        }
-        return true;
-    }
-    else
-    {
-        kerror("CAN read error: %d\n", int(status));
         return false;
+    }
+
+    __DMB();
+    const RxFrame &frame = rx_queue_[tail];
+    *id = frame.id;
+    *len = frame.len;
+    for (uint8_t i = 0; i < frame.len; ++i)
+    {
+        data[i] = frame.data[i];
+    }
+
+    __DMB();
+    rx_tail_ = (tail + 1) & RX_QUEUE_MASK;
+    return true;
+}
+
+bool CanDriver::enqueueFromIsr(const CAN_RxHeaderTypeDef &header, const uint8_t *data)
+{
+    if (header.IDE != CAN_ID_STD || header.RTR != CAN_RTR_DATA || header.DLC > 8)
+    {
+        return false;
+    }
+
+    const uint8_t head = rx_head_;
+    const uint8_t next = (head + 1) & RX_QUEUE_MASK;
+    if (next == rx_tail_)
+    {
+        ++rx_queue_drops_;
+        return false;
+    }
+
+    RxFrame &frame = rx_queue_[head];
+    frame.id = header.StdId;
+    frame.len = static_cast<uint8_t>(header.DLC);
+    for (uint8_t i = 0; i < frame.len; ++i)
+    {
+        frame.data[i] = data[i];
+    }
+
+    __DMB();
+    rx_head_ = next;
+    return true;
+}
+
+void CanDriver::receivePending()
+{
+    for (uint8_t frames_read = 0;
+         frames_read < RX_FIFO0_DEPTH && HAL_CAN_GetRxFifoFillLevel(&handle, CAN_RX_FIFO0) > 0;
+         ++frames_read)
+    {
+        CAN_RxHeaderTypeDef header;
+        uint8_t data[8];
+        if (HAL_CAN_GetRxMessage(&handle, CAN_RX_FIFO0, &header, data) != HAL_OK)
+        {
+            break;
+        }
+        enqueueFromIsr(header, data);
+    }
+}
+
+uint32_t CanDriver::rxQueueDrops() const
+{
+    return rx_queue_drops_;
+}
+
+uint32_t CanDriver::rxFifoOverruns() const
+{
+    return rx_fifo_overruns_;
+}
+
+void handleCan1Rx0Interrupt()
+{
+    if (can1_driver != nullptr)
+    {
+        HAL_CAN_IRQHandler(&can1_driver->handle);
+    }
+}
+
+void handleCan1Rx0Pending(CAN_HandleTypeDef *handle)
+{
+    if (can1_driver != nullptr && handle == &can1_driver->handle)
+    {
+        can1_driver->receivePending();
+    }
+}
+
+void handleCanError(CAN_HandleTypeDef *handle)
+{
+    if (can1_driver != nullptr && handle == &can1_driver->handle &&
+        (handle->ErrorCode & HAL_CAN_ERROR_RX_FOV0) != 0)
+    {
+        ++can1_driver->rx_fifo_overruns_;
+        handle->ErrorCode &= ~HAL_CAN_ERROR_RX_FOV0;
     }
 }
 
 }  // namespace drivers::can
+
+extern "C" void CAN1_RX0_IRQHandler(void)
+{
+    drivers::can::handleCan1Rx0Interrupt();
+}
+
+extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *handle)
+{
+    drivers::can::handleCan1Rx0Pending(handle);
+}
+
+extern "C" void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *handle)
+{
+    drivers::can::handleCanError(handle);
+}

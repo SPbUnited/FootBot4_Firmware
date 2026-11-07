@@ -9,6 +9,11 @@
 extern "C"
 {
     volatile float can_battery_voltage = 0.0f;
+    volatile float can_drive_voltage[4] = {};
+    volatile float can_drive_velocity[4] = {};
+    volatile float can_drive_position[4] = {};
+    volatile float can_driver_pcb_temperature[4] = {};
+    volatile float can_motor_temperature[4] = {};
 }
 
 namespace devices::bldc
@@ -16,8 +21,10 @@ namespace devices::bldc
 
 void BldcsDriver::init()
 {
-    uint8_t monitor_value = SUPPLY_VOLTAGE_R;
-    motorWrite(0, MONITOR_SETTINGS_RW, &monitor_value, 1);
+    // const uint8_t monitor_registers[4] = {SHAFT_FEEDBACK_R, SUPPLY_VOLTAGE_R, PCB_TEMPERATURE_R,
+    //                                      MOTOR_TEMPERATURE_R};
+    const uint8_t monitor_registers[4] = {SHAFT_FEEDBACK_R, 0, 0, 0};
+    motorWrite(0, MONITOR_SETTINGS_RW, monitor_registers, sizeof(monitor_registers));
 
     kprogress_start("Awaiting BLDC initialization...");
     for (int i = 0; i < 4; i++)
@@ -111,13 +118,30 @@ void BldcsDriver::pollFeedback()
             float voltage;
             std::memcpy(&voltage, response, sizeof(voltage));
             can_battery_voltage = voltage;
+            can_drive_voltage[offset] = voltage;
             received_feedback_mask |= 1U << offset;
         }
         else if (register_addr == SHAFT_FEEDBACK_R && response_len == 2 * sizeof(float))
         {
             std::memcpy(&current_vel.vec[offset], &response[0], sizeof(float));
             std::memcpy(&current_pos.vec[offset], &response[4], sizeof(float));
+            can_drive_velocity[offset] = current_vel.vec[offset];
+            can_drive_position[offset] = current_pos.vec[offset];
             received_feedback_mask |= 1U << offset;
+        }
+        else if ((register_addr == PCB_TEMPERATURE_R || register_addr == MOTOR_TEMPERATURE_R) &&
+                 response_len == sizeof(float))
+        {
+            float temperature;
+            std::memcpy(&temperature, response, sizeof(temperature));
+            if (register_addr == PCB_TEMPERATURE_R)
+            {
+                can_driver_pcb_temperature[offset] = temperature;
+            }
+            else
+            {
+                can_motor_temperature[offset] = temperature;
+            }
         }
     }
 }

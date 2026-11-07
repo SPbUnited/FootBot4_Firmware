@@ -4,6 +4,12 @@
 
 /** Latest CAN-reported motor supply voltage, in volts. */
 extern "C" volatile float can_battery_voltage;
+/** Latest CAN telemetry from each drive; temperature values are in degrees Celsius. */
+extern "C" volatile float can_drive_voltage[4];
+extern "C" volatile float can_drive_velocity[4];
+extern "C" volatile float can_drive_position[4];
+extern "C" volatile float can_driver_pcb_temperature[4];
+extern "C" volatile float can_motor_temperature[4];
 
 namespace devices::bldc
 {
@@ -92,6 +98,8 @@ enum CANFuocoRegisterMap
     // Virtual registers
     MULTI_TARGET_W = 96,
     SHAFT_FEEDBACK_R = 102,
+    PCB_TEMPERATURE_R = 103,
+    MOTOR_TEMPERATURE_R = 104,
     SAVE_TO_EEPROM_W = 127,
 };
 

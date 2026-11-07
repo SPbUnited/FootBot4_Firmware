@@ -49,6 +49,126 @@
       "address": "0x2000081C",
       "type": "f32",
       "color": "#00AEEFFF"
+    },
+    {
+      "name": "can_drive_position[0]",
+      "address": "0x20000820",
+      "type": "f32",
+      "color": "#EB4242FF"
+    },
+    {
+      "name": "can_drive_position[1]",
+      "address": "0x20000824",
+      "type": "f32",
+      "color": "#EB7442FF"
+    },
+    {
+      "name": "can_drive_position[2]",
+      "address": "0x20000828",
+      "type": "f32",
+      "color": "#EBA742FF"
+    },
+    {
+      "name": "can_drive_position[3]",
+      "address": "0x2000082C",
+      "type": "f32",
+      "color": "#EBDA42FF"
+    },
+    {
+      "name": "can_drive_velocity[0]",
+      "address": "0x20000830",
+      "type": "f32",
+      "color": "#C9EB42FF"
+    },
+    {
+      "name": "can_drive_velocity[1]",
+      "address": "0x20000834",
+      "type": "f32",
+      "color": "#96EB42FF"
+    },
+    {
+      "name": "can_drive_velocity[2]",
+      "address": "0x20000838",
+      "type": "f32",
+      "color": "#63EB42FF"
+    },
+    {
+      "name": "can_drive_velocity[3]",
+      "address": "0x2000083C",
+      "type": "f32",
+      "color": "#42EB53FF"
+    },
+    {
+      "name": "can_drive_voltage[0]",
+      "address": "0x20000840",
+      "type": "f32",
+      "color": "#42EB85FF"
+    },
+    {
+      "name": "can_drive_voltage[1]",
+      "address": "0x20000844",
+      "type": "f32",
+      "color": "#42EBB8FF"
+    },
+    {
+      "name": "can_drive_voltage[2]",
+      "address": "0x20000848",
+      "type": "f32",
+      "color": "#42EBEBFF"
+    },
+    {
+      "name": "can_drive_voltage[3]",
+      "address": "0x2000084C",
+      "type": "f32",
+      "color": "#42B8EBFF"
+    },
+    {
+      "name": "can_driver_pcb_temperature[0]",
+      "address": "0x20000850",
+      "type": "f32",
+      "color": "#4285EBFF"
+    },
+    {
+      "name": "can_driver_pcb_temperature[1]",
+      "address": "0x20000854",
+      "type": "f32",
+      "color": "#4253EBFF"
+    },
+    {
+      "name": "can_driver_pcb_temperature[2]",
+      "address": "0x20000858",
+      "type": "f32",
+      "color": "#6342EBFF"
+    },
+    {
+      "name": "can_driver_pcb_temperature[3]",
+      "address": "0x2000085C",
+      "type": "f32",
+      "color": "#9642EBFF"
+    },
+    {
+      "name": "can_motor_temperature[0]",
+      "address": "0x20000860",
+      "type": "f32",
+      "color": "#C942EBFF"
+    },
+    {
+      "name": "can_motor_temperature[1]",
+      "address": "0x20000864",
+      "type": "f32",
+      "color": "#EB42DAFF"
+    },
+    {
+      "name": "can_motor_temperature[2]",
+      "address": "0x20000868",
+      "type": "f32",
+      "color": "#EB42A7FF"
+    },
+    {
+      "name": "can_motor_temperature[3]",
+      "address": "0x2000086C",
+      "type": "f32",
+      "color": "#EB4274FF"
     }
   ],
   "groups": [
@@ -69,6 +189,66 @@
           "series": [
             {
               "variable": "can_battery_voltage"
+            },
+            {
+              "variable": "can_drive_position[0]"
+            },
+            {
+              "variable": "can_drive_position[1]"
+            },
+            {
+              "variable": "can_drive_position[2]"
+            },
+            {
+              "variable": "can_drive_position[3]"
+            },
+            {
+              "variable": "can_drive_velocity[0]"
+            },
+            {
+              "variable": "can_drive_velocity[1]"
+            },
+            {
+              "variable": "can_drive_velocity[2]"
+            },
+            {
+              "variable": "can_drive_velocity[3]"
+            },
+            {
+              "variable": "can_drive_voltage[0]"
+            },
+            {
+              "variable": "can_drive_voltage[1]"
+            },
+            {
+              "variable": "can_drive_voltage[2]"
+            },
+            {
+              "variable": "can_drive_voltage[3]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[0]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[1]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[2]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[3]"
+            },
+            {
+              "variable": "can_motor_temperature[0]"
+            },
+            {
+              "variable": "can_motor_temperature[1]"
+            },
+            {
+              "variable": "can_motor_temperature[2]"
+            },
+            {
+              "variable": "can_motor_temperature[3]"
             }
           ]
         }
