@@ -1,7 +1,7 @@
 #include "nrf24.hpp"
 
-#include "kernel/kernel.hpp"
 #include "devices/device_manager.hpp"
+#include "kernel/kernel.hpp"
 
 #define NRF24_REG_RX_ADDR_P0 (uint8_t)0x0A  // Receive address data pipe 0
 #define NRF24_REG_RX_ADDR_P1 (uint8_t)0x0B  // Receive address data pipe 1
@@ -69,6 +69,13 @@ void Nrf24Recv::recv_irq()
     if (m_lenDbg < 6)
     {
         // Log error - could add logging here
+    }
+
+    if (m_lenDbg == 0 || m_lenDbg > m_incomePacketLen)
+    {
+        writeReg(0x07, 0x40);  // Clear RX_DR interrupt
+        spi_instance.flushRx();
+        return;
     }
 
     if (time_ms - m_prevTime_ms > 1000)
@@ -191,7 +198,7 @@ bool Nrf24Recv::init()
     {
         w(0x05, 0x43);  // channel set
     }
-    
+
     w(0x00, 0x0D);
     spi_instance.flushRx();
     w(0x00, 0x0C);

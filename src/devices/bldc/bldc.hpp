@@ -2,6 +2,9 @@
 
 #include "drivers/can/can.hpp"
 
+/** Latest CAN-reported motor supply voltage, in volts. */
+extern "C" volatile float can_battery_voltage;
+
 namespace devices::bldc
 {
 
@@ -121,6 +124,7 @@ class BldcsDriver : public BldcsConfig
     BldcsVec current_pos;
 
     BldcsVec target_vel;
+    uint8_t received_feedback_mask = 0;
 
   public:
     BldcsDriver(BldcsConfig config) : BldcsConfig(config) {}
@@ -131,13 +135,15 @@ class BldcsDriver : public BldcsConfig
 
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);
+    void pollFeedback();
+    bool getFeedback(BldcsVec *velocity, BldcsVec *angle, uint8_t *received_mask);
 
     void setDribblerVel(float vel);
     void getDribblerVel(float *vel);
 
     void setDriveRegisterFloat(uint8_t register_addr, float value);
 
-    void motorWrite(uint8_t motor_addr, uint8_t register_addr, uint8_t *data, uint8_t len);
+    bool motorWrite(uint8_t motor_addr, uint8_t register_addr, const uint8_t *data, uint8_t len);
 };
 
 }  // namespace devices::bldc

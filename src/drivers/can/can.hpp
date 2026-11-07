@@ -42,8 +42,8 @@ class CanDriver : public CanConfig
     CanDriver(CanConfig config);
 
     void init();
-    void write(uint32_t id, uint8_t *data, uint8_t len);
-    void read(uint32_t id, uint8_t *data, uint8_t len);
+    bool write(uint32_t id, const uint8_t *data, uint8_t len);
+    bool read(uint32_t *id, uint8_t *data, uint8_t *len);
 };
 
 }  // namespace drivers::can

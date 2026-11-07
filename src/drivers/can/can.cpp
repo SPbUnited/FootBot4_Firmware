@@ -78,8 +78,13 @@ void CanDriver::init()
     }
 }
 
-void CanDriver::write(uint32_t id, uint8_t *data, uint8_t len)
+bool CanDriver::write(uint32_t id, const uint8_t *data, uint8_t len)
 {
+    if (data == nullptr || len > 8 || id > 0x7FF)
+    {
+        return false;
+    }
+
     CAN_TxHeaderTypeDef TxHeader;
     uint8_t TxData[8];
     uint32_t TxMailbox;
@@ -110,27 +115,41 @@ void CanDriver::write(uint32_t id, uint8_t *data, uint8_t len)
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kerror("CAN write error: %d, error code: %lu\n", int(status), error);
+        return false;
     }
+    return true;
 }
 
-void CanDriver::read(uint32_t id, uint8_t *data, uint8_t len)
+bool CanDriver::read(uint32_t *id, uint8_t *data, uint8_t *len)
 {
+    if (id == nullptr || data == nullptr || len == nullptr ||
+        HAL_CAN_GetRxFifoFillLevel(&handle, CAN_RX_FIFO0) == 0)
+    {
+        return false;
+    }
+
     CAN_RxHeaderTypeDef RxHeader;
     uint8_t RxData[8];
 
     HAL_StatusTypeDef status = HAL_CAN_GetRxMessage(&handle, CAN_RX_FIFO0, &RxHeader, RxData);
     if (status == HAL_OK)
     {
-        id = RxHeader.StdId;
-        len = RxHeader.DLC;
-        for (uint8_t i = 0; i < len; i++)
+        if (RxHeader.IDE != CAN_ID_STD || RxHeader.RTR != CAN_RTR_DATA || RxHeader.DLC > 8)
+        {
+            return false;
+        }
+        *id = RxHeader.StdId;
+        *len = RxHeader.DLC;
+        for (uint8_t i = 0; i < *len; i++)
         {
             data[i] = RxData[i];
         }
+        return true;
     }
     else
     {
         kerror("CAN read error: %d\n", int(status));
+        return false;
     }
 }
 
