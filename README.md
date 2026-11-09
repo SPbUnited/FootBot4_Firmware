@@ -103,8 +103,19 @@ cp ~/.platformio/packages/tool-ldscripts-ststm32/stm32f4/STM32F429ZITX_FLASH.ld 
 |---|---|---|---|
 | RPi → STM | `<5eB??B` | vel_x, vel_y, w, dribbler, kicker [В] (fp16), kicker_mode, angle_mode, beep, robot_id | 16 байт |
 | STM → RPi | `<Be??` | robot_id, напряжение кикера [В] (fp16), ball_deep, ball_front | 7 байт |
+| RPi → STM, настройки | `<8f` | angle_k, angle_b, max_linear_vel, max_linear_accel, max_angular_vel, max_angular_accel, wheel_vel_p, wheel_vel_i (float32); NaN — по умолчанию | 34 байта, синхробайт `0x5A` |
 
 Если формат меняется, прошивку, раннер и teleop надо обновлять вместе: кадры другой длины не распознаются, и робот стоит.
+
+### Кадр настроек
+
+Коэффициенты из стратегии (`SET_COEFFICIENTS` в `robot/control.proto`, поля STM32): `[0x5A][SettingsPacket][XOR]`, 34 байта. Раннер хранит коэффициенты и шлёт этот кадр раз в секунду, так что после сброса STM получает их снова.
+
+- `angle_k`, `angle_b` — удержание курса: `w = ошибка × (angle_b + angle_k × |v|)`.
+- `max_linear_vel`, `max_linear_accel`, `max_angular_vel`, `max_angular_accel` — ограничения в `Robot::act`.
+- `wheel_vel_p`, `wheel_vel_i` — PID скорости колёс в моторах; отправляются по CAN (`setDriveSettings`) только при изменении.
+
+NaN или отрицательное значение — значение по умолчанию (какое было до первого кадра настроек: из `device_manager.cpp` или EEPROM). Так кадр всегда задаёт полный набор, и убранный в стратегии коэффициент возвращается к умолчанию. Изменения пишутся в лог (`Settings from the RPi`). В EEPROM не сохраняется.
 
 Напряжение кикера в обе стороны — вольты на конденсаторе. В команде это цель заряда: `0` — не заряжать, больше 330 В прошивка не даёт (`kicker::MAX_VOLTAGE`), отрицательное и NaN считает нулём. В телеметрии — измеренное напряжение: АЦП × 140 (делитель), предел измерения ≈462 В. Старое радио (nrf) по-прежнему шлёт уровень 0..15; `Robot::set_kicker_setting` переводит его в 100..330 В.
 

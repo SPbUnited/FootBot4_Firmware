@@ -41,6 +41,20 @@ void UartControl::recv_irq()
     while (m_rx_acc_len - parse_idx >= kRxFrameLen)
     {
         const uint8_t *frame = &m_rx_acc_buf[parse_idx];
+        if (frame[0] == kSettingsSyncByte)
+        {
+            if (m_rx_acc_len - parse_idx < kSettingsFrameLen)
+            {
+                break;  // wait for the rest of the frame
+            }
+            if (compute_checksum(frame, kSettingsFrameLen - 1) == frame[kSettingsFrameLen - 1])
+            {
+                memcpy(&m_settings_pkt, frame + 1, sizeof(SettingsPacket));
+                m_has_settings = true;
+                parse_idx += kSettingsFrameLen;
+                continue;
+            }
+        }
         if (frame[0] != kSyncByte || compute_checksum(frame, kRxFrameLen - 1) != frame[kRxFrameLen - 1])
         {
             parse_idx++;
@@ -104,6 +118,12 @@ int UartControl::fetch()
     {
         m_id_from_buttons = true;
         m_known_id = robot_dev.robot_id;
+    }
+
+    if (m_has_settings)
+    {
+        m_has_settings = false;
+        apply_settings(m_settings_pkt);
     }
 
     if (m_has_pkt)
@@ -179,6 +199,58 @@ void UartControl::process_command(const RxPacket &pkt)
     robot_dev.set_kicker_voltage(kicker);
     robot_dev.set_kicker_mode(to_kicker_mode(pkt.kicker_mode));
     drivers::buzzer_drv.set(pkt.beep);
+}
+
+SettingsPacket UartControl::current_settings()
+{
+    return {robot_dev.angle_k,          robot_dev.angle_b,         robot_dev.max_linear_vel,
+            robot_dev.max_linear_accel, robot_dev.max_angular_vel, robot_dev.max_angular_accel,
+            bldcs_drv.drive_vel_p,      bldcs_drv.drive_vel_i};
+}
+
+// NaN or negative: the field is not set, take the default. True if the value changed
+static bool set_or_default(float &dst, float value, float default_value)
+{
+    if (isnan(value) || value < 0)
+    {
+        value = default_value;
+    }
+    if (value == dst)
+    {
+        return false;
+    }
+    dst = value;
+    return true;
+}
+
+void UartControl::apply_settings(const SettingsPacket &pkt)
+{
+    if (!m_defaults_saved)
+    {
+        m_defaults = current_settings();
+        m_defaults_saved = true;
+    }
+    const SettingsPacket &d = m_defaults;
+    bool changed = set_or_default(robot_dev.angle_k, pkt.angle_k, d.angle_k);
+    changed |= set_or_default(robot_dev.angle_b, pkt.angle_b, d.angle_b);
+    changed |= set_or_default(robot_dev.max_linear_vel, pkt.max_linear_vel, d.max_linear_vel);
+    changed |= set_or_default(robot_dev.max_linear_accel, pkt.max_linear_accel, d.max_linear_accel);
+    changed |= set_or_default(robot_dev.max_angular_vel, pkt.max_angular_vel, d.max_angular_vel);
+    changed |= set_or_default(robot_dev.max_angular_accel, pkt.max_angular_accel, d.max_angular_accel);
+    bool wheel_pid = set_or_default(bldcs_drv.drive_vel_p, pkt.wheel_vel_p, d.wheel_vel_p);
+    wheel_pid |= set_or_default(bldcs_drv.drive_vel_i, pkt.wheel_vel_i, d.wheel_vel_i);
+    if (wheel_pid)
+    {
+        bldcs_drv.setDriveSettings();  // CAN to the motors, only when changed
+    }
+    if (changed || wheel_pid)
+    {
+        kinfo("Settings from the RPi: angle k %.2f b %.2f, max vel %.2f accel %.2f, max w %.2f accel %.1f, "
+              "wheel p %.3f i %.2f",
+              robot_dev.angle_k, robot_dev.angle_b, robot_dev.max_linear_vel, robot_dev.max_linear_accel,
+              robot_dev.max_angular_vel, robot_dev.max_angular_accel, bldcs_drv.drive_vel_p,
+              bldcs_drv.drive_vel_i);
+    }
 }
 
 bool UartControl::init()

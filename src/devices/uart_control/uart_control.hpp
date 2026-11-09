@@ -39,6 +39,27 @@ struct RxPacket
 #pragma pack(pop)
 static_assert(sizeof(RxPacket) == 14, "must match CMD_FMT in fb4-runner/src/protocol/uart.py");
 
+// Settings frame RPi -> STM: [kSettingsSyncByte][SettingsPacket][XOR checksum of SYNC+payload],
+// the STM32 fields of Coefficients (robot/control.proto); the RPi keeps them and repeats the frame.
+// NaN or negative: the default (the value at boot). Not saved: a reset brings the defaults back
+constexpr uint8_t kSettingsSyncByte = 0x5A;
+
+// <8f = 32 bytes (frame = 34 bytes)
+#pragma pack(push, 1)
+struct SettingsPacket
+{
+    float angle_k;  // heading hold: w = error * (angle_b + angle_k * |v|)
+    float angle_b;
+    float max_linear_vel;
+    float max_linear_accel;
+    float max_angular_vel;
+    float max_angular_accel;
+    float wheel_vel_p;  // wheel motor velocity PID, sent to the BLDCs over CAN
+    float wheel_vel_i;
+};
+#pragma pack(pop)
+static_assert(sizeof(SettingsPacket) == 32, "must match SETTINGS_FMT in fb4-runner/src/protocol/uart.py");
+
 // TX telemetry payload: <Be?? = 5 bytes (frame = 7 bytes)
 #pragma pack(push, 1)
 struct TxTelemetry
@@ -54,6 +75,7 @@ class UartControl : public UartControlConfig
 {
   private:
     static constexpr uint32_t kRxFrameLen = 1 + sizeof(RxPacket) + 1;
+    static constexpr uint32_t kSettingsFrameLen = 1 + sizeof(SettingsPacket) + 1;
     static constexpr uint32_t kTxFrameLen = 1 + sizeof(TxTelemetry) + 1;
     static constexpr uint32_t kRxBufSize = 256;
     // Toggling on every frame (100 Hz) just looks dimly lit, so blink at ~5 Hz instead
@@ -71,6 +93,10 @@ class UartControl : public UartControlConfig
     // Only the latest command matters, so keep one slot instead of a queue
     RxPacket m_last_pkt{};
     bool m_has_pkt = false;
+    SettingsPacket m_settings_pkt{};
+    bool m_has_settings = false;
+    SettingsPacket m_defaults{};  // the values before the first settings frame
+    bool m_defaults_saved = false;
     bool m_link_active = false;
 
     // Robot id agreement with the RPi, see sync_robot_id()
@@ -78,6 +104,8 @@ class UartControl : public UartControlConfig
     bool m_id_from_buttons = false;   // changed with the buttons, the RPi hasn't taken it yet
 
     void process_command(const RxPacket &pkt);
+    void apply_settings(const SettingsPacket &pkt);
+    static SettingsPacket current_settings();
     void sync_robot_id(uint8_t rpi_id);
     void stop_robot();
 
