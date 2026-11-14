@@ -6,6 +6,7 @@
 #include "devices/device_manager.hpp"
 #include "devices/logger/logger.hpp"
 #include "devices/shell/shell.hpp"
+#include "drivers/driver_manager.hpp"
 #include "drivers/system_clock/system_clock.hpp"
 
 namespace kernel::scheduler
@@ -44,7 +45,7 @@ TaskDescriptor tasks[app_count] = {
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
-     TPS(1),
+     TPS(2),
      ksperiodic,
      idle,
      {0},
@@ -110,6 +111,7 @@ void yield()
     }
 
     devices::bldcs_drv.pollFeedback();
+    drivers::can_drv.updateMonitorWindow();
 }
 
 void init()

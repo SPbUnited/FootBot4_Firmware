@@ -133,6 +133,7 @@ class BldcsDriver : public BldcsConfig
 
     BldcsVec target_vel;
     uint8_t received_feedback_mask = 0;
+    uint8_t settings_broadcast_step = 0;
 
   public:
     BldcsDriver(BldcsConfig config) : BldcsConfig(config) {}
@@ -140,6 +141,8 @@ class BldcsDriver : public BldcsConfig
     void init();
 
     void setDriveSettings(bool is_verbose = false, bool is_idle = false);
+    bool setMonitorSettings();
+    void broadcastNextSetting(bool is_idle);
 
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);

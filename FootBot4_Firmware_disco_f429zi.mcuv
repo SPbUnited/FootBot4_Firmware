@@ -6,6 +6,12 @@
   "elf": {
     "path": ".pio/build/disco_f429zi/firmware.elf"
   },
+  "viewer": {
+    "probe": {
+      "device": "abc",
+      "keep_connection": false
+    }
+  },
   "trace": {
     "channels": [
       {
@@ -41,6 +47,7 @@
     ]
   },
   "machine": {
+    "cubeprog_api_path": "/opt/STMicroelectronics/STM32CubeProgrammer/bin/libCubeProgrammer_API.so",
     "viewer_probe_serial": "280054001700004D3939534E"
   },
   "variables": [
@@ -147,6 +154,270 @@
       "color": "#9642EBFF"
     },
     {
+      "name": "can_monitor_bus_load_rx_permille",
+      "address": "0x2000D494",
+      "type": "u32",
+      "color": "#FF3D3DFF"
+    },
+    {
+      "name": "can_monitor_last_rx_dlc",
+      "address": "0x2000D498",
+      "type": "u32",
+      "color": "#52FCDAFF"
+    },
+    {
+      "name": "can_monitor_last_rx_id",
+      "address": "0x2000D49C",
+      "type": "u32",
+      "color": "#7CFC52FF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[0]",
+      "address": "0x2000D4A0",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[10]",
+      "address": "0x2000D4C8",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[11]",
+      "address": "0x2000D4CC",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[12]",
+      "address": "0x2000D4D0",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[13]",
+      "address": "0x2000D4D4",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[14]",
+      "address": "0x2000D4D8",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[15]",
+      "address": "0x2000D4DC",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[1]",
+      "address": "0x2000D4A4",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[2]",
+      "address": "0x2000D4A8",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[3]",
+      "address": "0x2000D4AC",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[4]",
+      "address": "0x2000D4B0",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[5]",
+      "address": "0x2000D4B4",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[6]",
+      "address": "0x2000D4B8",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[7]",
+      "address": "0x2000D4BC",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[8]",
+      "address": "0x2000D4C0",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[9]",
+      "address": "0x2000D4C4",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[0]",
+      "address": "0x2000D4E0",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[10]",
+      "address": "0x2000D508",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[11]",
+      "address": "0x2000D50C",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[12]",
+      "address": "0x2000D510",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[13]",
+      "address": "0x2000D514",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[14]",
+      "address": "0x2000D518",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[15]",
+      "address": "0x2000D51C",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[1]",
+      "address": "0x2000D4E4",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[2]",
+      "address": "0x2000D4E8",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[3]",
+      "address": "0x2000D4EC",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[4]",
+      "address": "0x2000D4F0",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[5]",
+      "address": "0x2000D4F4",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[6]",
+      "address": "0x2000D4F8",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[7]",
+      "address": "0x2000D4FC",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[8]",
+      "address": "0x2000D500",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[9]",
+      "address": "0x2000D504",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_rx_bits_estimate",
+      "address": "0x2000D520",
+      "type": "u32",
+      "color": "#FFB012FF"
+    },
+    {
+      "name": "can_monitor_rx_fifo_overruns",
+      "address": "0x2000D524",
+      "type": "u32",
+      "color": "#FF32C8FF"
+    },
+    {
+      "name": "can_monitor_rx_frames",
+      "address": "0x2000D528",
+      "type": "u32",
+      "color": "#12A4FFFF"
+    },
+    {
+      "name": "can_monitor_rx_interval_max_us",
+      "address": "0x2000D52C",
+      "type": "u32",
+      "color": "#E4D84AFF"
+    },
+    {
+      "name": "can_monitor_rx_interval_us",
+      "address": "0x2000D530",
+      "type": "u32",
+      "color": "#45D9EFFF"
+    },
+    {
+      "name": "can_monitor_rx_queue_drops",
+      "address": "0x2000D534",
+      "type": "u32",
+      "color": "#FF8A32FF"
+    },
+    {
+      "name": "can_monitor_rx_rate_millihz",
+      "address": "0x2000D538",
+      "type": "u32",
+      "color": "#A36AFFFF"
+    },
+    {
+      "name": "can_monitor_tx_frames",
+      "address": "0x2000D53C",
+      "type": "u32",
+      "color": "#12FF84FF"
+    },
+    {
+      "name": "can_monitor_tx_rate_millihz",
+      "address": "0x2000D540",
+      "type": "u32",
+      "color": "#FF6A9EFF"
+    },
+    {
       "name": "can_motor_temperature[0]",
       "address": "0x20000860",
       "type": "f32",
@@ -173,18 +444,10 @@
   ],
   "groups": [
     {
-      "name": "CAN telemetry",
+      "name": "CAN",
       "plots": [
         {
-          "name": "Battery voltage",
-          "series": [
-            {
-              "variable": "can_battery_voltage"
-            }
-          ]
-        },
-        {
-          "name": "new plot0",
+          "name": "Drive and motor telemetry_copy_0",
           "type": "table",
           "series": [
             {
@@ -249,6 +512,264 @@
             },
             {
               "variable": "can_motor_temperature[3]"
+            }
+          ]
+        },
+        {
+          "name": "new plot0",
+          "type": "table"
+        },
+        {
+          "name": "new plot1"
+        }
+      ]
+    },
+    {
+      "name": "CAN monitor",
+      "plots": [
+        {
+          "name": "Battery voltage",
+          "series": [
+            {
+              "variable": "can_battery_voltage"
+            }
+          ]
+        },
+        {
+          "name": "CAN RX bus load (permille)",
+          "series": [
+            {
+              "variable": "can_monitor_bus_load_rx_permille"
+            }
+          ]
+        },
+        {
+          "name": "CAN RX/TX rate (mHz)",
+          "series": [
+            {
+              "variable": "can_monitor_rx_rate_millihz"
+            },
+            {
+              "variable": "can_monitor_tx_rate_millihz"
+            }
+          ]
+        },
+        {
+          "name": "CAN monitor status",
+          "type": "table",
+          "series": [
+            {
+              "variable": "can_monitor_bus_load_rx_permille"
+            },
+            {
+              "variable": "can_monitor_last_rx_dlc"
+            },
+            {
+              "variable": "can_monitor_last_rx_id"
+            },
+            {
+              "variable": "can_monitor_rx_bits_estimate"
+            },
+            {
+              "variable": "can_monitor_rx_fifo_overruns"
+            },
+            {
+              "variable": "can_monitor_rx_frames"
+            },
+            {
+              "variable": "can_monitor_rx_interval_max_us"
+            },
+            {
+              "variable": "can_monitor_rx_interval_us"
+            },
+            {
+              "variable": "can_monitor_rx_queue_drops"
+            },
+            {
+              "variable": "can_monitor_rx_rate_millihz"
+            },
+            {
+              "variable": "can_monitor_tx_frames"
+            },
+            {
+              "variable": "can_monitor_tx_rate_millihz"
+            }
+          ]
+        },
+        {
+          "name": "Drive and motor telemetry",
+          "type": "table",
+          "series": [
+            {
+              "variable": "can_battery_voltage"
+            },
+            {
+              "variable": "can_drive_position[0]"
+            },
+            {
+              "variable": "can_drive_position[1]"
+            },
+            {
+              "variable": "can_drive_position[2]"
+            },
+            {
+              "variable": "can_drive_position[3]"
+            },
+            {
+              "variable": "can_drive_velocity[0]"
+            },
+            {
+              "variable": "can_drive_velocity[1]"
+            },
+            {
+              "variable": "can_drive_velocity[2]"
+            },
+            {
+              "variable": "can_drive_velocity[3]"
+            },
+            {
+              "variable": "can_drive_voltage[0]"
+            },
+            {
+              "variable": "can_drive_voltage[1]"
+            },
+            {
+              "variable": "can_drive_voltage[2]"
+            },
+            {
+              "variable": "can_drive_voltage[3]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[0]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[1]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[2]"
+            },
+            {
+              "variable": "can_driver_pcb_temperature[3]"
+            },
+            {
+              "variable": "can_motor_temperature[0]"
+            },
+            {
+              "variable": "can_motor_temperature[1]"
+            },
+            {
+              "variable": "can_motor_temperature[2]"
+            },
+            {
+              "variable": "can_motor_temperature[3]"
+            }
+          ]
+        },
+        {
+          "name": "Power and temperature by motor (frames, interval µs)",
+          "type": "table",
+          "series": [
+            {
+              "variable": "can_monitor_motor_register_frames[10]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[11]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[13]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[14]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[15]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[1]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[2]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[3]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[5]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[6]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[7]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[9]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[10]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[11]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[13]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[14]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[15]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[1]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[2]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[3]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[5]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[6]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[7]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[9]"
+            }
+          ]
+        },
+        {
+          "name": "Shaft feedback by motor (frames, interval µs)",
+          "type": "table",
+          "series": [
+            {
+              "variable": "can_monitor_motor_register_frames[0]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[12]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[4]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[8]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[0]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[12]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[4]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[8]"
             }
           ]
         }

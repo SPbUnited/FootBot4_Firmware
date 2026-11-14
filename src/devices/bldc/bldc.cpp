@@ -21,10 +21,7 @@ namespace devices::bldc
 
 void BldcsDriver::init()
 {
-    // const uint8_t monitor_registers[4] = {SHAFT_FEEDBACK_R, SUPPLY_VOLTAGE_R, PCB_TEMPERATURE_R,
-    //                                      MOTOR_TEMPERATURE_R};
-    const uint8_t monitor_registers[4] = {SHAFT_FEEDBACK_R, 0, 0, 0};
-    motorWrite(0, MONITOR_SETTINGS_RW, monitor_registers, sizeof(monitor_registers));
+    setMonitorSettings();
 
     kprogress_start("Awaiting BLDC initialization...");
     for (int i = 0; i < 4; i++)
@@ -35,6 +32,47 @@ void BldcsDriver::init()
     kprogress_finish("BLDC OK");
 
     setDriveSettings(true);
+}
+
+bool BldcsDriver::setMonitorSettings()
+{
+    const uint8_t monitor_registers[4] = {SHAFT_FEEDBACK_R, SUPPLY_VOLTAGE_R, PCB_TEMPERATURE_R,
+                                          MOTOR_TEMPERATURE_R};
+    return motorWrite(0, MONITOR_SETTINGS_RW, monitor_registers, sizeof(monitor_registers));
+}
+
+void BldcsDriver::broadcastNextSetting(bool is_idle)
+{
+    switch (settings_broadcast_step)
+    {
+        case 0:
+            setMonitorSettings();
+            break;
+        case 1:
+            if (!isnan(drive_vel_p))
+            {
+                setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_P_RW, drive_vel_p);
+            }
+            break;
+        case 2:
+            if (!isnan(drive_vel_i))
+            {
+                setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_I_RW, drive_vel_i);
+            }
+            break;
+        case 3:
+            if (!isnan(drive_vel_limit) && !isnan(drive_vel_limit_idle))
+            {
+                setDriveRegisterFloat(CANFuocoRegisterMap::PID_VELOCITY_LIMIT_RW,
+                                      is_idle ? drive_vel_limit_idle : drive_vel_limit);
+            }
+            break;
+        default:
+            settings_broadcast_step = 0;
+            return;
+    }
+
+    settings_broadcast_step = (settings_broadcast_step + 1U) % 4U;
 }
 
 void BldcsDriver::setDriveSettings(bool is_verbose, bool is_idle)

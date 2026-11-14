@@ -1,5 +1,27 @@
 #include "can.hpp"
 
+#include "drivers/system_clock/system_clock.hpp"
+
+extern "C"
+{
+    volatile uint32_t can_monitor_rx_frames = 0;
+    volatile uint32_t can_monitor_tx_frames = 0;
+    volatile uint32_t can_monitor_rx_bits_estimate = 0;
+    volatile uint32_t can_monitor_rx_rate_millihz = 0;
+    volatile uint32_t can_monitor_tx_rate_millihz = 0;
+    volatile uint32_t can_monitor_bus_load_rx_permille = 0;
+    volatile uint32_t can_monitor_rx_interval_us = 0;
+    volatile uint32_t can_monitor_rx_interval_max_us = 0;
+    volatile uint32_t can_monitor_rx_queue_drops = 0;
+    volatile uint32_t can_monitor_rx_fifo_overruns = 0;
+    volatile uint32_t can_monitor_last_rx_id = 0;
+    volatile uint32_t can_monitor_last_rx_dlc = 0;
+    volatile uint32_t can_monitor_motor_register_frames[16] = {};
+    volatile uint32_t can_monitor_motor_register_interval_us[16] = {};
+    volatile uint32_t can_monitor_motor_register_ids[16] = {
+        0x0E6, 0x0E7, 0x0E8, 0x0E9, 0x166, 0x167, 0x168, 0x169,
+        0x1E6, 0x1E7, 0x1E8, 0x1E9, 0x266, 0x267, 0x268, 0x269};
+}
 #include "kernel/kernel.hpp"
 
 namespace drivers::can
@@ -135,6 +157,8 @@ bool CanDriver::write(uint32_t id, const uint8_t *data, uint8_t len)
         kerror("CAN write error: %d, error code: %lu\n", int(status), error);
         return false;
     }
+    ++tx_frames_;
+    can_monitor_tx_frames = tx_frames_;
     return true;
 }
 
@@ -177,6 +201,7 @@ bool CanDriver::enqueueFromIsr(const CAN_RxHeaderTypeDef &header, const uint8_t 
     if (next == rx_tail_)
     {
         ++rx_queue_drops_;
+        can_monitor_rx_queue_drops = rx_queue_drops_;
         return false;
     }
 
@@ -193,6 +218,44 @@ bool CanDriver::enqueueFromIsr(const CAN_RxHeaderTypeDef &header, const uint8_t 
     return true;
 }
 
+void CanDriver::recordRxFrame(const CAN_RxHeaderTypeDef &header)
+{
+    const uint32_t now = drivers::system_clock::micros();
+    const uint32_t frame_bits = 47U + 8U * header.DLC;
+    ++rx_frames_;
+    rx_bits_estimate_ += frame_bits;
+    can_monitor_rx_frames = rx_frames_;
+    can_monitor_rx_bits_estimate = rx_bits_estimate_;
+    can_monitor_last_rx_id = header.StdId;
+    can_monitor_last_rx_dlc = header.DLC;
+    if (last_rx_time_us_ != 0)
+    {
+        last_rx_interval_us_ = now - last_rx_time_us_;
+        if (last_rx_interval_us_ > max_rx_interval_us_)
+        {
+            max_rx_interval_us_ = last_rx_interval_us_;
+        }
+    }
+    last_rx_time_us_ = now;
+    can_monitor_rx_interval_us = last_rx_interval_us_;
+    can_monitor_rx_interval_max_us = max_rx_interval_us_;
+
+    const uint8_t motor_addr = static_cast<uint8_t>((header.StdId >> 7) & 0x0FU);
+    const uint8_t register_addr = static_cast<uint8_t>(header.StdId & 0x7FU);
+    if (motor_addr >= 1 && motor_addr <= 4 && register_addr >= 102 && register_addr <= 105)
+    {
+        const uint8_t index = (motor_addr - 1U) * 4U + register_addr - 102U;
+        ++monitored_frame_counts_[index];
+        if (monitored_frame_last_times_us_[index] != 0)
+        {
+            monitored_frame_intervals_us_[index] = now - monitored_frame_last_times_us_[index];
+        }
+        monitored_frame_last_times_us_[index] = now;
+        can_monitor_motor_register_frames[index] = monitored_frame_counts_[index];
+        can_monitor_motor_register_interval_us[index] = monitored_frame_intervals_us_[index];
+    }
+}
+
 void CanDriver::receivePending()
 {
     for (uint8_t frames_read = 0;
@@ -205,6 +268,7 @@ void CanDriver::receivePending()
         {
             break;
         }
+        recordRxFrame(header);
         enqueueFromIsr(header, data);
     }
 }
@@ -217,6 +281,60 @@ uint32_t CanDriver::rxQueueDrops() const
 uint32_t CanDriver::rxFifoOverruns() const
 {
     return rx_fifo_overruns_;
+}
+
+uint32_t CanDriver::rxFrames() const
+{
+    return rx_frames_;
+}
+uint32_t CanDriver::txFrames() const
+{
+    return tx_frames_;
+}
+uint32_t CanDriver::rxBitsEstimate() const
+{
+    return rx_bits_estimate_;
+}
+uint32_t CanDriver::lastRxIntervalUs() const
+{
+    return last_rx_interval_us_;
+}
+uint32_t CanDriver::maxRxIntervalUs() const
+{
+    return max_rx_interval_us_;
+}
+void CanDriver::updateMonitorWindow()
+{
+    static uint32_t window_start_us = 0;
+    static uint32_t window_rx_frames = 0;
+    static uint32_t window_tx_frames = 0;
+    static uint32_t window_rx_bits = 0;
+    const uint32_t now = drivers::system_clock::micros();
+    if (window_start_us == 0)
+    {
+        window_start_us = now;
+        window_rx_frames = rx_frames_;
+        window_tx_frames = tx_frames_;
+        window_rx_bits = rx_bits_estimate_;
+        return;
+    }
+    const uint32_t elapsed_us = now - window_start_us;
+    if (elapsed_us < 1000000U)
+    {
+        return;
+    }
+    can_monitor_rx_queue_drops = rx_queue_drops_;
+    can_monitor_rx_fifo_overruns = rx_fifo_overruns_;
+    can_monitor_rx_rate_millihz =
+        static_cast<uint32_t>((rx_frames_ - window_rx_frames) * 1000000000ULL / elapsed_us);
+    can_monitor_tx_rate_millihz =
+        static_cast<uint32_t>((tx_frames_ - window_tx_frames) * 1000000000ULL / elapsed_us);
+    can_monitor_bus_load_rx_permille =
+        static_cast<uint32_t>((rx_bits_estimate_ - window_rx_bits) * 1000ULL / elapsed_us);
+    window_start_us = now;
+    window_rx_frames = rx_frames_;
+    window_tx_frames = tx_frames_;
+    window_rx_bits = rx_bits_estimate_;
 }
 
 void handleCan1Rx0Interrupt()
@@ -241,6 +359,7 @@ void handleCanError(CAN_HandleTypeDef *handle)
         (handle->ErrorCode & HAL_CAN_ERROR_RX_FOV0) != 0)
     {
         ++can1_driver->rx_fifo_overruns_;
+        can_monitor_rx_fifo_overruns = can1_driver->rx_fifo_overruns_;
         handle->ErrorCode &= ~HAL_CAN_ERROR_RX_FOV0;
     }
 }
