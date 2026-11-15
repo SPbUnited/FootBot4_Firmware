@@ -1,8 +1,6 @@
 #pragma once
-
-namespace apps::screen
-{
-
-void screen();
-
-}  // namespace apps::screen
+namespace apps::screen {
+void init();
+void update();
+void suspendForShell();
+}

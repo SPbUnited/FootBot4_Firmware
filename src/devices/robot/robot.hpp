@@ -121,6 +121,10 @@ struct Robot : RobotSettings, RobotConfig
     void set_kicker_setting(uint8_t setting);
     void set_kicker_mode(KickerMode mode);
 
+    bool control_locked() const { return control_locked_; }
+    void set_control_locked(bool locked);
+    void clear_commands();
+
     void inc_id();
     void dec_id();
 
@@ -131,10 +135,12 @@ struct Robot : RobotSettings, RobotConfig
     void act();
 
     uint8_t play_mode;
-    uint32_t test_timer;
 
     void nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len);
     std::map<CANFuocoRegisterMap, uint8_t *> CANFuocoRegisterMapNames;
+
+  private:
+    volatile bool control_locked_ = false;
 };
 
 }  // namespace devices::robot

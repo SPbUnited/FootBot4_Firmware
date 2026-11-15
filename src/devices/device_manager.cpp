@@ -229,7 +229,7 @@ void init()
     IRQ_Init();
     nrf24_recv.recv_irq();
     kinfo("Devices initialized");
-    apps::screen::screen();
+    apps::screen::init();
 }
 
 }  // namespace devices

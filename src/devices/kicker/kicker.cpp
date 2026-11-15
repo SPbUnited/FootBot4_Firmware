@@ -1,4 +1,5 @@
 #include "kicker.hpp"
+#include "devices/device_manager.hpp"
 // #include <math.h>
 #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
@@ -27,8 +28,21 @@ void Kicker::set_target(uint16_t voltage)
     target = voltage;
 }
 
+void Kicker::stop()
+{
+    target = 0;
+    state = PREPARE;
+    prepared = false;
+    timer = 0;
+    straight_pin->write(true);
+    chip_pin->write(true);
+    charge_pin->write(true);
+    discharge_pin->write(true);
+}
+
 void Kicker::update()
 {
+    if (devices::robot_dev.control_locked()) { stop(); get_voltage(); return; }
     get_voltage();
 
     float MIN_VOLTAGE = 100;

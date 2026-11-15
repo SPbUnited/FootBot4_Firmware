@@ -1,4 +1,5 @@
 #include "bldc.hpp"
+#include "devices/device_manager.hpp"
 
 #include "half_float.h"
 #include "kernel/kernel.hpp"
@@ -51,6 +52,12 @@ void BldcsDriver::setDriveSettings(bool is_verbose, bool is_idle)
 
 void BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, uint8_t *data, uint8_t len)
 {
+    uint8_t stopped[8] = {};
+    if (devices::robot_dev.control_locked()) {
+        if (register_addr != MULTI_TARGET_W && register_addr != TARGET_RW) return;
+        data = stopped;
+        if (len > sizeof(stopped)) return;
+    }
     uint32_t id = motor_addr << 8 | register_addr;
     can->write(id, data, len);
 }
@@ -62,6 +69,7 @@ void BldcsDriver::setDriveRegisterFloat(uint8_t register_addr, float value)
 
 void BldcsDriver::setDriveVel(BldcsVec vel)
 {
+    if (devices::robot_dev.control_locked()) vel = {{0, 0, 0, 0}};
     uint8_t payload[8] = {0};
 
     for (size_t i = 0; i < 4; i++)
