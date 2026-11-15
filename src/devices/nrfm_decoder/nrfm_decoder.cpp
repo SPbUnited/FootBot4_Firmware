@@ -9,6 +9,7 @@ namespace devices::nrfm_decoder
 
 void NRFMDecoder::nrfm_rx_callback(uint8_t *data, uint8_t len)
 {
+    if (robot_dev.control_locked() || len == 0) return;
     NRFMPacket *packet = reinterpret_cast<NRFMPacket *>(data);
 
     if (packet->packet.robot_id != robot_dev.robot_id)

@@ -1,6 +1,6 @@
 #include "robot.hpp"
 
-// #include "devices/device_manager.hpp"
+#include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 #include "math.hpp"
 
@@ -38,6 +38,7 @@ void Robot::update_nonidle_timer()
 void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
                                         bool is_velocity_local)
 {
+    if (control_locked_) return;
     if (vel_local_x != 0.0 || vel_local_y != 0.0)
     {
         update_nonidle_timer();
@@ -68,6 +69,7 @@ void Robot::set_target_local_linear_vel(float vel_local_x, float vel_local_y,
 
 void Robot::set_target_angular_vel(float vel_theta)
 {
+    if (control_locked_) return;
     angle_mode = ANGLEVEL;
 
     vel_global_target.theta = vel_theta;
@@ -78,6 +80,7 @@ void Robot::set_target_angular_vel(float vel_theta)
 
 void Robot::set_target_angular_dpos(float dpos_theta)
 {
+    if (control_locked_) return;
     angle_mode = ANGLEPOS;
 
     vel_global_target.theta = 0;
@@ -103,6 +106,7 @@ void Robot::set_max_linear_accel(float max_accel)
 
 void Robot::set_dribbler_setting(uint8_t setting)
 {
+    if (control_locked_) return;
     if (dribbler_setting == setting)
     {
         return;
@@ -117,6 +121,7 @@ void Robot::set_dribbler_setting(uint8_t setting)
 
 void Robot::set_kicker_setting(uint8_t setting)
 {
+    if (control_locked_) return;
     kicker_setting = setting;
 
     kverbose("set_kicker_setting(setting = %d): kicker_setting = %d", setting, kicker_setting);
@@ -124,6 +129,7 @@ void Robot::set_kicker_setting(uint8_t setting)
 
 void Robot::set_kicker_mode(KickerMode mode)
 {
+    if (control_locked_) return;
     kicker_mode = mode;
 
     kverbose("set_kicker_mode(mode = %d): kicker_mode = %d", mode, kicker_mode);
@@ -314,29 +320,38 @@ void Robot::plan()
                                     angle_k);  // динамический коэф
     }
 
-    // kicker_drv.set_target(100);
-    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() || drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() || drivers::in_pins[drivers::BUTTON_SELECT].read())
-    {
-        if (play_mode == PLAY)
-        {
-            play_mode = TEST;
-            test_timer = drivers::system_clock::micros();
-        }
-    }
-    if (play_mode == TEST)
-    {
-        if (drivers::system_clock::micros() - test_timer > 10000000)
-        {
-            play_mode = PLAY;
-        }
-    }
-    
+}
 
+void Robot::clear_commands()
+{
+    linear_mode = VELOCITY_LOCAL;
+    angle_mode = ANGLEVEL;
+    vel_global_target = {0, 0, 0};
+    pos_global_target = pos_global_current;
+    vel_local_output = vel_local_output_smoothed = {0, 0, 0};
+    next_waypoint = 0;
+    for (auto &waypoint : waypoints) waypoint = {};
+    dribbler_setting = kicker_setting = 0;
+    kicker_mode = DISABLED;
+    dribbler_update = true;
+}
 
+void Robot::set_control_locked(bool locked)
+{
+    if (control_locked_ == locked) return;
+    // Keep outputs inhibited while clearing both software and hardware RX queues.
+    control_locked_ = true;
+    clear_commands();
+    bldcs_drv.setDriveVel({{0, 0, 0, 0}});
+    bldcs_drv.setDribblerVel(0);
+    kicker_drv.stop();
+    devices::nrf24_recv.discard_pending();
+    control_locked_ = locked;
 }
 
 void Robot::act()
 {
+    if (control_locked_) clear_commands();
     float vel_abs =
         sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y);
     if (vel_abs > max_linear_vel)
