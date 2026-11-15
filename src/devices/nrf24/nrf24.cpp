@@ -106,10 +106,20 @@ void Nrf24Recv::recv_irq()
         packet.data[i] = m_incomeArray[i];
     }
 
-    m_rx_queue.push_back(packet);
+    if (!devices::robot_dev.control_locked()) m_rx_queue.push_back(packet);
 }
 
 // Main receive function
+void Nrf24Recv::discard_pending()
+{
+    bool enabled = NVIC_GetEnableIRQ(EXTI15_10_IRQn);
+    HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+    while (!m_rx_queue.isEmpty()) m_rx_queue.pop_front();
+    spi_instance.flushRx();
+    writeReg(0x07, 0x40);
+    if (enabled) HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+
 int Nrf24Recv::fetch()
 {
     while (!m_rx_queue.isEmpty())

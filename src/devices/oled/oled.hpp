@@ -12,8 +12,15 @@ class OledDriver : public oled_lib::OledConfig
 
     OledDriver(oled_lib::OledConfig cfg, I2C_HandleTypeDef *hi2c);
 
-    /** Initializes display; returns false if the controller does not respond. */
-    bool init();
+    void init();
+    bool ready();
+    bool submit();
+    void transferComplete(bool success);
+    volatile uint32_t transfer_errors = 0;
+    volatile uint32_t max_transfer_us = 0;
+  private:
+    I2C_HandleTypeDef *bus_;
+    uint32_t started_us_ = 0;
 };
 
 }  // namespace devices::oled

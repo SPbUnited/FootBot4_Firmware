@@ -101,6 +101,7 @@ class Nrf24Recv : public Nrf24RecvConfig
     bool init();
     void recv_irq();
     int fetch();
+    void discard_pending();
     void send(uint8_t checker, uint8_t id);
 
     static int8_t u8Toi8(uint8_t x);
