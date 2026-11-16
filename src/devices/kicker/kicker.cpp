@@ -42,31 +42,12 @@ void Kicker::stop()
 
 void Kicker::update()
 {
-    if (devices::robot_dev.control_locked()) { stop(); get_voltage(); return; }
+    auto &robot = devices::robot_dev;
+    if (robot.control_locked() && !robot.test_kicker) { stop(); get_voltage(); return; }
     get_voltage();
-
-    float MIN_VOLTAGE = 100;
-    float MAX_VOLTAGE = 330;
-
-    if (devices::robot_dev.kicker_setting == 0)
-    {
-        target = 0;
-    }
-    else
-    {
-        target =
-            (devices::robot_dev.kicker_setting - 1) / (15.0 - 1) * (MAX_VOLTAGE - MIN_VOLTAGE) +
-            MIN_VOLTAGE;
-    }
-
-    if (target >= 330)
-    {
-        target = 330;
-    }
-    else if (target <= 0)
-    {
-        target = 0;
-    }
+    const bool manual = robot.control_locked();
+    const auto mode = manual ? robot.test_kick : robot.kicker_mode;
+    target = voltageForLevel(manual ? robot.test_voltage : robot.kicker_setting);
     if ((state == PREPARE) || !prepared)
     {
         straight_pin->write(true);
@@ -98,7 +79,7 @@ void Kicker::update()
             charge_pin->write(true);
             // state = KICK;
             prepared = true;
-            if (devices::robot_dev.kicker_mode != devices::robot::DISABLED)
+            if (mode != devices::robot::DISABLED)
             {
                 state = KICK;
             }
@@ -128,19 +109,19 @@ void Kicker::update()
 
         state = PREPARE;
         
-        if (devices::robot_dev.kicker_mode == devices::robot::KICK_FRONT)
+        if (mode == devices::robot::KICK_FRONT)
         {
             timer = drivers::system_clock::micros();
             straight_pin->write(false);
             state = AFTER_KICK;
         }
-        else if (devices::robot_dev.kicker_mode == devices::robot::KICK_UP)
+        else if (mode == devices::robot::KICK_UP)
         {
             timer = drivers::system_clock::micros();
             chip_pin->write(false);
             state = AFTER_KICK;
         }
-        else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
+        else if (mode == devices::robot::AUTOKICK_FRONT)
         {
             // timer = drivers::system_clock::micros();
             if (read_deep() && read_front())
@@ -150,7 +131,7 @@ void Kicker::update()
                 state = AFTER_KICK;
             }
         }
-        else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
+        else if (mode == devices::robot::AUTOKICK_UP)
         {
             if (read_deep() && read_front())
             {
@@ -159,7 +140,7 @@ void Kicker::update()
                 state = AFTER_KICK;
             }
         }
-        else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_MOMENTUM)
+        else if (mode == devices::robot::AUTOKICK_MOMENTUM)
         {
             // timer = drivers::system_clock::micros();
             if (read_deep() || read_front())
@@ -169,6 +150,8 @@ void Kicker::update()
                 state = AFTER_KICK;
             }
         }
+
+        if (manual) robot.test_kick = devices::robot::DISABLED;
 
         // if(drivers::system_clock::micros() - timer > 5000)
         // {
@@ -181,8 +164,10 @@ void Kicker::update()
     }
     else if (state == AFTER_KICK)
     {
-        if((drivers::system_clock::micros() - timer > 10000) && (actual_voltage < 10))
+        if (drivers::system_clock::micros() - timer > 10000 && (manual || actual_voltage < 10))
         {
+            straight_pin->write(true);
+            chip_pin->write(true);
             state = PREPARE;
         }
     }
