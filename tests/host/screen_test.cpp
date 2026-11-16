@@ -31,7 +31,7 @@ int main() {
         advance(1000);
         in_pins[pin].value = false;
         advance(40);
-        assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
+        assert(rows[0] == "MENU 1/5" && rows[1] == "TO PLAY MODE");
         if (pin != BUTTON_SELECT) {
             robot_dev.play_mode = robot::PLAY;
             playFrames = oled_drv.frames;
@@ -52,7 +52,7 @@ int main() {
     in_pins[BUTTON_ADDR_UP].value = in_pins[BUTTON_ADDR_DOWN].value = false;
     advance(10); advance(30);
     click(BUTTON_SELECT); // root
-    assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
+    assert(rows[0] == "MENU 1/5" && rows[1] == "TO PLAY MODE");
     click(BUTTON_ADDR_DOWN);
     click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // settings
     assert(robot_dev.locked);
@@ -76,8 +76,29 @@ int main() {
     suspendForShell(); frames = oled_drv.frames;
     advance(1000); assert(oled_drv.frames == frames);
     click(BUTTON_SELECT, true); assert(oled_drv.frames > frames);
-    for (int i = 0; i < 3; ++i) click(BUTTON_ADDR_UP);
-    assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
+    click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // Tests
+    assert(rows[0] == "TESTS 1/2" && robot_dev.locked);
+    click(BUTTON_SELECT); click(BUTTON_SELECT); // speed editor
+    click(BUTTON_ADDR_UP);
+    assert(robot_dev.test_dribbler == 0);
+    click(BUTTON_SELECT); click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT);
+    assert(robot_dev.test_dribbler == 1);
+    click(BUTTON_SELECT, true); assert(robot_dev.test_dribbler == 0);
+    click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); click(BUTTON_SELECT); // voltage editor
+    click(BUTTON_ADDR_UP);
+    assert(robot_dev.test_kicker && robot_dev.test_voltage == 0);
+    click(BUTTON_SELECT); assert(robot_dev.test_voltage == 1);
+    click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT);
+    assert(robot_dev.test_kick == robot::KICK_UP && rows[0] == "KICKER 2/3");
+    robot_dev.test_kick = robot::DISABLED; // driver consumed the first request
+    click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT);
+    assert(robot_dev.test_kick == robot::KICK_FRONT && rows[0] == "KICKER 3/3");
+    click(BUTTON_SELECT, true);
+    assert(!robot_dev.test_kicker && robot_dev.test_voltage == 0 &&
+           robot_dev.test_kick == robot::DISABLED);
+    click(BUTTON_SELECT, true); assert(!robot_dev.locked);
+    for (int i = 0; i < 4; ++i) click(BUTTON_ADDR_UP);
+    assert(rows[0] == "MENU 1/5" && rows[1] == "TO PLAY MODE");
     frames = oled_drv.frames;
     click(BUTTON_SELECT);
     advance(100);

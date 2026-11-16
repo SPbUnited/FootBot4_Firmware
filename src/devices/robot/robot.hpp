@@ -124,6 +124,10 @@ struct Robot : RobotSettings, RobotConfig
     bool control_locked() const { return control_locked_; }
     void set_control_locked(bool locked);
     void clear_commands();
+    uint8_t test_dribbler = 0;
+    bool test_kicker = false;
+    uint8_t test_voltage = 0;
+    KickerMode test_kick = DISABLED;
 
     void inc_id();
     void dec_id();
