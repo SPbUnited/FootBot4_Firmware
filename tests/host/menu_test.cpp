@@ -33,6 +33,7 @@ int main() {
 
     Menu m;
     m.event(Event::Select, 7, 0); // root
+    m.event(Event::Down, 7, 0);
     m.event(Event::Select, 7, 0); // telemetry
     assert(!m.locked() && m.page == Page::Telemetry);
     m.event(Event::Up, 7, 0); assert(m.telemetry == 2);
@@ -52,7 +53,7 @@ int main() {
     m.tick(899); assert(m.page == Page::Saved);
     m.tick(900); assert(m.page == Page::Settings);
     m.event(Event::Back, 0, 900); assert(!m.locked());
-    m.event(Event::Down, 0, 0); m.event(Event::Down, 0, 0); assert(m.selected == 2);
+    m.event(Event::Down, 0, 0); assert(m.selected == 3);
     m.event(Event::Select, 0, 0); m.event(Event::Down, 0, 0); m.event(Event::Select, 0, 0);
     assert(m.page == Page::Reboot && m.selected == 0 && m.locked());
     assert(m.event(Event::Select, 0, 0) == Effect::None && !m.locked());

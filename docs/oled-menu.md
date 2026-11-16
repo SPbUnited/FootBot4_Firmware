@@ -6,7 +6,8 @@ Button debounce is 30 ms. Direction repeat starts at 400 ms, repeats every
 150 ms, and accelerates to 75 ms after two seconds. Both direction buttons
 pressed together are ignored.
 
-Home has position and velocity pages. SELECT opens Telemetry, Settings, System.
+Home has position and velocity pages. SELECT opens TO PLAY MODE, Telemetry, Settings, and System.
+TO PLAY MODE returns to PLAY without reboot and freezes OLED updates.
 Telemetry adds a kicker voltage page. System contains the scrolling firmware
 version and a reboot confirmation, initially selecting Cancel.
 
