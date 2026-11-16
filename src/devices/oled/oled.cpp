@@ -1,4 +1,5 @@
 #include "oled.hpp"
+#include "robot_icon.hpp"
 
 // #include "drivers/driver_manager.hpp"
 #include "kernel/kernel.hpp"
@@ -45,6 +46,7 @@ void OledDriver::init()
     HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
     display.clear();
     display.print("Booting...");
+    drawRobotIcon(display);
     display.flush();
 }
 
