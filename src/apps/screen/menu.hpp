@@ -25,14 +25,18 @@ struct Button {
         return Event::None;
     }
 };
-enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, Version, Reboot };
-enum class Effect { None, SaveId, Reboot, ToPlay };
+enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, Version, Reboot, Tests, Dribbler, Speed, Kicker, Voltage };
+enum class Effect { None, SaveId, Reboot, ToPlay, Kick };
 struct Menu {
     Page page = Page::Home;
     int selected = 0, first = 0, telemetry = 0, home = 0;
     uint8_t editId = 0;
+    uint8_t speed = 0, voltage = 0, draft = 0;
+    bool spinning = false, chip = false;
     uint32_t savedAt = 0;
-    bool locked() const { return page == Page::Settings || page == Page::EditId || page == Page::Saved || page == Page::Reboot; }
+    bool locked() const { return page == Page::Settings || page == Page::EditId || page == Page::Saved || page == Page::Reboot || page == Page::Tests ||
+        page == Page::Dribbler || page == Page::Speed || kickerPage(); }
+    bool kickerPage() const { return page == Page::Kicker || page == Page::Voltage; }
     void go(Page next, int selection = 0) { page = next; selected = selection; first = 0; }
     void tick(uint32_t now) { if (page == Page::Saved && uint32_t(now - savedAt) >= 800) go(Page::Settings); }
     Effect event(Event e, uint8_t id, uint32_t now) {
@@ -46,6 +50,11 @@ struct Menu {
             case Page::EditId: case Page::Saved: go(Page::Settings); break;
             case Page::System: go(Page::Root, 3); first = 1; break;
             case Page::Version: case Page::Reboot: go(Page::System); break;
+            case Page::Tests: go(Page::Root, 4); first = 2; break;
+            case Page::Dribbler: spinning = false; go(Page::Tests); break;
+            case Page::Speed: go(Page::Dribbler); break;
+            case Page::Kicker: voltage = 0; go(Page::Tests, 1); break;
+            case Page::Voltage: go(Page::Kicker); break;
             }
             return Effect::None;
         }
@@ -54,8 +63,17 @@ struct Menu {
             if (page == Page::Home) home = 1 - home;
             else if (page == Page::Telemetry) telemetry = (telemetry + delta + 3) % 3;
             else if (page == Page::EditId) editId = (editId + (e == Event::Up ? 1 : 15)) % 16;
+            else if (page == Page::Speed || page == Page::Voltage)
+                draft = (draft + (e == Event::Up ? 1 : 15)) % 16;
             else {
-                int count = page == Page::Root ? 4 : (page == Page::System || page == Page::Reboot ? 2 : 1);
+                int count = 1;
+                switch (page) {
+                case Page::Root: count = 5; break;
+                case Page::Kicker: count = 3; break;
+                case Page::Tests: case Page::Dribbler:
+                case Page::System: case Page::Reboot: count = 2; break;
+                default: break;
+                }
                 selected += delta;
                 if (selected < 0) selected = 0;
                 if (selected >= count) selected = count - 1;
@@ -71,7 +89,7 @@ struct Menu {
                     home = 0;
                     return Effect::ToPlay;
                 }
-                go(selected == 1 ? Page::Telemetry : selected == 2 ? Page::Settings : Page::System); break;
+                go(selected == 1 ? Page::Telemetry : selected == 2 ? Page::Settings : selected == 3 ? Page::System : Page::Tests); break;
             case Page::Settings: editId = id; go(Page::EditId); break;
             case Page::EditId:
                 if (editId == id) go(Page::Settings);
@@ -81,6 +99,17 @@ struct Menu {
             case Page::Reboot:
                 if (selected == 1) return Effect::Reboot;
                 go(Page::System, 1); break;
+            case Page::Tests: go(selected == 0 ? Page::Dribbler : Page::Kicker); break;
+            case Page::Dribbler:
+                if (selected == 0) { draft = speed; go(Page::Speed); }
+                else spinning = !spinning;
+                break;
+            case Page::Speed: speed = draft; go(Page::Dribbler); break;
+            case Page::Kicker:
+                if (selected == 0) { draft = voltage; go(Page::Voltage); }
+                else { chip = selected == 1; return Effect::Kick; }
+                break;
+            case Page::Voltage: voltage = draft; go(Page::Kicker); break;
             default: break;
             }
         }

@@ -1,4 +1,5 @@
 #include "bldc.hpp"
+#include <cstring>
 #include "devices/device_manager.hpp"
 
 #include <cstring>
@@ -139,6 +140,11 @@ bool BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, const ui
     uint8_t stopped[8] = {};
     if (devices::robot_dev.control_locked()) {
         if (register_addr != MULTI_TARGET_W && register_addr != TARGET_RW) return;
+        if (motor_addr == 7 && register_addr == TARGET_RW && len == sizeof(float)) {
+            const float speed = devices::robot_dev.test_dribbler *
+                                devices::robot_dev.dribbler_setting_to_vel;
+            std::memcpy(stopped, &speed, sizeof(speed));
+        }
         data = stopped;
         if (len > sizeof(stopped)) return;
     }

@@ -7,6 +7,11 @@
 namespace devices::kicker
 {
 
+constexpr double voltageForLevel(uint8_t level)
+{
+    return level == 0 ? 0 : level >= 15 ? 330 : 100 + (level - 1) * 230.0 / 14;
+}
+
 enum KICKER_STATES
 {
   PREPARE,

@@ -34,12 +34,44 @@ void list(Frame &f, const char *title, const char *const *items, int count) {
 Frame render(uint32_t now) {
     Frame f;
     auto &r = devices::robot_dev;
-    static const char *root[] = {"TO PLAY MODE", "Telemetry", "Settings", "System"};
+    static const char *root[] = {"TO PLAY MODE", "Telemetry", "Settings", "System", "Tests"};
     static const char *settings[] = {"Robot ID"};
     static const char *system[] = {"Firmware version", "Reboot"};
     static const char *reboot[] = {"Cancel", "Reboot"};
     switch (menu.page) {
-    case Page::Root: list(f, "MENU", root, 4); break;
+    case Page::Root: list(f, "MENU", root, 5); break;
+    case Page::Tests: {
+        const char *items[] = {"Dribbler", "Kicker"};
+        list(f, "TESTS", items, 2);
+        break;
+    }
+    case Page::Dribbler: {
+        char speed[22], value[16];
+        number(value, sizeof(value), menu.speed * r.dribbler_setting_to_vel, 9, 1);
+        std::snprintf(speed, sizeof(speed), "Set speed: %s", value);
+        const char *items[] = {speed, menu.spinning ? "Stop dribbler" : "Start dribbler"};
+        list(f, "DRIBBLER", items, 2);
+        break;
+    }
+    case Page::Kicker: {
+        char voltage[22];
+        std::snprintf(voltage, sizeof(voltage), "Set voltage: %.1fV",
+                      devices::kicker::voltageForLevel(menu.voltage));
+        const char *items[] = {voltage, "Chip Kick", "Straight Kick"};
+        list(f, "KICKER", items, 3);
+        break;
+    }
+    case Page::Speed:
+        std::snprintf(f.lines[0], 22, "DRIBBLER SPEED");
+        field(f, 1, "Speed:", menu.draft * r.dribbler_setting_to_vel);
+        std::snprintf(f.lines[3], 22, "OK:set HOLD:back");
+        break;
+    case Page::Voltage:
+        std::snprintf(f.lines[0], 22, "KICKER VOLTAGE");
+        std::snprintf(f.lines[1], 22, "Set: %.1f V", devices::kicker::voltageForLevel(menu.draft));
+        field(f, 2, "Actual:", devices::kicker_drv.actual_voltage);
+        std::snprintf(f.lines[3], 22, "OK:set HOLD:back");
+        break;
     case Page::Settings: list(f, "SETTINGS", settings, 1); break;
     case Page::System: list(f, "SYSTEM", system, 2); break;
     case Page::Reboot: list(f, "REBOOT?", reboot, 2); break;
@@ -150,8 +182,20 @@ void update() {
     Event e = se != Event::None ? se : (u && d) ? Event::None : ue != Event::None ? ue : de;
     if (e != Event::None) shellView = false;
     menu.tick(now);
-    Effect effect = menu.event(e, devices::robot_dev.robot_id, now);
-    devices::robot_dev.set_control_locked(menu.locked());
+    auto &robot = devices::robot_dev;
+    const bool wasKicker = menu.kickerPage();
+    const auto previousVoltage = menu.voltage;
+    Effect effect = menu.event(e, robot.robot_id, now);
+    robot.test_dribbler = menu.spinning ? menu.speed : 0;
+    robot.test_kicker = menu.kickerPage();
+    robot.test_voltage = menu.voltage;
+    if ((wasKicker && !robot.test_kicker) || previousVoltage != menu.voltage) {
+        robot.test_kick = devices::robot::DISABLED;
+        devices::kicker_drv.stop();
+    }
+    robot.set_control_locked(menu.locked());
+    if (effect == Effect::Kick && robot.test_kick == devices::robot::DISABLED)
+        robot.test_kick = menu.chip ? devices::robot::KICK_UP : devices::robot::KICK_FRONT;
     if (effect == Effect::SaveId) {
         devices::robot::RobotSettings saved{};
         devices::eeprom::get(0, saved);

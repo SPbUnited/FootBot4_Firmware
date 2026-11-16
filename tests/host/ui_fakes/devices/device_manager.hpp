@@ -14,8 +14,13 @@ inline Pin in_pins[3];
 namespace devices {
 namespace robot {
 enum { PLAY, TEST };
+enum { DISABLED, KICK_UP, KICK_FRONT };
 struct RobotSettings { float unrelated = 12.5f; uint8_t robot_id = 7, signature = 123; };
 struct Robot : RobotSettings {
+    float dribbler_setting_to_vel = 37.5f;
+    uint8_t test_dribbler = 0, test_voltage = 0;
+    bool test_kicker = false;
+    int test_kick = DISABLED;
     bool locked = false;
     int play_mode = PLAY;
     struct Vec { float x = 0, y = 0, theta = 0; } pos_global_current, vel_global_current;
@@ -51,6 +56,7 @@ struct Oled {
     bool submit() { ++frames; return true; }
 };
 inline Oled oled_drv;
-struct Kicker { double actual_voltage = 120.5; };
+namespace kicker { inline double voltageForLevel(uint8_t level) { return level ? 100 + (level - 1) * 230.0 / 14 : 0; } }
+struct Kicker { double actual_voltage = 120.5; void stop() {} };
 inline Kicker kicker_drv;
 }
