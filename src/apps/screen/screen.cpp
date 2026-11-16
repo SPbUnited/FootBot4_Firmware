@@ -1,4 +1,5 @@
 #include "screen.hpp"
+#include "devices/oled/robot_icon.hpp"
 #include "menu.hpp"
 #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
@@ -147,6 +148,7 @@ void update() {
         std::snprintf(frame.lines[0], 22, "PLAY MODE");
         std::snprintf(frame.lines[2], 22, "ID: %02u", devices::robot_dev.robot_id);
         draw(frame);
+        devices::oled::drawRobotIcon(devices::oled_drv.display);
         if (devices::oled_drv.submit()) {
             playFramePending = false;
             validFrame = false;
