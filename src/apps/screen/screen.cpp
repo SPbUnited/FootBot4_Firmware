@@ -12,6 +12,7 @@ Menu menu;
 Button up, down, select;
 Button testEntry[3];
 bool waitForRelease = false;
+bool playFramePending = false;
 bool shellView = false, validFrame = false;
 uint32_t lastFrame = 0, lastErrors = 0;
 struct Frame { char lines[4][22] = {}; int highlight = -1; bool large = false; } previous;
@@ -100,12 +101,27 @@ void init() {
     validFrame = shellView = false;
     for (auto &button : testEntry) button = {};
     waitForRelease = false;
+    playFramePending = devices::robot_dev.play_mode == devices::robot::PLAY;
     lastFrame = HAL_GetTick() - 100;
     update();
 }
 void suspendForShell() { shellView = true; validFrame = false; }
 void update() {
     uint32_t now = HAL_GetTick();
+    if (playFramePending) {
+        if (!devices::oled_drv.ready() || uint32_t(now - lastFrame) < 100) return;
+        lastFrame = now;
+        Frame frame;
+        std::snprintf(frame.lines[0], 22, "PLAY MODE");
+        std::snprintf(frame.lines[2], 22, "ID: %02u", devices::robot_dev.robot_id);
+        draw(frame);
+        if (devices::oled_drv.submit()) {
+            playFramePending = false;
+            validFrame = false;
+            devices::robot_dev.play_mode = devices::robot::PLAY;
+        }
+        return;
+    }
     bool u = drivers::in_pins[drivers::BUTTON_ADDR_UP].read();
     bool d = drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read();
     bool ok = drivers::in_pins[drivers::BUTTON_SELECT].read();
@@ -117,6 +133,7 @@ void update() {
             button.sample(pressed[i], now, Event::Up);
             if (pressed[i] && button.pressed && uint32_t(now - button.since) > 3000) {
                 devices::robot_dev.play_mode = devices::robot::TEST;
+                menu.go(Page::Root);
                 waitForRelease = true;
                 for (auto &entry : testEntry) entry = {};
                 break;
@@ -145,7 +162,7 @@ void update() {
     } else if (effect == Effect::Reboot) {
         kernel::reboot();
     } else if (effect == Effect::ToPlay) {
-        devices::robot_dev.play_mode = devices::robot::PLAY;
+        playFramePending = true;
         return;
     }
     if (!devices::oled_drv.ready()) return;

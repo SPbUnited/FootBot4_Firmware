@@ -15,28 +15,30 @@ int main() {
     using namespace drivers;
     init();
     auto &rows = oled_drv.display.rows;
+    assert(rows[0] == "PLAY MODE" && rows[2] == "ID: 07");
+    unsigned playFrames = oled_drv.frames;
     click(BUTTON_SELECT);
     advance(1000);
-    assert(oled_drv.frames == 0 && eeprom::writes == 0 && !robot_dev.locked);
+    assert(oled_drv.frames == playFrames && eeprom::writes == 0 && !robot_dev.locked);
     for (int pin : {BUTTON_ADDR_UP, BUTTON_ADDR_DOWN, BUTTON_SELECT}) {
         in_pins[pin].value = true;
         advance(10);
         advance(30);
         advance(3000);
-        assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == 0);
+        assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == playFrames);
         advance(10);
         assert(robot_dev.play_mode == robot::TEST);
         advance(1000);
         in_pins[pin].value = false;
         advance(40);
-        assert(rows[0].find("ID:07 TEST POS") == 0);
+        assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
         if (pin != BUTTON_SELECT) {
             robot_dev.play_mode = robot::PLAY;
-            oled_drv.frames = 0;
+            playFrames = oled_drv.frames;
         }
     }
     advance(100);
-    assert(rows[0].find("ID:07 TEST") == 0);
+    click(BUTTON_SELECT, true); // return home for telemetry checks
     unsigned frames = oled_drv.frames;
     advance(100); assert(oled_drv.frames == frames); // unchanged image
     robot_dev.pos_global_current.x = -123456789;
@@ -78,6 +80,11 @@ int main() {
     assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
     frames = oled_drv.frames;
     click(BUTTON_SELECT);
-    assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == frames);
+    advance(100);
+    assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == frames + 1);
+    assert(rows[0] == "PLAY MODE" && rows[2] == "ID: 08");
+    robot_dev.pos_global_current.x = 42;
+    advance(1000);
+    assert(oled_drv.frames == frames + 1);
     std::puts("screen integration tests passed (mock OLED/storage)");
 }

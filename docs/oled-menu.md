@@ -7,7 +7,8 @@ Button debounce is 30 ms. Direction repeat starts at 400 ms, repeats every
 pressed together are ignored.
 
 Home has position and velocity pages. SELECT opens TO PLAY MODE, Telemetry, Settings, and System.
-TO PLAY MODE returns to PLAY without reboot and freezes OLED updates.
+At boot and when returning through TO PLAY MODE, the OLED receives a static
+PLAY MODE frame with the current robot ID. Normal PLAY does not refresh it.
 Telemetry adds a kicker voltage page. System contains the scrolling firmware
 version and a reboot confirmation, initially selecting Cancel.
 
