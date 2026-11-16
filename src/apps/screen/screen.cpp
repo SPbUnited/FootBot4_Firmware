@@ -33,12 +33,12 @@ void list(Frame &f, const char *title, const char *const *items, int count) {
 Frame render(uint32_t now) {
     Frame f;
     auto &r = devices::robot_dev;
-    static const char *root[] = {"Telemetry", "Settings", "System"};
+    static const char *root[] = {"TO PLAY MODE", "Telemetry", "Settings", "System"};
     static const char *settings[] = {"Robot ID"};
     static const char *system[] = {"Firmware version", "Reboot"};
     static const char *reboot[] = {"Cancel", "Reboot"};
     switch (menu.page) {
-    case Page::Root: list(f, "MENU", root, 3); break;
+    case Page::Root: list(f, "MENU", root, 4); break;
     case Page::Settings: list(f, "SETTINGS", settings, 1); break;
     case Page::System: list(f, "SYSTEM", system, 2); break;
     case Page::Reboot: list(f, "REBOOT?", reboot, 2); break;
@@ -142,7 +142,12 @@ void update() {
         devices::eeprom::put(0, saved);
         devices::robot_dev.robot_id = menu.editId;
         menu.savedAt = HAL_GetTick();
-    } else if (effect == Effect::Reboot) kernel::reboot();
+    } else if (effect == Effect::Reboot) {
+        kernel::reboot();
+    } else if (effect == Effect::ToPlay) {
+        devices::robot_dev.play_mode = devices::robot::PLAY;
+        return;
+    }
     if (!devices::oled_drv.ready()) return;
     if (lastErrors != devices::oled_drv.transfer_errors) {
         lastErrors = devices::oled_drv.transfer_errors; validFrame = false;

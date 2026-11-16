@@ -26,7 +26,7 @@ struct Button {
     }
 };
 enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, Version, Reboot };
-enum class Effect { None, SaveId, Reboot };
+enum class Effect { None, SaveId, Reboot, ToPlay };
 struct Menu {
     Page page = Page::Home;
     int selected = 0, first = 0, telemetry = 0, home = 0;
@@ -41,10 +41,10 @@ struct Menu {
             switch (page) {
             case Page::Home: break;
             case Page::Root: go(Page::Home); break;
-            case Page::Telemetry: go(Page::Root); break;
-            case Page::Settings: go(Page::Root, 1); break;
+            case Page::Telemetry: go(Page::Root, 1); break;
+            case Page::Settings: go(Page::Root, 2); break;
             case Page::EditId: case Page::Saved: go(Page::Settings); break;
-            case Page::System: go(Page::Root, 2); break;
+            case Page::System: go(Page::Root, 3); first = 1; break;
             case Page::Version: case Page::Reboot: go(Page::System); break;
             }
             return Effect::None;
@@ -55,7 +55,7 @@ struct Menu {
             else if (page == Page::Telemetry) telemetry = (telemetry + delta + 3) % 3;
             else if (page == Page::EditId) editId = (editId + (e == Event::Up ? 1 : 15)) % 16;
             else {
-                int count = page == Page::Root ? 3 : (page == Page::System || page == Page::Reboot ? 2 : 1);
+                int count = page == Page::Root ? 4 : (page == Page::System || page == Page::Reboot ? 2 : 1);
                 selected += delta;
                 if (selected < 0) selected = 0;
                 if (selected >= count) selected = count - 1;
@@ -66,7 +66,12 @@ struct Menu {
             switch (page) {
             case Page::Home: go(Page::Root); break;
             case Page::Root:
-                go(selected == 0 ? Page::Telemetry : selected == 1 ? Page::Settings : Page::System); break;
+                if (selected == 0) {
+                    go(Page::Home);
+                    home = 0;
+                    return Effect::ToPlay;
+                }
+                go(selected == 1 ? Page::Telemetry : selected == 2 ? Page::Settings : Page::System); break;
             case Page::Settings: editId = id; go(Page::EditId); break;
             case Page::EditId:
                 if (editId == id) go(Page::Settings);

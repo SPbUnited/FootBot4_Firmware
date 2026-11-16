@@ -50,6 +50,8 @@ int main() {
     in_pins[BUTTON_ADDR_UP].value = in_pins[BUTTON_ADDR_DOWN].value = false;
     advance(10); advance(30);
     click(BUTTON_SELECT); // root
+    assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
+    click(BUTTON_ADDR_DOWN);
     click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // settings
     assert(robot_dev.locked);
     robot_dev.unrelated = 99; // runtime override must not be persisted
@@ -72,5 +74,10 @@ int main() {
     suspendForShell(); frames = oled_drv.frames;
     advance(1000); assert(oled_drv.frames == frames);
     click(BUTTON_SELECT, true); assert(oled_drv.frames > frames);
+    for (int i = 0; i < 3; ++i) click(BUTTON_ADDR_UP);
+    assert(rows[0] == "MENU 1/4" && rows[1] == "TO PLAY MODE");
+    frames = oled_drv.frames;
+    click(BUTTON_SELECT);
+    assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == frames);
     std::puts("screen integration tests passed (mock OLED/storage)");
 }
