@@ -1,5 +1,6 @@
 #include "oled.hpp"
 #include "robot_icon.hpp"
+#include "wave.hpp"
 
 // #include "drivers/driver_manager.hpp"
 #include "kernel/kernel.hpp"
@@ -48,6 +49,23 @@ void OledDriver::init()
     display.print("Booting...");
     drawRobotIcon(display);
     display.flush();
+
+    const uint32_t started = HAL_GetTick();
+    unsigned drawn = 0;
+    for (unsigned frame = 1; frame <= waveFrames; ++frame)
+    {
+        const uint32_t deadline = frame * waveDurationMs / waveFrames;
+        const uint32_t elapsed = HAL_GetTick() - started;
+        if (elapsed < deadline)
+            HAL_Delay(deadline - elapsed);
+
+        constexpr unsigned bootWaveWidth = waveWidth - 4;
+        const unsigned visible = frame * bootWaveWidth / waveFrames;
+        drawWave(display, drawn, visible, 9, 7);
+        drawn = visible;
+        if (display.flush() != oled_lib::OledResult::Ok)
+            break;
+    }
 }
 
 bool OledDriver::ready()

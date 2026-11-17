@@ -15,7 +15,7 @@ int main() {
     using namespace drivers;
     init();
     auto &rows = oled_drv.display.rows;
-    assert(rows[0] == "PLAY MODE" && rows[2] == "ID: 07");
+    assert(rows[0] == "PLAY MODE" && rows[1] == "ID: 07");
     unsigned playFrames = oled_drv.frames;
     click(BUTTON_SELECT);
     advance(1000);
@@ -24,9 +24,19 @@ int main() {
         in_pins[pin].value = true;
         advance(10);
         advance(30);
-        advance(3000);
+        advance(1000);
         assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == playFrames);
+        advance(167);
+        assert(oled_drv.frames == playFrames + 1);
+        in_pins[pin].value = false;
+        advance(100);
+        assert(oled_drv.frames == playFrames + 2);
+        in_pins[pin].value = true;
         advance(10);
+        advance(30);
+        advance(2850); // final wave frame, before entering TEST
+        assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == playFrames + 3);
+        advance(160);
         assert(robot_dev.play_mode == robot::TEST);
         advance(1000);
         in_pins[pin].value = false;
@@ -103,7 +113,7 @@ int main() {
     click(BUTTON_SELECT);
     advance(100);
     assert(robot_dev.play_mode == robot::PLAY && oled_drv.frames == frames + 1);
-    assert(rows[0] == "PLAY MODE" && rows[2] == "ID: 08");
+    assert(rows[0] == "PLAY MODE" && rows[1] == "ID: 08");
     robot_dev.pos_global_current.x = 42;
     advance(1000);
     assert(oled_drv.frames == frames + 1);
