@@ -40,7 +40,7 @@ struct Display {
     void clear() { for (auto &s : rows) s.clear(); }
     void rectFill(int x, int y, int w, int h, bool) { assert(x >= 0 && y >= 0 && x + w <= 128 && y + h <= 32); }
     void line(int x0, int y0, int x1, int y1, bool) {
-        assert(x0 >= 98 && x0 < 128 && x1 >= 98 && x1 < 128);
+        assert(x0 >= 0 && x0 < 128 && x1 >= 0 && x1 < 128);
         assert(y0 >= 0 && y0 < 32 && y1 >= 0 && y1 < 32);
     }
     void setTextColor(bool) {}

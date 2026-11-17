@@ -1,5 +1,6 @@
 #include "screen.hpp"
 #include "devices/oled/robot_icon.hpp"
+#include "devices/oled/wave.hpp"
 #include "menu.hpp"
 #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
@@ -14,6 +15,7 @@ Button up, down, select;
 Button testEntry[3];
 bool waitForRelease = false;
 bool playFramePending = false;
+unsigned shownWave = 0;
 bool shellView = false, validFrame = false;
 uint32_t lastFrame = 0, lastErrors = 0;
 struct Frame { char lines[4][22] = {}; int highlight = -1; bool large = false; } previous;
@@ -128,12 +130,27 @@ void draw(const Frame &f) {
     }
     d.setTextSize(1); d.setTextColor(true);
 }
+bool submitPlayFrame(unsigned wave)
+{
+    auto &oled = devices::oled_drv;
+    if (!oled.ready()) return false;
+
+    Frame frame;
+    std::snprintf(frame.lines[0], 22, "PLAY MODE");
+    std::snprintf(frame.lines[1], 22, "ID: %02u", devices::robot_dev.robot_id);
+    draw(frame);
+    devices::oled::drawRobotIcon(oled.display);
+    devices::oled::drawWave(oled.display, 0, wave * devices::oled::waveWidth / devices::oled::waveFrames, 15, 5);
+    return oled.submit();
+}
+
 }
 void init() {
     menu = {}; up = {}; down = {}; select = {};
     validFrame = shellView = false;
     for (auto &button : testEntry) button = {};
     waitForRelease = false;
+    shownWave = 0;
     playFramePending = devices::robot_dev.play_mode == devices::robot::PLAY;
     lastFrame = HAL_GetTick() - 100;
     update();
@@ -142,14 +159,10 @@ void suspendForShell() { shellView = true; validFrame = false; }
 void update() {
     uint32_t now = HAL_GetTick();
     if (playFramePending) {
-        if (!devices::oled_drv.ready() || uint32_t(now - lastFrame) < 100) return;
+        if (uint32_t(now - lastFrame) < 100) return;
         lastFrame = now;
-        Frame frame;
-        std::snprintf(frame.lines[0], 22, "PLAY MODE");
-        std::snprintf(frame.lines[2], 22, "ID: %02u", devices::robot_dev.robot_id);
-        draw(frame);
-        devices::oled::drawRobotIcon(devices::oled_drv.display);
-        if (devices::oled_drv.submit()) {
+        if (submitPlayFrame(0)) {
+            shownWave = 0;
             playFramePending = false;
             validFrame = false;
             devices::robot_dev.play_mode = devices::robot::PLAY;
@@ -161,17 +174,33 @@ void update() {
     bool ok = drivers::in_pins[drivers::BUTTON_SELECT].read();
     if (devices::robot_dev.play_mode == devices::robot::PLAY) {
         up = {}; down = {}; select = {};
+        uint32_t held = 0;
         const bool pressed[] = {u, d, ok};
         for (int i = 0; i < 3; ++i) {
             auto &button = testEntry[i];
             button.sample(pressed[i], now, Event::Up);
-            if (pressed[i] && button.pressed && uint32_t(now - button.since) > 3000) {
+            if (!pressed[i]) {
+                button = {};
+                continue;
+            }
+            if (button.pressed && uint32_t(now - button.since) > held)
+                held = now - button.since;
+            if (held > 1000 + devices::oled::waveDurationMs) {
                 devices::robot_dev.play_mode = devices::robot::TEST;
                 menu.go(Page::Root);
+                shownWave = 0;
+                validFrame = false;
                 waitForRelease = true;
                 for (auto &entry : testEntry) entry = {};
-                break;
+                return;
             }
+        }
+        const unsigned wave = held > 1000 ?
+            ((held - 1000) * devices::oled::waveFrames + devices::oled::waveDurationMs - 1) /
+            devices::oled::waveDurationMs : 0;
+        if (wave != shownWave && uint32_t(now - lastFrame) >= 100) {
+            lastFrame = now;
+            if (submitPlayFrame(wave)) shownWave = wave;
         }
         return;
     }
