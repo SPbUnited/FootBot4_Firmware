@@ -140,7 +140,7 @@ bool submitPlayFrame(unsigned wave)
     std::snprintf(frame.lines[1], 22, "ID: %02u", devices::robot_dev.robot_id);
     draw(frame);
     devices::oled::drawRobotIcon(oled.display);
-    devices::oled::drawWave(oled.display, 0, wave * devices::oled::waveWidth / devices::oled::waveFrames, 15, 5);
+    devices::oled::drawWave(oled.display, 0, wave * (devices::oled::waveWidth - 4) / devices::oled::waveFrames, 15, 5);
     return oled.submit();
 }
 
