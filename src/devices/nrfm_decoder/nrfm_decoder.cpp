@@ -1,5 +1,6 @@
 #include "nrfm_decoder.hpp"
 
+#include "decoders/debug_override.hpp"
 #include "decoders/new_old_and_old_format.hpp"
 // #include "devices/device_manager.hpp"
 
@@ -80,6 +81,10 @@ void NRFMDecoder::nrfm_rx_callback(uint8_t *data, uint8_t len)
             }
             kdebug("New old format packet");
             new_old_and_old_format(packet, true);
+            break;
+        case NRFM_DEBUG_OVERRIDE:
+            kdebug("Debug override packet");
+            debug_override(packet, len);
             break;
         default:
             kerror("Unknown packet type %d", packet->packet.packet_type);

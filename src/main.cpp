@@ -5,8 +5,8 @@
 int main(void)
 {
     HAL_Init();
-    drivers::init();
-    devices::init();
+    drivers::InitStatus driver_status = drivers::init();
+    devices::init(driver_status);
 
     kernel::scheduler::init();
 }

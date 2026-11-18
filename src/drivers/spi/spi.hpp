@@ -45,7 +45,8 @@ class SPIDriver : public SPIConfig
 
     SPIDriver(SPIConfig config);
 
-    void init();
+    /** Configures SPI; returns HAL initialization success. */
+    bool init();
     int rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len);
     int rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len);
 

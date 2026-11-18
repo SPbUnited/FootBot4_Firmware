@@ -3,13 +3,10 @@
 #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 
-
 namespace devices::kicker
 {
 
 Kicker::Kicker(KickerConfig config) : KickerConfig(config) {}
-
-
 
 // Main receive function
 void Kicker::init()
@@ -20,10 +17,9 @@ void Kicker::init()
 float Kicker::get_voltage()
 {
     double voltage = (adc_pin->read() * 3300) / (4096 - 1);
-    actual_voltage = actual_voltage * 0.9f + 140 * voltage * 0.001f * 0.1f;
+    actual_voltage = 140 * voltage * 0.001f;
     // kinfo("voltage");
     return actual_voltage;
-    
 }
 
 void Kicker::set_target(uint16_t voltage)
@@ -33,10 +29,25 @@ void Kicker::set_target(uint16_t voltage)
 
 void Kicker::update()
 {
-    target = devices::robot_dev.kicker_setting * (300/15);
-    if (target >= 300)
+    get_voltage();
+
+    float MIN_VOLTAGE = 100;
+    float MAX_VOLTAGE = 330;
+
+    if (devices::robot_dev.kicker_setting == 0)
     {
-        target = 300;
+        target = 0;
+    }
+    else
+    {
+        target =
+            (devices::robot_dev.kicker_setting - 1) / (15.0 - 1) * (MAX_VOLTAGE - MIN_VOLTAGE) +
+            MIN_VOLTAGE;
+    }
+
+    if (target >= 330)
+    {
+        target = 330;
     }
     else if (target <= 0)
     {
@@ -51,9 +62,9 @@ void Kicker::update()
         {
             bound = 5;
         }
-        else if (bound > 15)
+        else if (bound > 10)
         {
-            bound = 15;
+            bound = 10;
         }
         if (target - actual_voltage > bound)
         {
@@ -78,19 +89,21 @@ void Kicker::update()
                 state = KICK;
             }
         }
-        if (ball_checker_deep->read())
+        if (read_deep())
         {
             drivers::out_pins[drivers::LED_DRV2].write(true);
         }
-        else{
+        else
+        {
             drivers::out_pins[drivers::LED_DRV2].write(false);
         }
 
-        if (ball_checker_front->read())
+        if (read_front())
         {
             drivers::out_pins[drivers::LED_DRV3].write(true);
         }
-        else{
+        else
+        {
             drivers::out_pins[drivers::LED_DRV3].write(false);
         }
     }
@@ -98,33 +111,77 @@ void Kicker::update()
     {
         discharge_pin->write(true);
         charge_pin->write(true);
+
+        state = PREPARE;
+        
         if (devices::robot_dev.kicker_mode == devices::robot::KICK_FRONT)
         {
+            timer = drivers::system_clock::micros();
             straight_pin->write(false);
+            state = AFTER_KICK;
         }
         else if (devices::robot_dev.kicker_mode == devices::robot::KICK_UP)
         {
+            timer = drivers::system_clock::micros();
             chip_pin->write(false);
+            state = AFTER_KICK;
         }
-        else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
+        else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_FRONT)
         {
-            if (ball_checker_deep->read() && ball_checker_front->read())
+            // timer = drivers::system_clock::micros();
+            if (read_deep() && read_front())
             {
+                timer = drivers::system_clock::micros();
                 straight_pin->write(false);
+                state = AFTER_KICK;
             }
         }
-        else if(devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
+        else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_UP)
         {
-            if (ball_checker_deep->read() && ball_checker_front->read())
+            if (read_deep() && read_front())
             {
+                timer = drivers::system_clock::micros();
                 chip_pin->write(false);
+                state = AFTER_KICK;
             }
         }
-        
+        else if (devices::robot_dev.kicker_mode == devices::robot::AUTOKICK_MOMENTUM)
+        {
+            // timer = drivers::system_clock::micros();
+            if (read_deep() || read_front())
+            {
+                timer = drivers::system_clock::micros();
+                straight_pin->write(false);
+                state = AFTER_KICK;
+            }
+        }
+
+        // if(drivers::system_clock::micros() - timer > 5000)
+        // {
+        //     state = PREPARE;
+        // }
         // kernel::delay_ms(2);
-        // if 
-        state = PREPARE;
+        // if
+        // drivers::system_clock::micros()
+        
+    }
+    else if (state == AFTER_KICK)
+    {
+        if((drivers::system_clock::micros() - timer > 10000) && (actual_voltage < 10))
+        {
+            state = PREPARE;
+        }
     }
 }
 
+bool Kicker::read_deep()
+{
+    return !ball_checker_deep->read();
 }
+
+bool Kicker::read_front()
+{
+    return !ball_checker_front->read();
+}
+
+}  // namespace devices::kicker

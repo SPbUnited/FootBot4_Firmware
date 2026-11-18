@@ -12,28 +12,38 @@ BNO055::BNO055(BNO055Config &config) : BNO055Config(config)
     temp_scale = 1;
 }
 
-void BNO055::reset()
+bool BNO055::reset()
 {
-    // Perform a power-on-reset
-    readcharreg(BNO055_SYS_TRIGGER_ADDR);
-    rx = rx | 0x20;
-    writecharreg(BNO055_SYS_TRIGGER_ADDR, rx);
+    online = false;
+    if (!readcharreg(BNO055_SYS_TRIGGER_ADDR))
+    {
+        return false;
+    }
+    rx = static_cast<char>(static_cast<uint8_t>(rx) | 0x20U);
+    if (!writecharreg(BNO055_SYS_TRIGGER_ADDR, rx))
+    {
+        return false;
+    }
     // Wait for the system to come back up again (datasheet says 650ms)
     // wait_ms(675);
     kernel::delay_ms(675);
+    return true;
 }
 
 bool BNO055::check()
 {
+    online = false;
     // Check we have communication link with the chip
-    readcharreg(BNO055_CHIP_ID_ADDR);
-    if (rx != 0xA0)
+    if (!readcharreg(BNO055_CHIP_ID_ADDR) || static_cast<uint8_t>(rx) != 0xA0)
         return false;
     // Grab the chip ID and software versions
     tx[0] = BNO055_CHIP_ID_ADDR;
     // _i2c.write(address, tx, 1, true);
     // _i2c.read(address + 1, rawdata, 7, false);
-    readmulreg(BNO055_CHIP_ID_ADDR, rawdata, 7);
+    if (!readmulreg(BNO055_CHIP_ID_ADDR, rawdata, 7))
+    {
+        return false;
+    }
     // writemulreg(address, tx, 1);
     // readmulreg(address + 1, rawdata, 7);
     ID.id = rawdata[0];
@@ -43,21 +53,28 @@ bool BNO055::check()
     ID.sw[0] = rawdata[4];
     ID.sw[1] = rawdata[5];
     ID.bootload = rawdata[6];
-    setpage(1);
+    if (!setpage(1))
+    {
+        return false;
+    }
     tx[0] = BNO055_UNIQUE_ID_ADDR;
     // _i2c.write(address, tx, 1, true);
     // _i2c.read(address + 1, ID.serial, 16, false);
     // writemulreg(address, tx, 1);
     // readmulreg(address + 1, ID.serial, 16);
-    readmulreg(BNO055_UNIQUE_ID_ADDR, ID.serial, 16);
-    setpage(0);
-    return true;
+    bool serial_read = readmulreg(BNO055_UNIQUE_ID_ADDR, ID.serial, 16);
+    bool page_restored = setpage(0);
+    online = serial_read && page_restored;
+    return online;
 }
 
 void BNO055::SetExternalCrystal(bool yn)
 {
     // Read the current status from the device
-    readcharreg(BNO055_SYS_TRIGGER_ADDR);
+    if (!readcharreg(BNO055_SYS_TRIGGER_ADDR))
+    {
+        return;
+    }
     if (yn)
         rx = rx | 0x80;
     else
@@ -81,9 +98,12 @@ void BNO055::set_accel_units(char units)
     writecharreg(BNO055_UNIT_SEL_ADDR, rx);
 }
 
-void BNO055::set_anglerate_units(char units)
+bool BNO055::set_anglerate_units(char units)
 {
-    readcharreg(BNO055_UNIT_SEL_ADDR);
+    if (!readcharreg(BNO055_UNIT_SEL_ADDR))
+    {
+        return false;
+    }
     if (units == DEG_PER_SEC)
     {
         rx = rx & 0xFD;
@@ -94,12 +114,15 @@ void BNO055::set_anglerate_units(char units)
         rx = rx | units;
         rate_scale = 1.0f / 900.0f;
     }
-    writecharreg(BNO055_UNIT_SEL_ADDR, rx);
+    return writecharreg(BNO055_UNIT_SEL_ADDR, rx);
 }
 
-void BNO055::set_angle_units(char units)
+bool BNO055::set_angle_units(char units)
 {
-    readcharreg(BNO055_UNIT_SEL_ADDR);
+    if (!readcharreg(BNO055_UNIT_SEL_ADDR))
+    {
+        return false;
+    }
     if (units == DEGREES)
     {
         rx = rx & 0xFB;
@@ -110,7 +133,7 @@ void BNO055::set_angle_units(char units)
         rx = rx | units;
         angle_scale = 1.0f / 900.0f;
     }
-    writecharreg(BNO055_UNIT_SEL_ADDR, rx);
+    return writecharreg(BNO055_UNIT_SEL_ADDR, rx);
 }
 
 void BNO055::set_temp_units(char units)
@@ -172,10 +195,15 @@ void BNO055::set_orientation(int position)
     }
 }
 
-void BNO055::setmode(char omode)
+bool BNO055::setmode(char omode)
 {
-    writecharreg(BNO055_OPR_MODE_ADDR, omode);
+    if (!writecharreg(BNO055_OPR_MODE_ADDR, omode))
+    {
+        return false;
+    }
     op_mode = omode;
+    HAL_Delay(25);
+    return true;
 }
 
 void BNO055::setpowermode(char pmode)
@@ -281,19 +309,36 @@ void BNO055::get_quat(void)
     quat.z = float(quat.rawz) / 16384.0f;
 }
 
-void BNO055::get_angles(void)
+bool BNO055::get_angles(void)
 {
+    if (!online)
+    {
+        return false;
+    }
+    uint32_t now_ms = HAL_GetTick();
+    if (angle_retry_pending_ && static_cast<int32_t>(now_ms - angle_retry_after_ms_) < 0)
+    {
+        return false;
+    }
     tx[0] = BNO055_EULER_H_LSB_ADDR;
     // _i2c.write(address, tx, 1, true);
     // _i2c.read(address + 1, rawdata, 6, 0);
-    readmulreg(BNO055_EULER_H_LSB_ADDR, rawdata, 6);
-    euler.rawyaw = (rawdata[1] << 8 | rawdata[0]);
-    euler.rawroll = (rawdata[3] << 8 | rawdata[2]);
-    euler.rawpitch = (rawdata[5] << 8 | rawdata[4]);
+    if (!readmulreg(BNO055_EULER_H_LSB_ADDR, rawdata, 6))
+    {
+        angle_retry_pending_ = true;
+        angle_retry_after_ms_ = HAL_GetTick() + 500U;
+        return false;
+    }
+    angle_retry_pending_ = false;
+    angle_retry_after_ms_ = 0;
+    euler.rawyaw = (static_cast<uint8_t>(rawdata[1]) << 8 | static_cast<uint8_t>(rawdata[0]));
+    euler.rawroll = (static_cast<uint8_t>(rawdata[3]) << 8 | static_cast<uint8_t>(rawdata[2]));
+    euler.rawpitch = (static_cast<uint8_t>(rawdata[5]) << 8 | static_cast<uint8_t>(rawdata[4]));
     euler.yaw = float(euler.rawyaw) * angle_scale + 1.57;
     // Flipped roll and pitch to offset screwy work by others
     euler.roll = float(euler.rawpitch) * angle_scale * (-1.0);
     euler.pitch = float(euler.rawroll) * angle_scale;
+    return true;
 }
 
 void BNO055::get_temp(void)

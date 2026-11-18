@@ -1,17 +1,32 @@
 #pragma once
 
+#include <map>
+
 #include "devices/bldc/bldc.hpp"
 #include "devices/chassis/chassis.hpp"
 #include "devices/imu/imu.hpp"
-#include "devices/odom/odom.hpp"
 #include "devices/kicker/kicker.hpp"
+#include "devices/odom/odom.hpp"
 
 namespace devices::robot
 {
 
+enum MODES
+{
+    PLAY = 0,
+    TEST = 1,
+};
+
+enum CANFuocoRegisterMap
+{
+    ANGLE_B = 1,
+    ANGLE_K = 2,
+};
+
 enum LinearControlMode
 {
-    VELOCITY,
+    VELOCITY_LOCAL,
+    VELOCITY_GLOBAL,
     COORDINATE,
 };
 
@@ -28,6 +43,7 @@ enum KickerMode
     KICK_UP = 0b101,
     AUTOKICK_FRONT = 0b110,
     AUTOKICK_UP = 0b111,
+    AUTOKICK_MOMENTUM = 0b1000,
 };
 
 struct RobotConfig
@@ -43,7 +59,8 @@ struct RobotSettings
 {
     float dribbler_setting_to_vel;
     float kicker_setting_to_voltage;
-    float angle_kp;
+    float angle_k;
+    float angle_b;
 
     float max_linear_vel;
     float max_linear_accel;
@@ -59,19 +76,19 @@ uint8_t calculate_signature(RobotSettings config);
 
 struct Robot : RobotSettings, RobotConfig
 {
-    Robot(RobotSettings &settings, RobotConfig &config)
-        : RobotSettings(settings), RobotConfig(config)
-    {
-    }
+    Robot(RobotSettings &settings, RobotConfig &config);
 
     LinearControlMode linear_mode;
     AngleControlMode angle_mode;
 
-    devices::chassis::StateVector target_vel;
-    devices::chassis::StateVector target_pos;
+    devices::chassis::StateVector vel_local_output;
+    devices::chassis::StateVector vel_local_output_smoothed;
 
-    devices::chassis::StateVector current_vel;
-    devices::chassis::StateVector current_pos;
+    devices::chassis::StateVector vel_global_target;
+    devices::chassis::StateVector pos_global_target;
+
+    devices::chassis::StateVector vel_global_current;
+    devices::chassis::StateVector pos_global_current;
 
     size_t next_waypoint;
     struct Waypoint
@@ -86,7 +103,12 @@ struct Robot : RobotSettings, RobotConfig
     uint8_t dribbler_setting;
     bool dribbler_update;
 
-    void set_target_linear_vel(float vel_x, float vel_y);
+    uint32_t nonidle_timer;
+    bool is_idle;
+
+    void update_nonidle_timer();
+
+    void set_target_local_linear_vel(float vel_x, float vel_y, bool is_velocity_local = false);
     void set_target_angular_vel(float vel_theta);
     void set_target_angular_dpos(float dpos_theta);
 
@@ -107,6 +129,21 @@ struct Robot : RobotSettings, RobotConfig
     void sense();
     void plan();
     void act();
+
+    uint8_t play_mode;
+    uint32_t test_timer;
+    uint8_t square_side;
+    bool square_running;
+    devices::chassis::StateVector square_start;
+    float square_heading;
+    bool square_turning;
+    bool imu_heading_valid;
+
+    void start_square_test();
+    void update_square_test();
+
+    void nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len);
+    std::map<CANFuocoRegisterMap, uint8_t *> CANFuocoRegisterMapNames;
 };
 
 }  // namespace devices::robot

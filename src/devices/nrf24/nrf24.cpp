@@ -1,5 +1,6 @@
 #include "nrf24.hpp"
 
+#include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 
 #define NRF24_REG_RX_ADDR_P0 (uint8_t)0x0A  // Receive address data pipe 0
@@ -41,58 +42,83 @@ int8_t Nrf24Recv::u8Toi8(uint8_t x)
     return static_cast<int8_t>(x);
 }
 
-// Main receive function
-int Nrf24Recv::recv()
+void Nrf24Recv::recv_irq()
 {
-    for (size_t i = 0; i < 1; i++)
+    uint8_t reg = 1;
+    uint32_t time_ms = 0;       // HAL_GetTick();
+    int rc = readReg(7, &reg);  // 7 = NRF24_REG_FIFO_STATUS
+    if (rc < 0)
     {
-        uint8_t reg = 1;
-        uint32_t time_ms = 0;       // HAL_GetTick();
-        int rc = readReg(7, &reg);  // 7 = NRF24_REG_FIFO_STATUS
-        if (rc < 0)
-        {
-            // Error handling - could add logging here
-        }
-
-        if (!(reg & 0x40))  // RX_DR - Data Not Ready
-        {
-            continue;
-        }
-
-        dts_led.toggle();
-
-        uint32_t timeout_nrf_timer_recv = 0;            // HAL_GetTick();
-        rc = spi_instance.rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command
-        if (rc < 0)
-        {
-            // Error handling
-        }
-
-        if (m_lenDbg < 6)
-        {
-            // Log error - could add logging here
-        }
-
-        if (time_ms - m_prevTime_ms > 1000)
-        {
-            m_prevTime_ms = time_ms;
-            m_packetsReceived_1s = m_packetsReceived;
-            m_packetsReceived = 0;
-            m_ownPacketsReceived_1s = m_ownPacketsReceived;
-            m_ownPacketsReceived = 0;
-        }
-        m_packetsReceived++;
-
-        spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);
-
-        writeReg(0x07, 0x40);  // Clear RX_DR interrupt
-
-        m_lastPacketTime = HAL_GetTick();
-
-        nrfm_decoder.nrfm_rx_callback(m_incomeArray, m_lenDbg);
+        // Error handling - could add logging here
     }
 
+    if (!(reg & 0x40))  // RX_DR - Data Not Ready
+    {
+        return;
+    }
+
+    dts_led.toggle();
+
+    uint32_t timeout_nrf_timer_recv = 0;            // HAL_GetTick();
+    rc = spi_instance.rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command
+    if (rc < 0)
+    {
+        // Error handling
+    }
+
+    if (m_lenDbg < 6)
+    {
+        // Log error - could add logging here
+    }
+
+    if (m_lenDbg == 0 || m_lenDbg > m_incomePacketLen)
+    {
+        writeReg(0x07, 0x40);  // Clear RX_DR interrupt
+        spi_instance.flushRx();
+        return;
+    }
+
+    if (time_ms - m_prevTime_ms > 1000)
+    {
+        m_prevTime_ms = time_ms;
+        m_packetsReceived_1s = m_packetsReceived;
+        m_packetsReceived = 0;
+        m_ownPacketsReceived_1s = m_ownPacketsReceived;
+        m_ownPacketsReceived = 0;
+    }
+    m_packetsReceived++;
+
+    spi_instance.rawRead(0x61, m_incomeArray, m_lenDbg);
+
+    writeReg(0x07, 0x40);  // Clear RX_DR interrupt
+
+    m_lastPacketTime = HAL_GetTick();
+
+    // nrfm_decoder.nrfm_rx_callback(m_incomeArray, m_lenDbg);
+
     spi_instance.flushRx();
+
+    Nrf24Packet packet = {{}, m_lenDbg};
+
+    for (size_t i = 0; i < m_lenDbg; i++)
+    {
+        packet.data[i] = m_incomeArray[i];
+    }
+
+    m_rx_queue.push_back(packet);
+}
+
+// Main receive function
+int Nrf24Recv::fetch()
+{
+    while (!m_rx_queue.isEmpty())
+    {
+        Nrf24Packet packet = m_rx_queue.pop_front();
+
+        nrfm_decoder.nrfm_rx_callback(packet.data, packet.len);
+    }
+
+    // spi_instance.flushRx();
 
     // HAL_Delay(1);
     return 0;
@@ -106,7 +132,7 @@ void Nrf24Recv::send(uint8_t checker, uint8_t id)
 }
 
 // Constructor
-void Nrf24Recv::init()
+bool Nrf24Recv::init()
 {
     // spi.init()
 
@@ -132,6 +158,7 @@ void Nrf24Recv::init()
     if (a != 0x0E)
     {
         // Error - NRF24 not responding
+        return true;
     }
 
     w(0x00, 0x0C);  // CONFIG: PWR_UP, CRCEN, PRIM_RX=0 (TX mode)
@@ -163,8 +190,15 @@ void Nrf24Recv::init()
     spi_instance.rawWrite(0x10, default_addr_0, 5);
 
     w(0x03, 0x03);
+    if (devices::robot_dev.robot_id <= 7)
+    {
+        w(0x05, 111);  // channel set
+    }
+    else
+    {
+        w(0x05, 0x43);  // channel set
+    }
 
-    w(0x05, 0x34);  // channel set
     w(0x00, 0x0D);
     spi_instance.flushRx();
     w(0x00, 0x0C);
@@ -181,6 +215,7 @@ void Nrf24Recv::init()
         volatile int a = 0;
         a++;
         // fail();
+        return true;
     }
     w(0x03, 0x01);
     w(0x06, 0x0E);
@@ -192,6 +227,7 @@ void Nrf24Recv::init()
         volatile int a = 0;
         a++;
         // fail();
+        return true;
     }
 
     uint8_t self_addr[]{0xAB, 0xAD, 0xAF};
@@ -207,6 +243,7 @@ void Nrf24Recv::init()
         volatile int a = 0;
         a++;
         // fail();
+        return true;
     }
     // if (send_or_recieve)
     //     w(0x02, 0x06);
@@ -218,7 +255,7 @@ void Nrf24Recv::init()
     // if (send_or_recieve)
     //     w(0x00, 0x0E);
     // else
-    w(0x00, 0x0F);
+    w(0x00, 0x3F);
 
     spi_instance.flushRx();
 
@@ -236,6 +273,8 @@ void Nrf24Recv::init()
     for (int i = 0; i < 5000; i++)
         ;
     spi_instance.resetCS();
+
+    return false;
 }
 
 // Private methods implementation

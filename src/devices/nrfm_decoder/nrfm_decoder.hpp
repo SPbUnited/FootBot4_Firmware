@@ -51,6 +51,10 @@ union NRFMPacket
                 int16_t coory : 12;
                 int8_t angle : 8;
             } global_coordinate;
+            struct __attribute__((packed, aligned(1))) debug_override_t
+            {
+                uint8_t data[31];
+            } debug_override;
         } payload;
     } packet;
 };
@@ -69,6 +73,7 @@ class NRFMDecoder : public NRFMDecoderConfig
     void nrfm_rx_callback(uint8_t *data, uint8_t len);
 
     void new_old_and_old_format(NRFMPacket *packet, bool is_new_old_format = false);
+    void debug_override(NRFMPacket *packet, uint8_t len);
 };
 
 }  // namespace devices::nrfm_decoder

@@ -3,8 +3,10 @@
 #include "apps/mainloop/mainloop.hpp"
 #include "apps/screen/screen.hpp"
 #include "apps/setting_broadcaster/setting_broadcaster.hpp"
+#include "devices/device_manager.hpp"
 #include "devices/logger/logger.hpp"
 #include "devices/shell/shell.hpp"
+#include "drivers/driver_manager.hpp"
 #include "drivers/system_clock/system_clock.hpp"
 
 namespace kernel::scheduler
@@ -14,7 +16,6 @@ static bool is_init = false;
 
 enum Apps
 {
-    app_nrf24,
     app_mainloop,
     app_screen,
     app_setting_broadcaster,
@@ -32,7 +33,6 @@ enum Apps
 void monitor_reset();
 
 TaskDescriptor tasks[app_count] = {
-    {"nrf24", apps::mainloop::nrf24_recv, 0, TPS(250), ksperiodic, idle, {0}, LOG_WRANING},
     {"mainloop",
      apps::mainloop::loop,
      0,
@@ -42,17 +42,17 @@ TaskDescriptor tasks[app_count] = {
      idle,
      {0},
      LOG_INFO},
+    {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
-     TPS(1),
+     TPS(2),
      ksperiodic,
      idle,
      {0},
      LOG_NONE},
-    {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
-    {"monitor_reset", monitor_reset, 0, TPS(1), ksperiodic, idle, {0}, LOG_DEBUG},
     {"shell", devices::shell::my_shellLoop, 0, 0, kspersistent, idle, {0}, LOG_DEBUG},
+    {"monitor_reset", monitor_reset, 0, TPS(1), ksperiodic, idle, {0}, LOG_DEBUG},
 };
 
 void monitor_reset()
@@ -98,7 +98,9 @@ void yield()
         return;
     }
 
-    for (size_t app = 0; app < app_count; app++)
+    for (size_t app = 0;
+         app < (devices::robot_dev.play_mode == devices::robot::PLAY ? app_shell : app_count);
+         app++)
     {
         uint32_t elapsed_time = drivers::system_clock::micros() - tasks[app].last_exec;
         if (tasks[app].is_pending(elapsed_time, tasks[app].period))
@@ -106,6 +108,9 @@ void yield()
             run(static_cast<Apps>(app));
         }
     }
+
+    devices::bldcs_drv.pollFeedback();
+    drivers::can_drv.updateMonitorWindow();
 }
 
 void init()

@@ -22,7 +22,7 @@ struct ChassisConfig
     devices::bldc::BldcsDriver *bldcs;
     float wheel_angles[4];  // Углы расположения колёс в радианах
     float wheel_radius;     // Радиус колёс в метрах
-    float robot_radius;     // Радиус робота (расстояние от центра до колеса) в метрах
+    float robot_radius;  // Радиус робота (расстояние от центра до колеса) в метрах
 };
 
 class Chassis : public ChassisConfig
@@ -30,6 +30,8 @@ class Chassis : public ChassisConfig
   private:
     vt::numeric_matrix<4, 3> J;
     vt::numeric_matrix<3, 4> Jinv;
+    bldc::BldcsVec previous_wheel_position{};
+    bool has_wheel_position_reference = false;
 
   public:
     Chassis(ChassisConfig config);
@@ -38,6 +40,8 @@ class Chassis : public ChassisConfig
     void setVel(StateVector vel);
     void getVel(StateVector *vel);
     void getVel(StateVector *vel, bldc::BldcsVec wheel_vels);
+    /** Converts fresh wheel encoder positions into one local chassis displacement. */
+    bool getPositionDelta(StateVector *delta);
 };
 
 }  // namespace devices::chassis

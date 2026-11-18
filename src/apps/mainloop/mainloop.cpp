@@ -4,6 +4,12 @@
 #include "drivers/driver_manager.hpp"
 #include "inttypes.h"
 
+extern "C"
+{
+    volatile uint32_t mainloop_monitor_cycles = 0;
+    volatile uint32_t mainloop_monitor_stage = 0;
+}
+
 namespace apps::mainloop
 {
 
@@ -17,6 +23,8 @@ bool is_loop_pending(uint32_t time_elapsed, uint32_t period)
 
 void loop()
 {
+    mainloop_monitor_stage = 1;
+
     // Timer
     static uint32_t timer = 0;
     while (drivers::system_clock::micros() - timer < Ts_us)
@@ -25,18 +33,21 @@ void loop()
     timer = drivers::system_clock::micros();
 
     // Sense
+    mainloop_monitor_stage = 2;
     devices::robot_dev.sense();
+    devices::nrf24_recv.recv_irq();
+    devices::nrf24_recv.fetch();
 
     // Plan
+    mainloop_monitor_stage = 3;
     devices::robot_dev.plan();
 
     // Act
+    mainloop_monitor_stage = 4;
     devices::robot_dev.act();
-}
 
-void nrf24_recv()
-{
-    devices::nrf24_recv.recv();
+    ++mainloop_monitor_cycles;
+    mainloop_monitor_stage = 0;
 }
 
 }  // namespace apps::mainloop

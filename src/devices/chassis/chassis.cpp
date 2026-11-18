@@ -97,4 +97,51 @@ void Chassis::getVel(StateVector *vel, bldc::BldcsVec wheel_vels)
     kdebug("getVel: %f %f %f", vel->x, vel->y, vel->theta);
 }
 
+bool Chassis::getPositionDelta(StateVector *delta)
+{
+    constexpr float pi = 3.14159265358979323846f;
+    if (delta == nullptr)
+    {
+        return false;
+    }
+
+    bldc::BldcsVec wheel_position{};
+    uint8_t received_mask = 0;
+    if (!bldcs->getDrivePosition(&wheel_position, &received_mask))
+    {
+        return false;
+    }
+
+    if (!has_wheel_position_reference)
+    {
+        previous_wheel_position = wheel_position;
+        has_wheel_position_reference = true;
+        return false;
+    }
+
+    vt::numeric_vector<4> wheel_delta;
+    for (size_t i = 0; i < 4; ++i)
+    {
+        // Motor feedback uses the sign opposite to chassis wheel velocity commands.
+        float angle_delta = previous_wheel_position.vec[i] - wheel_position.vec[i];
+        while (angle_delta > pi)
+        {
+            angle_delta -= 2.0f * pi;
+        }
+        while (angle_delta < -pi)
+        {
+            angle_delta += 2.0f * pi;
+        }
+        wheel_delta[i] = angle_delta;
+        previous_wheel_position.vec[i] = wheel_position.vec[i];
+    }
+
+    vt::numeric_vector<3> local_delta =
+        Jinv * vt::numeric_matrix<4, 4>::diagonals(wheel_radius) * wheel_delta;
+    delta->x = local_delta[0];
+    delta->y = local_delta[1];
+    delta->theta = local_delta[2];
+    return true;
+}
+
 }  // namespace devices::chassis

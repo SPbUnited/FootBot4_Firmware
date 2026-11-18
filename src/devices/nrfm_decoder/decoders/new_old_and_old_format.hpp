@@ -3,6 +3,7 @@
 #include "../nrfm_decoder.hpp"
 #include "half_float.h"
 #include "kernel/kernel.hpp"
+#include "math.hpp"
 
 namespace devices::nrfm_decoder
 {
@@ -12,7 +13,7 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
     kverbose("new_old_and_old_format(is_new_old_format = %d)", is_new_old_format);
 
     constexpr float cm_to_m = 0.01f;
-    constexpr float pi = 3.1415926f;
+    constexpr float pi = M_PI;
 
     float velx = is_new_old_format
                      ? fp8_to_fp32(packet->packet.payload.old_format.velx) * cm_to_m
@@ -28,18 +29,19 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
 
     float dangle = packet->packet.payload.old_format.angular_velocity_or_angle * pi / 128.0f;
 
-    robot_dev.set_target_linear_vel(vely, -velx);
     if (packet->packet.payload.old_format.AS)
     {
+        robot_dev.set_target_local_linear_vel(vely, -velx, false);
         robot_dev.set_target_angular_dpos(-dangle);
     }
     else
     {
+        robot_dev.set_target_local_linear_vel(vely, -velx, true);
         robot_dev.set_target_angular_vel(-angular_velocity);
     }
 
     robot_dev.set_kicker_setting(packet->packet.payload.old_format.kicker_setting);
-                                //  packet->packet.payload.old_format.HE);
+    //  packet->packet.payload.old_format.HE);
     robot_dev.set_dribbler_setting(packet->packet.payload.old_format.dribbler_setting *
                                    packet->packet.payload.old_format.DE);
 
@@ -58,21 +60,28 @@ void NRFMDecoder::new_old_and_old_format(NRFMPacket *packet, bool is_new_old_for
     //          packet->packet.payload.old_format.KF, packet->packet.payload.old_format.KU,
     //          packet->packet.payload.old_format.AS, packet->packet.payload.old_format.DE,
     //          packet->packet.payload.old_format.HE);
-    if (packet->packet.payload.old_format.AF)
-    {
-        kicker_mode = devices::robot::AUTOKICK_FRONT;
-    }
-    else if (packet->packet.payload.old_format.AU)
-    {
-        kicker_mode = devices::robot::AUTOKICK_UP;
-    }
-    else if (packet->packet.payload.old_format.KF)
+    if (packet->packet.payload.old_format.KF)
     {
         kicker_mode = devices::robot::KICK_FRONT;
     }
     else if (packet->packet.payload.old_format.KU)
     {
         kicker_mode = devices::robot::KICK_UP;
+    }
+    else if (packet->packet.payload.old_format.AF)
+    {
+        if (packet->packet.payload.old_format.AU)
+        {
+            kicker_mode = devices::robot::AUTOKICK_MOMENTUM;
+        }
+        else
+        {
+            kicker_mode = devices::robot::AUTOKICK_FRONT;
+        }
+    }
+    else if (packet->packet.payload.old_format.AU)
+    {
+        kicker_mode = devices::robot::AUTOKICK_UP;
     }
     
 

@@ -11,7 +11,14 @@ uart::UartConfig uart4_config = {
         __HAL_RCC_UART4_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_DMA1_CLK_ENABLE();
     },
+    .dma_rx_stream = DMA1_Stream2,
+    .dma_rx_irqn = DMA1_Stream2_IRQn,
+    .dma_rx_channel = DMA_CHANNEL_4,
+    .dma_tx_stream = DMA1_Stream4,
+    .dma_tx_irqn = DMA1_Stream4_IRQn,
+    .dma_tx_channel = DMA_CHANNEL_4,
     .txPin = GPIO_PIN_0,
     .txPort = GPIOA,
     .txAlternate = GPIO_AF8_UART4,
@@ -37,7 +44,14 @@ uart::UartConfig uart1_config = {
         __HAL_RCC_USART1_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_DMA2_CLK_ENABLE();
     },
+    .dma_rx_stream = DMA2_Stream5,
+    .dma_rx_irqn = DMA2_Stream5_IRQn,
+    .dma_rx_channel = DMA_CHANNEL_4,
+    .dma_tx_stream = DMA2_Stream7,
+    .dma_tx_irqn = DMA2_Stream7_IRQn,
+    .dma_tx_channel = DMA_CHANNEL_4,
     .txPin = GPIO_PIN_9,
     .txPort = GPIOA,
     .txAlternate = GPIO_AF7_USART1,
@@ -93,11 +107,16 @@ can::CanConfig can1_config = {
     .rxPin = GPIO_PIN_0,
     .rxPort = GPIOD,
     .rxAlternate = GPIO_AF9_CAN1,
-    .prescaler = 12,  // Для 250 кбит/с при 45 МГц CAN clock: 15TQ * (12/45МГц) = 4мкс = 250кбит/с
+    // 250 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
+    // .prescaler = 12,
+    // 500 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
+    .prescaler = 6,
+    // 1000 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
+    // .prescaler = 3,
     .mode = CAN_MODE_NORMAL,
     .sjw = CAN_SJW_1TQ,
-    .timeSeg1 = CAN_BS1_6TQ,
-    .timeSeg2 = CAN_BS2_8TQ,
+    .timeSeg1 = CAN_BS1_12TQ,
+    .timeSeg2 = CAN_BS2_2TQ,
     .timeTriggeredMode = DISABLE,
     .autoBusOff = DISABLE,
     .autoWakeUp = DISABLE,
@@ -170,11 +189,9 @@ gpio::GPIODescriptor out_pins_desc[] = {
 };
 
 gpio::GPIODescriptor in_pins_desc[] = {
-    [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11},
-    [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
-    [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},
-    [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
-    [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},
+    [BUTTON_ADDR_UP] = {GPIOE, GPIO_PIN_11}, [BUTTON_ADDR_DOWN] = {GPIOE, GPIO_PIN_10},
+    [BUTTON_SELECT] = {GPIOE, GPIO_PIN_9},   [CHECKER_DEEP] = {GPIOF, GPIO_PIN_10},
+    [CHECKER_FRONT] = {GPIOF, GPIO_PIN_7},   [BUTTON_TURN_OFF] = {GPIOC, GPIO_PIN_11},
 };
 
 gpio::GPIODescriptor analog_pins_desc[] = {
@@ -182,21 +199,23 @@ gpio::GPIODescriptor analog_pins_desc[] = {
 };
 
 gpio::ADCDescriptor adc_desc[] = {
-    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, ENABLE, ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
+    [KICKER_VOLTAGE] = {ADC1, ADC_RESOLUTION_12B, ADC_DATAALIGN_RIGHT, DISABLE, ENABLE,
+                        ADC_SOFTWARE_START, ADC_EXTERNALTRIGCONVEDGE_NONE, ADC_CHANNEL_11},
 };
 
 gpio::GPIOAnalogInputDriver analog_in_pin;
 
-void init()
+InitStatus init()
 {
+    InitStatus status{};
     drivers::system_clock_drv.init();
     drivers::bootstrap_drv.init();
 
     // HAL_Delay(5000);
 
-    drivers::uart4.init();
-    drivers::uart1.init();
-    drivers::i2c2.init();
+    status.uart4 = drivers::uart4.init();
+    status.uart1 = drivers::uart1.init();
+    status.i2c = drivers::i2c2.init();
     __HAL_RCC_ADC1_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOG_CLK_ENABLE();
@@ -204,19 +223,18 @@ void init()
     __HAL_RCC_GPIOE_CLK_ENABLE();
 
     static uint32_t adcBuffer[1] = {0};
-    
+
     for (int i = 0; i < OUT_COUNT; i++)
     {
         out_pins[i].init(out_pins_desc[i]);
-        if ((i==CHARGE) || (i == DISCHARGE) || (i==STRAIGHT) || (i==CHIP))
+        if ((i == CHARGE) || (i == DISCHARGE) || (i == STRAIGHT) || (i == CHIP))
         {
             out_pins[i].write(true);
         }
-        if ((i==DEEP_LED) || (i==FRONT_LED))
+        if ((i == DEEP_LED) || (i == FRONT_LED))
         {
             out_pins[i].write(true);
         }
-        
     }
     for (int i = 0; i < INPUT_COUNT; i++)
     {
@@ -224,11 +242,12 @@ void init()
     }
     for (int i = 0; i < 1; i++)
     {
-        analog_in_pin.init(analog_pins_desc[i], adc_desc[i], adcBuffer, 1);
+        status.adc = analog_in_pin.init(analog_pins_desc[i], adc_desc[i], adcBuffer, 1);
     }
 
-    drivers::can_drv.init();
-    drivers::spi2.init();
+    status.can = drivers::can_drv.init();
+    status.spi = drivers::spi2.init();
+    return status;
 }
 
 }  // namespace drivers
