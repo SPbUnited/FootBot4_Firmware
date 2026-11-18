@@ -17,6 +17,25 @@ void Odometer::update(devices::chassis::StateVector vel)
     thetaAntiWindup();
 }
 
+void Odometer::updateLocalDelta(devices::chassis::StateVector delta, float heading)
+{
+    float heading_delta = heading - state.theta;
+    while (heading_delta > M_PI)
+    {
+        heading_delta -= 2.0f * M_PI;
+    }
+    while (heading_delta < -M_PI)
+    {
+        heading_delta += 2.0f * M_PI;
+    }
+    float mid_heading = state.theta + heading_delta * 0.5f;
+    devices::chassis::StateVector global_delta = rotate(delta, mid_heading);
+    state.x += global_delta.x;
+    state.y += global_delta.y;
+    state.theta = heading;
+    thetaAntiWindup();
+}
+
 void Odometer::getState(devices::chassis::StateVector *state)
 {
     *state = this->state;

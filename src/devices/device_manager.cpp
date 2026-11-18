@@ -1,8 +1,8 @@
 #include "device_manager.hpp"
 
 #include "FlashStorage_STM32.h"
-#include "drivers/driver_manager.hpp"
 #include "apps/screen/screen.hpp"
+#include "drivers/driver_manager.hpp"
 
 namespace devices
 {
@@ -41,12 +41,16 @@ imu::BNO055 bno055_drv(bno055_config);
 
 bldc::BldcsConfig bldcs_config = {
     .can = &drivers::can_drv,
-    .drive_vel_p = 0.25,
-    .drive_vel_i = 40.0,
-    // .drive_vel_p = 0.1,
-    // .drive_vel_i = 1.0,
-    .drive_vel_limit = 8.0,
-    .drive_vel_limit_idle = 1.0,
+    // .drive_vel_p = 0.25,
+    // .drive_vel_i = 40.0,
+    // // .drive_vel_p = 0.1,
+    // // .drive_vel_i = 1.0,
+    // .drive_vel_limit = 8.0,
+    // .drive_vel_limit_idle = 1.0,
+    .drive_vel_p = NAN,
+    .drive_vel_i = NAN,
+    .drive_vel_limit = NAN,
+    .drive_vel_limit_idle = NAN,
 };
 
 bldc::BldcsDriver bldcs_drv(bldcs_config);
@@ -141,21 +145,55 @@ void IRQ_Init(void)
     /* USER CODE END MX_GPIO_Init_2 */
 }
 
-void init()
+void init(drivers::InitStatus driver_status)
 {
     shell::my_shellInit();
-    logger::init();
+    if (driver_status.uart4)
+    {
+        logger::init();
+    }
     // char buffer[128];
     // int rem = sizeof(init_message) % sizeof(buffer);
     // snprintf(buffer, sizeof(buffer), "%s", init_message);
     // logPrintln("%s", buffer);
-    shellWriteString(&shell::shell, init_message);
+    if (driver_status.uart4)
+    {
+        shellWriteString(&shell::shell, init_message);
+    }
     kinfo("Shell initialized");
     kinfo("Logger initialized");
-    oled_drv.init();
-    kinfo("OLED initialized");
+    bool oled_initialized = driver_status.i2c && oled_drv.init();
+    apps::screen::begin_boot_report(oled_initialized);
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::CAN,
+        driver_status.can ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::IMU_UART,
+        driver_status.uart1 ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::LOG_UART,
+        driver_status.uart4 ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::I2C,
+        driver_status.i2c ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::SPI,
+        driver_status.spi ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::ANALOG_INPUT,
+        driver_status.adc ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    apps::screen::set_boot_status(apps::screen::BootComponent::GPIO,
+                                  apps::screen::BootState::READY);
+    if (oled_initialized)
+    {
+        kinfo("OLED initialized");
+    }
 
-    if (nrf24_recv.init())
+    bool radio_initialized = driver_status.spi && !nrf24_recv.init();
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::RADIO,
+        radio_initialized ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    if (!radio_initialized)
     {
         kerror("NRF24 initialization failed");
     }
@@ -164,32 +202,75 @@ void init()
         kinfo("NRF24 initialized");
     }
 
-    for (size_t i = 0; i < 5; i++)
+    bool bno055_initialized = false;
+    uint8_t imu_failure_detail = driver_status.uart1 ? 2 : 1;
+    for (size_t i = 0; driver_status.uart1 && i < 5; i++)
     {
         bool bno055_init = bno055_drv.check();
         if (!bno055_init)
         {
             kerror("BNO055 offline");
-            bno055_drv.reset();
+            if (!bno055_drv.reset())
+            {
+                HAL_Delay(100);
+            }
         }
         else
         {
             kinfo("BNO055 online");
-            bno055_drv.set_angle_units(RADIANS);
-            bno055_drv.set_anglerate_units(RAD_PER_SEC);
-            bno055_drv.setmode(OPERATION_MODE_NDOF);
-            kinfo("BNO055 initialized");
-            break;
+            bool config_mode_ok = bno055_drv.setmode(OPERATION_MODE_CONFIG);
+            bool angle_units_ok = config_mode_ok && bno055_drv.set_angle_units(RADIANS);
+            bool rate_units_ok = angle_units_ok && bno055_drv.set_anglerate_units(RAD_PER_SEC);
+            bool ndof_mode_ok = rate_units_ok && bno055_drv.setmode(OPERATION_MODE_NDOF);
+            if (ndof_mode_ok)
+            {
+                kinfo("BNO055 initialized");
+                bno055_initialized = true;
+                break;
+            }
+
+            imu_failure_detail = 3;
+            kerror("BNO055 configuration failed");
+            if (!bno055_drv.reset())
+            {
+                HAL_Delay(100);
+            }
         }
     }
+    if (!bno055_initialized)
+    {
+        kerror("BNO055 initialization failed after retries");
+    }
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::IMU,
+        bno055_initialized ? apps::screen::BootState::OK : apps::screen::BootState::FAILED,
+        bno055_initialized ? 0 : imu_failure_detail);
 
-    bldcs_drv.init();
-    kinfo("BLDC initialized");
+    uint8_t drive_feedback_mask = bldcs_drv.init();
+    uint8_t drive_count = 0;
+    for (uint8_t i = 0; i < 4; ++i)
+    {
+        drive_count += (drive_feedback_mask >> i) & 1U;
+    }
+    apps::screen::set_boot_status(apps::screen::BootComponent::DRIVES,
+                                  drive_count == 4
+                                      ? apps::screen::BootState::OK
+                                      : (drive_count == 0 ? apps::screen::BootState::FAILED
+                                                          : apps::screen::BootState::WARNING),
+                                  drive_feedback_mask);
+    if (drive_count == 4)
+    {
+        kinfo("BLDC initialized");
+    }
 
     chassis_drv.init();
+    apps::screen::set_boot_status(apps::screen::BootComponent::CHASSIS,
+                                  apps::screen::BootState::READY);
     kinfo("Chassis initialized");
 
     odom_dev.init();
+    apps::screen::set_boot_status(apps::screen::BootComponent::ODOMETER,
+                                  apps::screen::BootState::READY);
     kinfo("Odometer initialized");
 
     robot_settings.signature = robot::calculate_signature(robot_settings);
@@ -214,21 +295,15 @@ void init()
     kinfo("Robot initialized");
 
     kicker_drv.init();
+    apps::screen::set_boot_status(apps::screen::BootComponent::KICKER,
+                                  apps::screen::BootState::READY);
     kinfo("Kicker initialized");
-
-    if (nrf24_recv.init())
-    {
-        kerror("NRF24 initialization failed");
-    }
-    else
-    {
-        kinfo("NRF24 initialized");
-    }
     // kinfo("AUAUSDUASDUDevices initialized");
 
     IRQ_Init();
     nrf24_recv.recv_irq();
     kinfo("Devices initialized");
+    apps::screen::finish_boot_report();
     apps::screen::screen();
 }
 

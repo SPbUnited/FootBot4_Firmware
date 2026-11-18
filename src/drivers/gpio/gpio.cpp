@@ -1,4 +1,5 @@
 #include "gpio.hpp"
+
 #include "kernel/kernel.hpp"
 #include "stm32f4xx_hal_adc_ex.h"
 
@@ -46,18 +47,28 @@ bool GPIOInputDriver::read()
     return HAL_GPIO_ReadPin(this->GPIOx, this->GPIO_Pin);
 }
 
-void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t* buffer, uint32_t size)
+bool GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t* buffer,
+                                 uint32_t size)
 {
     // Enable GPIO clock for the specific port
-    if (pin.GPIOx == GPIOA) __HAL_RCC_GPIOA_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOB) __HAL_RCC_GPIOB_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOC) __HAL_RCC_GPIOC_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOD) __HAL_RCC_GPIOD_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOE) __HAL_RCC_GPIOE_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOF) __HAL_RCC_GPIOF_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOG) __HAL_RCC_GPIOG_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOH) __HAL_RCC_GPIOH_CLK_ENABLE();
-    else if (pin.GPIOx == GPIOI) __HAL_RCC_GPIOI_CLK_ENABLE();
+    if (pin.GPIOx == GPIOA)
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOB)
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOC)
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOD)
+        __HAL_RCC_GPIOD_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOE)
+        __HAL_RCC_GPIOE_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOF)
+        __HAL_RCC_GPIOF_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOG)
+        __HAL_RCC_GPIOG_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOH)
+        __HAL_RCC_GPIOH_CLK_ENABLE();
+    else if (pin.GPIOx == GPIOI)
+        __HAL_RCC_GPIOI_CLK_ENABLE();
 
     // Enable ADC clock
     __HAL_RCC_ADC1_CLK_ENABLE();
@@ -99,6 +110,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t
     {
         uint32_t error = HAL_ADC_GetError(&handle);
         kinfo("ADC init error: %d, error code: %lu\n", int(status), error);
+        return false;
     }
     else
     {
@@ -117,6 +129,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t
     {
         uint32_t error = HAL_ADC_GetError(&handle);
         kinfo("ADC channel config error: %d, error code: %lu\n", int(status), error);
+        return false;
     }
     else
     {
@@ -138,11 +151,15 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t
     hdma_adc.Init.MemBurst = DMA_MBURST_SINGLE;
     hdma_adc.Init.PeriphBurst = DMA_PBURST_SINGLE;
 
-    HAL_DMA_Init(&hdma_adc);
+    if (HAL_DMA_Init(&hdma_adc) != HAL_OK)
+    {
+        kerror("ADC DMA initialization failed: error=%lu", HAL_DMA_GetError(&hdma_adc));
+        return false;
+    }
 
     // Associate DMA handle with ADC handle
     __HAL_LINKDMA(&handle, DMA_Handle, hdma_adc);
-    
+
     kinfo("DMA configured and linked to ADC\n");
 
     // Start DMA conversion
@@ -153,7 +170,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t
         kinfo("DMA2_Stream0 NDTR = 0x%08X\n", DMA2_Stream0->NDTR);
         kinfo("DMA2_Stream0 PAR = 0x%08X\n", DMA2_Stream0->PAR);
         kinfo("DMA2_Stream0 M0AR = 0x%08X\n", DMA2_Stream0->M0AR);
-        
+
         status = HAL_ADC_Start_DMA(&handle, adcDataBuffer, bufferSize);
         if (status != HAL_OK)
         {
@@ -162,6 +179,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t
             // Try to get more info from DMA
             uint32_t dma_error = HAL_DMA_GetError(&hdma_adc);
             kinfo("DMA error code: %lu\n", dma_error);
+            return false;
         }
         else
         {
@@ -170,6 +188,7 @@ void GPIOAnalogInputDriver::init(GPIODescriptor pin, ADCDescriptor adc, uint32_t
     }
 
     // static_cast<GPIODescriptor&>(*this) = pin;
+    return true;
 }
 
 uint32_t GPIOAnalogInputDriver::read()
@@ -206,7 +225,7 @@ uint32_t GPIOAnalogInputDriver::read()
 //     {
 //         // Enable ADC clock
 //         __HAL_RCC_ADC1_CLK_ENABLE();
-        
+
 //         // Enable DMA clock
 //         __HAL_RCC_DMA2_CLK_ENABLE();
 //     }

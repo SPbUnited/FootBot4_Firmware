@@ -38,7 +38,8 @@ class I2cDriver : public I2cConfig
 
     I2cDriver(I2cConfig config);
 
-    void init();
+    /** Configures I2C pins and peripheral; returns HAL initialization success. */
+    bool init();
 };
 
 };  // namespace drivers::i2c

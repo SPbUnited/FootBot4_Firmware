@@ -9,6 +9,16 @@ extern "C"
     volatile uint32_t can_monitor_rx_bits_estimate = 0;
     volatile uint32_t can_monitor_rx_rate_millihz = 0;
     volatile uint32_t can_monitor_tx_rate_millihz = 0;
+    volatile uint32_t can_monitor_tx_mailbox_busy = 0;
+    volatile uint32_t can_monitor_tx_attempts = 0;
+    volatile uint32_t can_monitor_tx_failures = 0;
+    volatile uint32_t can_monitor_tx_last_status = 0;
+    volatile uint32_t can_monitor_hal_state = 0;
+    volatile uint32_t can_monitor_hal_error_code = 0;
+    volatile uint32_t can_monitor_tx_free_mailboxes = 0;
+    volatile uint32_t can_monitor_esr = 0;
+    volatile uint32_t can_monitor_tsr = 0;
+    volatile uint32_t can_monitor_msr = 0;
     volatile uint32_t can_monitor_bus_load_rx_permille = 0;
     volatile uint32_t can_monitor_rx_interval_us = 0;
     volatile uint32_t can_monitor_rx_interval_max_us = 0;
@@ -34,8 +44,9 @@ CanDriver *can1_driver = nullptr;
 
 CanDriver::CanDriver(CanConfig config) : CanConfig(config) {}
 
-void CanDriver::init()
+bool CanDriver::init()
 {
+    initialized_ = false;
     clk_enable();
 
     GPIO_InitTypeDef GPIO_InitStruct;
@@ -76,6 +87,7 @@ void CanDriver::init()
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kerror("CAN init error: %d, error code: %lu\n", int(status), error);
+        return false;
     }
 
     // Configure a filter to allow all messages (standard ID)
@@ -96,6 +108,7 @@ void CanDriver::init()
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kerror("CAN filter config error: %d, error code: %lu\n", int(status), error);
+        return false;
     }
 
     status = HAL_CAN_Start(&handle);
@@ -103,7 +116,7 @@ void CanDriver::init()
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kerror("CAN start error: %d, error code: %lu\n", int(status), error);
-        return;
+        return false;
     }
 
     HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 5, 0);
@@ -115,12 +128,15 @@ void CanDriver::init()
     {
         uint32_t error = HAL_CAN_GetError(&handle);
         kerror("CAN RX notification error: %d, error code: %lu\n", int(status), error);
+        return false;
     }
+    initialized_ = true;
+    return true;
 }
 
 bool CanDriver::write(uint32_t id, const uint8_t *data, uint8_t len)
 {
-    if (data == nullptr || len > 8 || id > 0x7FF)
+    if (!initialized_ || data == nullptr || len > 8 || id > 0x7FF)
     {
         return false;
     }
@@ -141,20 +157,29 @@ bool CanDriver::write(uint32_t id, const uint8_t *data, uint8_t len)
         TxData[i] = data[i];
     }
 
-    // Try to add message to available mailbox
-    uint32_t timeout = 10000;
-    HAL_StatusTypeDef status = HAL_BUSY;
-
-    while (status == HAL_BUSY && timeout-- > 0)
-    {
-        status = HAL_CAN_AddTxMessage(&handle, &TxHeader, TxData, &TxMailbox);
-        HAL_Delay(1);
-    }
-
+    // Drop this frame if all mailboxes are busy; callers send fresh control data periodically.
+    const uint32_t free_mailboxes_before_tx = HAL_CAN_GetTxMailboxesFreeLevel(&handle);
+    ++can_monitor_tx_attempts;
+    HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(&handle, &TxHeader, TxData, &TxMailbox);
+    can_monitor_tx_last_status = static_cast<uint32_t>(status);
+    can_monitor_hal_state = static_cast<uint32_t>(HAL_CAN_GetState(&handle));
+    can_monitor_hal_error_code = HAL_CAN_GetError(&handle);
+    can_monitor_tx_free_mailboxes = HAL_CAN_GetTxMailboxesFreeLevel(&handle);
+    can_monitor_esr = handle.Instance->ESR;
+    can_monitor_tsr = handle.Instance->TSR;
+    can_monitor_msr = handle.Instance->MSR;
     if (status != HAL_OK)
     {
-        uint32_t error = HAL_CAN_GetError(&handle);
-        kerror("CAN write error: %d, error code: %lu\n", int(status), error);
+        ++can_monitor_tx_failures;
+        if (status == HAL_BUSY || (status == HAL_ERROR && free_mailboxes_before_tx == 0U))
+        {
+            ++can_monitor_tx_mailbox_busy;
+        }
+        else
+        {
+            uint32_t error = HAL_CAN_GetError(&handle);
+            kerror("CAN write error: %d, error code: %lu\n", int(status), error);
+        }
         return false;
     }
     ++tx_frames_;
@@ -355,12 +380,19 @@ void handleCan1Rx0Pending(CAN_HandleTypeDef *handle)
 
 void handleCanError(CAN_HandleTypeDef *handle)
 {
-    if (can1_driver != nullptr && handle == &can1_driver->handle &&
-        (handle->ErrorCode & HAL_CAN_ERROR_RX_FOV0) != 0)
+    if (can1_driver != nullptr && handle == &can1_driver->handle)
     {
-        ++can1_driver->rx_fifo_overruns_;
-        can_monitor_rx_fifo_overruns = can1_driver->rx_fifo_overruns_;
-        handle->ErrorCode &= ~HAL_CAN_ERROR_RX_FOV0;
+        can_monitor_hal_error_code = handle->ErrorCode;
+        can_monitor_hal_state = static_cast<uint32_t>(HAL_CAN_GetState(handle));
+        can_monitor_esr = handle->Instance->ESR;
+        can_monitor_tsr = handle->Instance->TSR;
+        can_monitor_msr = handle->Instance->MSR;
+        if ((handle->ErrorCode & HAL_CAN_ERROR_RX_FOV0) != 0)
+        {
+            ++can1_driver->rx_fifo_overruns_;
+            can_monitor_rx_fifo_overruns = can1_driver->rx_fifo_overruns_;
+            handle->ErrorCode &= ~HAL_CAN_ERROR_RX_FOV0;
+        }
     }
 }
 

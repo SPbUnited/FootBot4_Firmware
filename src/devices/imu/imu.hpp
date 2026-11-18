@@ -190,19 +190,24 @@ struct BNO055Config
 /** Class for operating Bosch BNO055 sensor over I2C **/
 class BNO055 : public BNO055Config
 {
+  private:
+    bool online = false;
+    bool angle_retry_pending_ = false;
+    uint32_t angle_retry_after_ms_ = 0;
+
   public:
     /** Create BNO055 instance **/
     BNO055(BNO055Config &config);
 
     /** Perform a power-on reset of the BNO055 **/
-    void reset();
+    bool reset();
     /** Check that the BNO055 is connected and download the software details
     and serial number of chip and store in ID structure **/
     bool check();
     /** Turn the external timing crystal on/off **/
     void SetExternalCrystal(bool yn);
     /** Set the operation mode of the sensor **/
-    void setmode(char mode);
+    bool setmode(char mode);
     /** Set the power mode of the sensor **/
     void setpowermode(char mode);
 
@@ -212,9 +217,9 @@ class BNO055 : public BNO055Config
     /** Set the output units from the accelerometer, either MPERSPERS or MILLIG **/
     void set_accel_units(char units);
     /** Set the output units from the gyroscope, either DEG_PER_SEC or RAD_PER_SEC **/
-    void set_anglerate_units(char units);
+    bool set_anglerate_units(char units);
     /** Set the output units from the IMU, either DEGREES or RADIANS **/
-    void set_angle_units(char units);
+    bool set_angle_units(char units);
     /** Set the output units from the temperature sensor, either CENTIGRADE or FAHRENHEIT **/
     void set_temp_units(char units);
     /** Set the data output format to either WINDOWS or ANDROID **/
@@ -235,8 +240,8 @@ class BNO055 : public BNO055Config
     void get_grv(void);
     /** Get the output quaternion **/
     void get_quat(void);
-    /** Get the current Euler angles **/
-    void get_angles(void);
+    /** Gets current Euler angles; returns false when UART response is invalid or timed out. */
+    bool get_angles(void);
     /** Get the current temperature **/
     void get_temp(void);
 
@@ -277,7 +282,7 @@ class BNO055 : public BNO055Config
     float accel_scale, rate_scale, angle_scale;
     int temp_scale;
 
-    void readcharreg(char reg_addr)
+    bool readcharreg(char reg_addr)
     {
         tx[0] = 0xAA;  // Start byte
         tx[1] = 0x01;  // Read
@@ -285,50 +290,55 @@ class BNO055 : public BNO055Config
         tx[3] = 1;  // Length
         uart_drv.write(tx, 4);
 
-        char rx_buff[16];
-        int status = uart_drv.read(rx_buff, 3);
+        char rx_buff[3] = {};
+        HAL_StatusTypeDef status = uart_drv.read(rx_buff, sizeof(rx_buff), 10000U);
 
-        if (rx_buff[0] != 0xBB || rx_buff[1] != 1)
+        if (status != HAL_OK || static_cast<uint8_t>(rx_buff[0]) != 0xBB ||
+            static_cast<uint8_t>(rx_buff[1]) != 1)
         {
-            // kerror(
-            //     "BNO055 read error\n  status:   %d\n  sent:     %02X %02X %02X %02X\n  received:
-            //     "
-            //     "%02X %02X %02X",
-            //     status, tx[0], tx[1], tx[2], tx[3], rx_buff[0], rx_buff[1], rx_buff[2]);
-            return;
+            kerror("BNO055 UART read failed: reg=0x%02X status=%d header=%02X %02X",
+                   static_cast<uint8_t>(reg_addr), static_cast<int>(status),
+                   static_cast<uint8_t>(rx_buff[0]), static_cast<uint8_t>(rx_buff[1]));
+            return false;
         }
 
         rx = rx_buff[2];
+        return true;
     }
 
-    void readmulreg(char reg_addr, char *buff, size_t buff_size)
+    bool readmulreg(char reg_addr, char *buff, size_t buff_size)
     {
+        if (buff == nullptr || buff_size == 0 || buff_size > 126)
+        {
+            return false;
+        }
         tx[0] = 0xAA;  // Start byte
         tx[1] = 0x01;  // Read
         tx[2] = reg_addr;
         tx[3] = buff_size;
         uart_drv.write(tx, 4);
 
-        char rx_buff[128];
-        int status = uart_drv.read(rx_buff, buff_size + 2);
+        char rx_buff[128] = {};
+        HAL_StatusTypeDef status = uart_drv.read(rx_buff, buff_size + 2, 10000U);
 
-        if (rx_buff[0] != 0xBB || rx_buff[1] != buff_size)
+        if (status != HAL_OK || static_cast<uint8_t>(rx_buff[0]) != 0xBB ||
+            static_cast<uint8_t>(rx_buff[1]) != buff_size)
         {
-            // kerror(
-            //     "BNO055 read error\n  status:   %d\n  sent:     %02X %02X %02X %02X\n  received:
-            //     "
-            //     "%02X %02X %02X ...",
-            //     status, tx[0], tx[1], tx[2], tx[3], rx_buff[0], rx_buff[1], rx_buff[2]);
-            return;
+            kerror("BNO055 UART block read failed: reg=0x%02X len=%u status=%d header=%02X %02X",
+                   static_cast<uint8_t>(reg_addr), static_cast<unsigned>(buff_size),
+                   static_cast<int>(status), static_cast<uint8_t>(rx_buff[0]),
+                   static_cast<uint8_t>(rx_buff[1]));
+            return false;
         }
 
         for (size_t i = 0; i < buff_size; i++)
         {
             buff[i] = rx_buff[i + 2];
         }
+        return true;
     }
 
-    void writecharreg(char reg_addr, char value)
+    bool writecharreg(char reg_addr, char value)
     {
         tx[0] = 0xAA;  // Start byte
         tx[1] = 0x00;  // Write
@@ -337,16 +347,17 @@ class BNO055 : public BNO055Config
         tx[4] = value;
         uart_drv.write(tx, 5);
 
-        char rx_buff[128];
-        int status = uart_drv.read(rx_buff, 2);
-        if (rx_buff[0] != 0xEE || rx_buff[1] != 0x01)
+        char rx_buff[2] = {};
+        HAL_StatusTypeDef status = uart_drv.read(rx_buff, sizeof(rx_buff), 10000U);
+        if (status != HAL_OK || static_cast<uint8_t>(rx_buff[0]) != 0xEE ||
+            static_cast<uint8_t>(rx_buff[1]) != 0x01)
         {
-            // kerror(
-            //     "BNO055 write error\n  status:   %d\n  sent:     %02X %02X %02X %02X %02X\n  "
-            //     "received: "
-            //     "%02X %02X",
-            //     status, tx[0], tx[1], tx[2], tx[3], tx[4], rx_buff[0], rx_buff[1]);
+            kerror("BNO055 UART write failed: reg=0x%02X status=%d ack=%02X %02X",
+                   static_cast<uint8_t>(reg_addr), static_cast<int>(status),
+                   static_cast<uint8_t>(rx_buff[0]), static_cast<uint8_t>(rx_buff[1]));
+            return false;
         }
+        return true;
     }
 
     void writemulreg(char reg_addr, char *buff, size_t buff_size)
@@ -361,21 +372,21 @@ class BNO055 : public BNO055Config
         }
         uart_drv.write(tx, buff_size + 4);
 
-        char rx_buff[128];
-        int status = uart_drv.read(rx_buff, 2);
-        if (rx_buff[0] != 0xEE || rx_buff[1] != 0x01)
+        char rx_buff[2] = {};
+        HAL_StatusTypeDef status = uart_drv.read(rx_buff, sizeof(rx_buff), 10000U);
+        if (status != HAL_OK || static_cast<uint8_t>(rx_buff[0]) != 0xEE ||
+            static_cast<uint8_t>(rx_buff[1]) != 0x01)
         {
-            // kerror(
-            //     "BNO055 write error\n  status:   %d\n  sent:     %02X %02X %02X %02X %02X ...\n
-            //     " "received: "
-            //     "%02X %02X",
-            //     status, tx[0], tx[1], tx[2], tx[3], tx[4], rx_buff[0], rx_buff[1]);
+            kerror("BNO055 UART block write failed: reg=0x%02X status=%d ack=%02X %02X",
+                   static_cast<uint8_t>(reg_addr), static_cast<int>(status),
+                   static_cast<uint8_t>(rx_buff[0]), static_cast<uint8_t>(rx_buff[1]));
+            return;
         }
     }
 
-    void setpage(char value)
+    bool setpage(char value)
     {
-        writecharreg(BNO055_PAGE_ID_ADDR, value);
+        return writecharreg(BNO055_PAGE_ID_ADDR, value);
     }
 };
 

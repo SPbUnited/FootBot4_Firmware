@@ -7,13 +7,23 @@
 #include "i2c/i2c.hpp"
 // #include "led/led.hpp"
 
+#include "spi/spi.hpp"
 #include "stm32f4xx_hal.h"
 #include "system_clock/system_clock.hpp"
 #include "uart/uart.hpp"
-#include "spi/spi.hpp"
 
 namespace drivers
 {
+
+struct InitStatus
+{
+    bool uart4;
+    bool uart1;
+    bool i2c;
+    bool can;
+    bool spi;
+    bool adc;
+};
 
 extern bootstrap::Bootstrap bootstrap_drv;
 extern system_clock::SystemClock system_clock_drv;
@@ -67,6 +77,7 @@ extern gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 
 extern gpio::GPIOAnalogInputDriver analog_in_pin;
 
-void init();
+/** Initializes board drivers and returns HAL-level initialization results. */
+InitStatus init();
 
 }  // namespace drivers

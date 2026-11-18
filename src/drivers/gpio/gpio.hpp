@@ -7,22 +7,22 @@ namespace drivers::gpio
 
 struct GPIODescriptor
 {
-    GPIO_TypeDef *GPIOx;
+    GPIO_TypeDef* GPIOx;
     uint16_t GPIO_Pin;
     uint32_t Alternate = -1;
 };
 
 struct ADCDescriptor
 {
-  ADC_TypeDef *instance;
-  uint32_t resolution;
-  uint32_t dataAlign;
-  uint32_t scanConvMode;
-  FunctionalState continuousConvMode;
-  uint32_t externalTrigConv;
-  uint32_t externalTrigConvEdge;
+    ADC_TypeDef* instance;
+    uint32_t resolution;
+    uint32_t dataAlign;
+    uint32_t scanConvMode;
+    FunctionalState continuousConvMode;
+    uint32_t externalTrigConv;
+    uint32_t externalTrigConvEdge;
 
-  uint32_t channel;
+    uint32_t channel;
 };
 
 class GPIOOutputDriver : public GPIODescriptor
@@ -55,25 +55,39 @@ class GPIOAnalogInputDriver : public GPIODescriptor, public ADCDescriptor
     ADC_HandleTypeDef handle;
     DMA_HandleTypeDef hdma_adc;
     uint32_t* adcDataBuffer;
-    uint32_t bufferSize;    
-    
-  public:
-    GPIOAnalogInputDriver(){}
+    uint32_t bufferSize;
 
-    void init(GPIODescriptor pin, ADCDescriptor adc, uint32_t* buffer = nullptr, uint32_t size = 1);
+  public:
+    GPIOAnalogInputDriver() {}
+
+    /** Configures ADC, channel, and DMA; returns false on HAL setup failure. */
+    bool init(GPIODescriptor pin, ADCDescriptor adc, uint32_t* buffer = nullptr,
+              uint32_t size = 1);
 
     uint32_t read();
-    
-    uint32_t* getBuffer() const { return adcDataBuffer; }
-    
-    uint32_t getBufferSize() const { return bufferSize; }
-    
-    void setBuffer(uint32_t* buffer) { adcDataBuffer = buffer; }
-    
-    void setBufferSize(uint32_t size) { bufferSize = size; }
-    
+
+    uint32_t* getBuffer() const
+    {
+        return adcDataBuffer;
+    }
+
+    uint32_t getBufferSize() const
+    {
+        return bufferSize;
+    }
+
+    void setBuffer(uint32_t* buffer)
+    {
+        adcDataBuffer = buffer;
+    }
+
+    void setBufferSize(uint32_t size)
+    {
+        bufferSize = size;
+    }
+
     void startDMA();
-    
+
     void stopDMA();
 };
 

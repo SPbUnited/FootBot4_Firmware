@@ -14,24 +14,48 @@ extern "C"
     volatile float can_drive_position[4] = {};
     volatile float can_driver_pcb_temperature[4] = {};
     volatile float can_motor_temperature[4] = {};
+    volatile uint32_t bldc_monitor_target_tx_attempts = 0;
+    volatile uint32_t bldc_monitor_target_tx_successes = 0;
+    volatile uint32_t bldc_monitor_target_tx_failures = 0;
+    volatile float bldc_monitor_target_velocity[4] = {};
 }
 
 namespace devices::bldc
 {
 
-void BldcsDriver::init()
+uint8_t BldcsDriver::init()
 {
-    setMonitorSettings();
+    if (!setMonitorSettings())
+    {
+        kerror("BLDC monitor setup could not be queued on CAN");
+    }
 
     kprogress_start("Awaiting BLDC initialization...");
-    for (int i = 0; i < 4; i++)
+    const uint32_t start_ms = HAL_GetTick();
+    uint32_t last_progress_ms = start_ms;
+    while (position_feedback_mask != 0x0F && HAL_GetTick() - start_ms < 6000U)
     {
-        HAL_Delay(100);
-        kprogress_tick(25.0);
+        pollFeedback();
+        const uint32_t now_ms = HAL_GetTick();
+        if (now_ms - last_progress_ms >= 100U)
+        {
+            kprogress_tick(2.0);
+            last_progress_ms = now_ms;
+        }
+        HAL_Delay(10);
     }
-    kprogress_finish("BLDC OK");
+    if (position_feedback_mask == 0x0F)
+    {
+        kprogress_finish("BLDC encoder feedback received from all drives");
+    }
+    else
+    {
+        kprogress_finish("BLDC feedback incomplete");
+        kwarning("BLDC encoder feedback mask: 0x%02X (expected 0x0F)", position_feedback_mask);
+    }
 
     setDriveSettings(true);
+    return position_feedback_mask;
 }
 
 bool BldcsDriver::setMonitorSettings()
@@ -122,16 +146,24 @@ void BldcsDriver::setDriveVel(BldcsVec vel)
 
     for (size_t i = 0; i < 4; i++)
     {
+        bldc_monitor_target_velocity[i] = vel.vec[i];
         float value = -vel.vec[i];  // Positive speed should be CCW viewed from the top
         ushort value_fp16 = fp32_to_fp16(value);
         reinterpret_cast<uint16_t *>(payload)[i] = value_fp16;
     }
 
-    received_feedback_mask = 0;
-    motorWrite(0, MULTI_TARGET_W, payload, 8);
+    ++bldc_monitor_target_tx_attempts;
+    if (motorWrite(0, MULTI_TARGET_W, payload, 8))
+    {
+        ++bldc_monitor_target_tx_successes;
+    }
+    else
+    {
+        ++bldc_monitor_target_tx_failures;
+    }
 
     kdebug("setDriveVel: %f %f %f %f", vel.vec[0], vel.vec[1], vel.vec[2], vel.vec[3]);
-    current_vel = vel;
+    target_vel = vel;
 }
 
 void BldcsDriver::pollFeedback()
@@ -166,6 +198,7 @@ void BldcsDriver::pollFeedback()
             can_drive_velocity[offset] = current_vel.vec[offset];
             can_drive_position[offset] = current_pos.vec[offset];
             received_feedback_mask |= 1U << offset;
+            position_feedback_mask |= 1U << offset;
         }
         else if ((register_addr == PCB_TEMPERATURE_R || register_addr == MOTOR_TEMPERATURE_R) &&
                  response_len == sizeof(float))
@@ -201,6 +234,24 @@ void BldcsDriver::getDriveVel(BldcsVec *vel)
 {
     *vel = current_vel;
     kdebug("getDriveVel: %f %f %f %f", vel->vec[0], vel->vec[1], vel->vec[2], vel->vec[3]);
+}
+
+bool BldcsDriver::getDrivePosition(BldcsVec *position, uint8_t *received_mask)
+{
+    if (position == nullptr || received_mask == nullptr)
+    {
+        return false;
+    }
+
+    *position = current_pos;
+    *received_mask = position_feedback_mask;
+    if (*received_mask != 0x0F)
+    {
+        return false;
+    }
+
+    position_feedback_mask = 0;
+    return true;
 }
 
 void BldcsDriver::setDribblerVel(float vel)

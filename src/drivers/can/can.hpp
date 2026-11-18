@@ -62,6 +62,7 @@ class CanDriver : public CanConfig
     volatile uint32_t monitored_frame_counts_[16] = {};
     volatile uint32_t monitored_frame_intervals_us_[16] = {};
     volatile uint32_t monitored_frame_last_times_us_[16] = {};
+    bool initialized_ = false;
 
     friend void handleCan1Rx0Pending(CAN_HandleTypeDef *handle);
     friend void handleCanError(CAN_HandleTypeDef *handle);
@@ -75,7 +76,8 @@ class CanDriver : public CanConfig
 
     CanDriver(CanConfig config);
 
-    void init();
+    /** Starts CAN and RX notifications; returns false on any HAL setup failure. */
+    bool init();
     bool write(uint32_t id, const uint8_t *data, uint8_t len);
     /** Read one frame copied from the RX interrupt queue. */
     bool read(uint32_t *id, uint8_t *data, uint8_t *len);
@@ -98,6 +100,16 @@ extern "C"
     extern volatile uint32_t can_monitor_rx_bits_estimate;
     extern volatile uint32_t can_monitor_rx_rate_millihz;
     extern volatile uint32_t can_monitor_tx_rate_millihz;
+    extern volatile uint32_t can_monitor_tx_mailbox_busy;
+    extern volatile uint32_t can_monitor_tx_attempts;
+    extern volatile uint32_t can_monitor_tx_failures;
+    extern volatile uint32_t can_monitor_tx_last_status;
+    extern volatile uint32_t can_monitor_hal_state;
+    extern volatile uint32_t can_monitor_hal_error_code;
+    extern volatile uint32_t can_monitor_tx_free_mailboxes;
+    extern volatile uint32_t can_monitor_esr;
+    extern volatile uint32_t can_monitor_tsr;
+    extern volatile uint32_t can_monitor_msr;
     extern volatile uint32_t can_monitor_bus_load_rx_permille;
     extern volatile uint32_t can_monitor_rx_interval_us;
     extern volatile uint32_t can_monitor_rx_interval_max_us;

@@ -9,7 +9,7 @@ namespace drivers::spi
 
 SPIDriver::SPIDriver(SPIConfig config) : SPIConfig(config) {}
 
-void SPIDriver::init()
+bool SPIDriver::init()
 {
     // Initialize SPI clock
     if (clk_enable)
@@ -66,8 +66,10 @@ void SPIDriver::init()
     HAL_StatusTypeDef status = HAL_SPI_Init(&handle);
     if (status != HAL_OK)
     {
-        // Error - SPI init failed
+        kerror("SPI init failed: status=%d", static_cast<int>(status));
+        return false;
     }
+    return true;
 }
 
 int SPIDriver::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)

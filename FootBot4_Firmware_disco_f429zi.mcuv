@@ -7,6 +7,7 @@
     "path": ".pio/build/disco_f429zi/firmware.elf"
   },
   "viewer": {
+    "viewport_width_ms": 10000.0,
     "probe": {
       "device": "abc",
       "keep_connection": false
@@ -52,394 +53,537 @@
   },
   "variables": [
     {
+      "name": "bldc_monitor_target_tx_attempts",
+      "address": "0x2000084C",
+      "type": "u32",
+      "color": "#06D6A0FF"
+    },
+    {
+      "name": "bldc_monitor_target_tx_failures",
+      "address": "0x20000850",
+      "type": "u32",
+      "color": "#FF6B6BFF"
+    },
+    {
+      "name": "bldc_monitor_target_tx_successes",
+      "address": "0x20000854",
+      "type": "u32",
+      "color": "#118AB2FF"
+    },
+    {
+      "name": "bldc_monitor_target_velocity[0]",
+      "address": "0x20000858",
+      "type": "f32",
+      "color": "#F94144FF"
+    },
+    {
+      "name": "bldc_monitor_target_velocity[1]",
+      "address": "0x2000085C",
+      "type": "f32",
+      "color": "#F8961EFF"
+    },
+    {
+      "name": "bldc_monitor_target_velocity[2]",
+      "address": "0x20000860",
+      "type": "f32",
+      "color": "#43AA8BFF"
+    },
+    {
+      "name": "bldc_monitor_target_velocity[3]",
+      "address": "0x20000864",
+      "type": "f32",
+      "color": "#577590FF"
+    },
+    {
       "name": "can_battery_voltage",
-      "address": "0x2000081C",
+      "address": "0x20000868",
       "type": "f32",
       "color": "#00AEEFFF"
     },
     {
       "name": "can_drive_position[0]",
-      "address": "0x20000820",
+      "address": "0x2000086C",
       "type": "f32",
       "color": "#EB4242FF"
     },
     {
       "name": "can_drive_position[1]",
-      "address": "0x20000824",
+      "address": "0x20000870",
       "type": "f32",
       "color": "#EB7442FF"
     },
     {
       "name": "can_drive_position[2]",
-      "address": "0x20000828",
+      "address": "0x20000874",
       "type": "f32",
       "color": "#EBA742FF"
     },
     {
       "name": "can_drive_position[3]",
-      "address": "0x2000082C",
+      "address": "0x20000878",
       "type": "f32",
       "color": "#EBDA42FF"
     },
     {
       "name": "can_drive_velocity[0]",
-      "address": "0x20000830",
+      "address": "0x2000087C",
       "type": "f32",
       "color": "#C9EB42FF"
     },
     {
       "name": "can_drive_velocity[1]",
-      "address": "0x20000834",
+      "address": "0x20000880",
       "type": "f32",
       "color": "#96EB42FF"
     },
     {
       "name": "can_drive_velocity[2]",
-      "address": "0x20000838",
+      "address": "0x20000884",
       "type": "f32",
       "color": "#63EB42FF"
     },
     {
       "name": "can_drive_velocity[3]",
-      "address": "0x2000083C",
+      "address": "0x20000888",
       "type": "f32",
       "color": "#42EB53FF"
     },
     {
       "name": "can_drive_voltage[0]",
-      "address": "0x20000840",
+      "address": "0x2000088C",
       "type": "f32",
       "color": "#42EB85FF"
     },
     {
       "name": "can_drive_voltage[1]",
-      "address": "0x20000844",
+      "address": "0x20000890",
       "type": "f32",
       "color": "#42EBB8FF"
     },
     {
       "name": "can_drive_voltage[2]",
-      "address": "0x20000848",
+      "address": "0x20000894",
       "type": "f32",
       "color": "#42EBEBFF"
     },
     {
       "name": "can_drive_voltage[3]",
-      "address": "0x2000084C",
+      "address": "0x20000898",
       "type": "f32",
       "color": "#42B8EBFF"
     },
     {
       "name": "can_driver_pcb_temperature[0]",
-      "address": "0x20000850",
+      "address": "0x2000089C",
       "type": "f32",
       "color": "#4285EBFF"
     },
     {
       "name": "can_driver_pcb_temperature[1]",
-      "address": "0x20000854",
+      "address": "0x200008A0",
       "type": "f32",
       "color": "#4253EBFF"
     },
     {
       "name": "can_driver_pcb_temperature[2]",
-      "address": "0x20000858",
+      "address": "0x200008A4",
       "type": "f32",
       "color": "#6342EBFF"
     },
     {
       "name": "can_driver_pcb_temperature[3]",
-      "address": "0x2000085C",
+      "address": "0x200008A8",
       "type": "f32",
       "color": "#9642EBFF"
     },
     {
       "name": "can_monitor_bus_load_rx_permille",
-      "address": "0x2000D494",
+      "address": "0x2000D520",
       "type": "u32",
       "color": "#FF3D3DFF"
     },
     {
+      "name": "can_monitor_esr",
+      "address": "0x2000D524",
+      "type": "u32",
+      "color": "#FF9F1CFF"
+    },
+    {
+      "name": "can_monitor_hal_error_code",
+      "address": "0x2000D528",
+      "type": "u32",
+      "color": "#FEE440FF"
+    },
+    {
+      "name": "can_monitor_hal_state",
+      "address": "0x2000D52C",
+      "type": "u32",
+      "color": "#00F5D4FF"
+    },
+    {
       "name": "can_monitor_last_rx_dlc",
-      "address": "0x2000D498",
+      "address": "0x2000D530",
       "type": "u32",
       "color": "#52FCDAFF"
     },
     {
       "name": "can_monitor_last_rx_id",
-      "address": "0x2000D49C",
+      "address": "0x2000D534",
       "type": "u32",
       "color": "#7CFC52FF"
     },
     {
       "name": "can_monitor_motor_register_frames[0]",
-      "address": "0x2000D4A0",
+      "address": "0x2000D538",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[10]",
-      "address": "0x2000D4C8",
+      "address": "0x2000D560",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[11]",
-      "address": "0x2000D4CC",
+      "address": "0x2000D564",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[12]",
-      "address": "0x2000D4D0",
+      "address": "0x2000D568",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[13]",
-      "address": "0x2000D4D4",
+      "address": "0x2000D56C",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[14]",
-      "address": "0x2000D4D8",
+      "address": "0x2000D570",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[15]",
-      "address": "0x2000D4DC",
+      "address": "0x2000D574",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[1]",
-      "address": "0x2000D4A4",
+      "address": "0x2000D53C",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[2]",
-      "address": "0x2000D4A8",
+      "address": "0x2000D540",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[3]",
-      "address": "0x2000D4AC",
+      "address": "0x2000D544",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[4]",
-      "address": "0x2000D4B0",
+      "address": "0x2000D548",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[5]",
-      "address": "0x2000D4B4",
+      "address": "0x2000D54C",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[6]",
-      "address": "0x2000D4B8",
+      "address": "0x2000D550",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[7]",
-      "address": "0x2000D4BC",
+      "address": "0x2000D554",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[8]",
-      "address": "0x2000D4C0",
+      "address": "0x2000D558",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[9]",
-      "address": "0x2000D4C4",
+      "address": "0x2000D55C",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[0]",
-      "address": "0x2000D4E0",
+      "address": "0x2000D578",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[10]",
-      "address": "0x2000D508",
+      "address": "0x2000D5A0",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[11]",
-      "address": "0x2000D50C",
+      "address": "0x2000D5A4",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[12]",
-      "address": "0x2000D510",
+      "address": "0x2000D5A8",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[13]",
-      "address": "0x2000D514",
+      "address": "0x2000D5AC",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[14]",
-      "address": "0x2000D518",
+      "address": "0x2000D5B0",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[15]",
-      "address": "0x2000D51C",
+      "address": "0x2000D5B4",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[1]",
-      "address": "0x2000D4E4",
+      "address": "0x2000D57C",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[2]",
-      "address": "0x2000D4E8",
+      "address": "0x2000D580",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[3]",
-      "address": "0x2000D4EC",
+      "address": "0x2000D584",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[4]",
-      "address": "0x2000D4F0",
+      "address": "0x2000D588",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[5]",
-      "address": "0x2000D4F4",
+      "address": "0x2000D58C",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[6]",
-      "address": "0x2000D4F8",
+      "address": "0x2000D590",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[7]",
-      "address": "0x2000D4FC",
+      "address": "0x2000D594",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[8]",
-      "address": "0x2000D500",
+      "address": "0x2000D598",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[9]",
-      "address": "0x2000D504",
+      "address": "0x2000D59C",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
+      "name": "can_monitor_msr",
+      "address": "0x2000D5B8",
+      "type": "u32",
+      "color": "#E71D36FF"
+    },
+    {
       "name": "can_monitor_rx_bits_estimate",
-      "address": "0x2000D520",
+      "address": "0x2000D5BC",
       "type": "u32",
       "color": "#FFB012FF"
     },
     {
       "name": "can_monitor_rx_fifo_overruns",
-      "address": "0x2000D524",
+      "address": "0x2000D5C0",
       "type": "u32",
       "color": "#FF32C8FF"
     },
     {
       "name": "can_monitor_rx_frames",
-      "address": "0x2000D528",
+      "address": "0x2000D5C4",
       "type": "u32",
       "color": "#12A4FFFF"
     },
     {
       "name": "can_monitor_rx_interval_max_us",
-      "address": "0x2000D52C",
+      "address": "0x2000D5C8",
       "type": "u32",
       "color": "#E4D84AFF"
     },
     {
       "name": "can_monitor_rx_interval_us",
-      "address": "0x2000D530",
+      "address": "0x2000D5CC",
       "type": "u32",
       "color": "#45D9EFFF"
     },
     {
       "name": "can_monitor_rx_queue_drops",
-      "address": "0x2000D534",
+      "address": "0x2000D5D0",
       "type": "u32",
       "color": "#FF8A32FF"
     },
     {
       "name": "can_monitor_rx_rate_millihz",
-      "address": "0x2000D538",
+      "address": "0x2000D5D4",
       "type": "u32",
       "color": "#A36AFFFF"
     },
     {
+      "name": "can_monitor_tsr",
+      "address": "0x2000D5D8",
+      "type": "u32",
+      "color": "#2EC4B6FF"
+    },
+    {
+      "name": "can_monitor_tx_attempts",
+      "address": "0x2000D5DC",
+      "type": "u32",
+      "color": "#9B5DE5FF"
+    },
+    {
+      "name": "can_monitor_tx_failures",
+      "address": "0x2000D5E0",
+      "type": "u32",
+      "color": "#F15BB5FF"
+    },
+    {
       "name": "can_monitor_tx_frames",
-      "address": "0x2000D53C",
+      "address": "0x2000D5E4",
       "type": "u32",
       "color": "#12FF84FF"
     },
     {
+      "name": "can_monitor_tx_free_mailboxes",
+      "address": "0x2000D5E8",
+      "type": "u32",
+      "color": "#80ED99FF"
+    },
+    {
+      "name": "can_monitor_tx_last_status",
+      "address": "0x2000D5EC",
+      "type": "u32",
+      "color": "#00BBF9FF"
+    },
+    {
+      "name": "can_monitor_tx_mailbox_busy",
+      "address": "0x2000D5F0",
+      "type": "u32",
+      "color": "#9BB88544"
+    },
+    {
       "name": "can_monitor_tx_rate_millihz",
-      "address": "0x2000D540",
+      "address": "0x2000D5F4",
       "type": "u32",
       "color": "#FF6A9EFF"
     },
     {
       "name": "can_motor_temperature[0]",
-      "address": "0x20000860",
+      "address": "0x200008AC",
       "type": "f32",
       "color": "#C942EBFF"
     },
     {
       "name": "can_motor_temperature[1]",
-      "address": "0x20000864",
+      "address": "0x200008B0",
       "type": "f32",
       "color": "#EB42DAFF"
     },
     {
       "name": "can_motor_temperature[2]",
-      "address": "0x20000868",
+      "address": "0x200008B4",
       "type": "f32",
       "color": "#EB42A7FF"
     },
     {
       "name": "can_motor_temperature[3]",
-      "address": "0x2000086C",
+      "address": "0x200008B8",
       "type": "f32",
       "color": "#EB4274FF"
+    },
+    {
+      "name": "devices::robot_dev.imu_heading_valid",
+      "address": "0x2000D24D",
+      "type": "u8",
+      "color": "#5174230D"
+    },
+    {
+      "name": "mainloop_monitor_cycles",
+      "address": "0x2000080C",
+      "type": "u32",
+      "color": "#FFD166FF"
+    },
+    {
+      "name": "mainloop_monitor_stage",
+      "address": "0x20000810",
+      "type": "u32",
+      "color": "#EF476FFF",
+      "interpretation": "custom_enum",
+      "enum_labels": [
+        {
+          "label": "idle",
+          "value": 0
+        },
+        {
+          "label": "wait period",
+          "value": 1
+        },
+        {
+          "label": "sense",
+          "value": 2
+        },
+        {
+          "label": "plan",
+          "value": 3
+        },
+        {
+          "label": "act",
+          "value": 4
+        }
+      ]
     }
   ],
   "groups": [
@@ -759,6 +903,179 @@
             {
               "variable": "can_monitor_motor_register_frames[8]"
             },
+            {
+              "variable": "can_monitor_motor_register_interval_us[0]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[12]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[4]"
+            },
+            {
+              "variable": "can_monitor_motor_register_interval_us[8]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Startup diagnostics",
+      "plots": [
+        {
+          "name": "CAN FIFO/queue/TX busy",
+          "y_axis": {
+            "autofit_viewport": true
+          },
+          "series": [
+            {
+              "variable": "can_monitor_rx_fifo_overruns"
+            },
+            {
+              "variable": "can_monitor_rx_queue_drops"
+            },
+            {
+              "variable": "can_monitor_tx_mailbox_busy"
+            }
+          ]
+        },
+        {
+          "name": "CAN frame rate RX/TX",
+          "y_axis": {
+            "autofit_viewport": true
+          },
+          "series": [
+            {
+              "variable": "can_monitor_rx_rate_millihz"
+            },
+            {
+              "variable": "can_monitor_tx_rate_millihz"
+            }
+          ]
+        },
+        {
+          "name": "CAN total frames",
+          "y_axis": {
+            "autofit_viewport": true
+          },
+          "series": [
+            {
+              "variable": "can_monitor_rx_frames"
+            },
+            {
+              "variable": "can_monitor_tx_frames"
+            }
+          ]
+        },
+        {
+          "name": "CAN transmit/controller status",
+          "type": "table",
+          "series": [
+            {
+              "variable": "can_monitor_esr"
+            },
+            {
+              "variable": "can_monitor_hal_error_code"
+            },
+            {
+              "variable": "can_monitor_hal_state"
+            },
+            {
+              "variable": "can_monitor_msr"
+            },
+            {
+              "variable": "can_monitor_tsr"
+            },
+            {
+              "variable": "can_monitor_tx_attempts"
+            },
+            {
+              "variable": "can_monitor_tx_failures"
+            },
+            {
+              "variable": "can_monitor_tx_frames"
+            },
+            {
+              "variable": "can_monitor_tx_free_mailboxes"
+            },
+            {
+              "variable": "can_monitor_tx_last_status"
+            },
+            {
+              "variable": "can_monitor_tx_mailbox_busy"
+            }
+          ]
+        },
+        {
+          "name": "IMU heading valid",
+          "y_axis": {
+            "autofit_viewport": true
+          },
+          "series": [
+            {
+              "variable": "devices::robot_dev.imu_heading_valid"
+            }
+          ]
+        },
+        {
+          "name": "Mainloop and motor command",
+          "type": "table",
+          "series": [
+            {
+              "variable": "bldc_monitor_target_tx_attempts"
+            },
+            {
+              "variable": "bldc_monitor_target_tx_failures"
+            },
+            {
+              "variable": "bldc_monitor_target_tx_successes"
+            },
+            {
+              "variable": "bldc_monitor_target_velocity[0]"
+            },
+            {
+              "variable": "bldc_monitor_target_velocity[1]"
+            },
+            {
+              "variable": "bldc_monitor_target_velocity[2]"
+            },
+            {
+              "variable": "bldc_monitor_target_velocity[3]"
+            },
+            {
+              "variable": "mainloop_monitor_cycles"
+            },
+            {
+              "variable": "mainloop_monitor_stage"
+            }
+          ]
+        },
+        {
+          "name": "Shaft feedback frames per motor",
+          "y_axis": {
+            "autofit_viewport": true
+          },
+          "series": [
+            {
+              "variable": "can_monitor_motor_register_frames[0]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[12]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[4]"
+            },
+            {
+              "variable": "can_monitor_motor_register_frames[8]"
+            }
+          ]
+        },
+        {
+          "name": "Shaft feedback interval per motor (us)",
+          "y_axis": {
+            "autofit_viewport": true
+          },
+          "series": [
             {
               "variable": "can_monitor_motor_register_interval_us[0]"
             },

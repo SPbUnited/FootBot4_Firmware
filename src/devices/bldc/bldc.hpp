@@ -10,6 +10,10 @@ extern "C" volatile float can_drive_velocity[4];
 extern "C" volatile float can_drive_position[4];
 extern "C" volatile float can_driver_pcb_temperature[4];
 extern "C" volatile float can_motor_temperature[4];
+extern "C" volatile uint32_t bldc_monitor_target_tx_attempts;
+extern "C" volatile uint32_t bldc_monitor_target_tx_successes;
+extern "C" volatile uint32_t bldc_monitor_target_tx_failures;
+extern "C" volatile float bldc_monitor_target_velocity[4];
 
 namespace devices::bldc
 {
@@ -130,6 +134,7 @@ class BldcsDriver : public BldcsConfig
     BldcsVec current;
     BldcsVec current_vel;
     BldcsVec current_pos;
+    uint8_t position_feedback_mask = 0;
 
     BldcsVec target_vel;
     uint8_t received_feedback_mask = 0;
@@ -138,7 +143,8 @@ class BldcsDriver : public BldcsConfig
   public:
     BldcsDriver(BldcsConfig config) : BldcsConfig(config) {}
 
-    void init();
+    /** Initializes monitoring and returns mask of drives with encoder feedback. */
+    uint8_t init();
 
     void setDriveSettings(bool is_verbose = false, bool is_idle = false);
     bool setMonitorSettings();
@@ -146,6 +152,8 @@ class BldcsDriver : public BldcsConfig
 
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);
+    /** Gets shaft positions after fresh feedback from all four drives. */
+    bool getDrivePosition(BldcsVec *position, uint8_t *received_mask);
     void pollFeedback();
     bool getFeedback(BldcsVec *velocity, BldcsVec *angle, uint8_t *received_mask);
 
