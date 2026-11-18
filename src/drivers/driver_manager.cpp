@@ -107,8 +107,12 @@ can::CanConfig can1_config = {
     .rxPin = GPIO_PIN_0,
     .rxPort = GPIOD,
     .rxAlternate = GPIO_AF9_CAN1,
-    // 1 Мбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
-    .prescaler = 3,
+    // 250 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
+    // .prescaler = 12,
+    // 500 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
+    .prescaler = 6,
+    // 1000 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
+    // .prescaler = 3,
     .mode = CAN_MODE_NORMAL,
     .sjw = CAN_SJW_1TQ,
     .timeSeg1 = CAN_BS1_12TQ,

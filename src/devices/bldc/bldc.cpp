@@ -18,6 +18,8 @@ extern "C"
     volatile uint32_t bldc_monitor_target_tx_successes = 0;
     volatile uint32_t bldc_monitor_target_tx_failures = 0;
     volatile float bldc_monitor_target_velocity[4] = {};
+    volatile uint8_t bldc_monitor_feedback_mask = 0;
+    volatile uint8_t bldc_monitor_drive_feedback[4] = {};
 }
 
 namespace devices::bldc
@@ -33,8 +35,9 @@ uint8_t BldcsDriver::init()
     kprogress_start("Awaiting BLDC initialization...");
     const uint32_t start_ms = HAL_GetTick();
     uint32_t last_progress_ms = start_ms;
-    while (position_feedback_mask != 0x0F && HAL_GetTick() - start_ms < 6000U)
+    while (position_feedback_mask != 0x0F && HAL_GetTick() - start_ms < 5000U)
     {
+        broadcastNextSetting(true);
         pollFeedback();
         const uint32_t now_ms = HAL_GetTick();
         if (now_ms - last_progress_ms >= 100U)
@@ -42,7 +45,7 @@ uint8_t BldcsDriver::init()
             kprogress_tick(2.0);
             last_progress_ms = now_ms;
         }
-        HAL_Delay(10);
+        HAL_Delay(100);
     }
     if (position_feedback_mask == 0x0F)
     {
@@ -55,6 +58,7 @@ uint8_t BldcsDriver::init()
     }
 
     setDriveSettings(true);
+    bldc_monitor_feedback_mask = position_feedback_mask;
     return position_feedback_mask;
 }
 
@@ -214,6 +218,11 @@ void BldcsDriver::pollFeedback()
                 can_motor_temperature[offset] = temperature;
             }
         }
+    }
+    bldc_monitor_feedback_mask = position_feedback_mask;
+    for (uint8_t drive = 0; drive < 4; ++drive)
+    {
+        bldc_monitor_drive_feedback[drive] = (position_feedback_mask >> drive) & 1U;
     }
 }
 

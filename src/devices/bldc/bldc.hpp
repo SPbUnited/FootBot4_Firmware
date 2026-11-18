@@ -14,6 +14,10 @@ extern "C" volatile uint32_t bldc_monitor_target_tx_attempts;
 extern "C" volatile uint32_t bldc_monitor_target_tx_successes;
 extern "C" volatile uint32_t bldc_monitor_target_tx_failures;
 extern "C" volatile float bldc_monitor_target_velocity[4];
+/** Bit mask of drives that have returned encoder feedback; bits 0-3 map to drives 1-4. */
+extern "C" volatile uint8_t bldc_monitor_feedback_mask;
+/** Per-drive encoder feedback status: 1 after first feedback, otherwise 0. */
+extern "C" volatile uint8_t bldc_monitor_drive_feedback[4];
 
 namespace devices::bldc
 {
