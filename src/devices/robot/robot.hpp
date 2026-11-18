@@ -14,7 +14,6 @@ namespace devices::robot
 enum MODES
 {
     PLAY = 0,
-    TEST = 1,
 };
 
 enum CANFuocoRegisterMap
@@ -132,15 +131,7 @@ struct Robot : RobotSettings, RobotConfig
 
     uint8_t play_mode;
     uint32_t test_timer;
-    uint8_t square_side;
-    bool square_running;
-    devices::chassis::StateVector square_start;
-    float square_heading;
-    bool square_turning;
     bool imu_heading_valid;
-
-    void start_square_test();
-    void update_square_test();
 
     void nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len);
     std::map<CANFuocoRegisterMap, uint8_t *> CANFuocoRegisterMapNames;

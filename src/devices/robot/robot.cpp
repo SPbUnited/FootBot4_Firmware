@@ -11,9 +11,6 @@ Robot::Robot(RobotSettings &settings, RobotConfig &config)
     : RobotSettings(settings), RobotConfig(config)
 {
     play_mode = PLAY;
-    square_side = 0;
-    square_running = false;
-    square_turning = false;
     imu_heading_valid = false;
     CANFuocoRegisterMapNames = std::map<CANFuocoRegisterMap, uint8_t *>{
         {ANGLE_K, reinterpret_cast<uint8_t *>(&this->angle_k)},
@@ -184,89 +181,6 @@ void Robot::sense()
     // kicker_drv.get_voltage();
 }
 
-void Robot::start_square_test()
-{
-    if (!imu_heading_valid)
-    {
-        kerror("Square test blocked: IMU heading unavailable");
-        return;
-    }
-
-    square_side = 0;
-    square_running = true;
-    linear_mode = VELOCITY_GLOBAL;
-    angle_mode = ANGLEPOS;
-    square_heading = pos_global_current.theta;
-    pos_global_target.theta = square_heading;
-    square_start = pos_global_current;
-    square_turning = false;
-    vel_global_target = {0.35f * cos(square_heading), 0.35f * sin(square_heading), 0.0f};
-    update_nonidle_timer();
-    kinfo("Square test started: side=0.25m, sides=4");
-}
-
-void Robot::update_square_test()
-{
-    if (!square_running)
-    {
-        return;
-    }
-
-    if (!imu_heading_valid)
-    {
-        vel_global_target = {0.0f, 0.0f, 0.0f};
-        square_running = false;
-        play_mode = PLAY;
-        kerror("Square test stopped: IMU heading lost");
-        return;
-    }
-
-    if (square_turning)
-    {
-        float angle_error = pos_global_target.theta - pos_global_current.theta;
-        while (angle_error > M_PI)
-        {
-            angle_error -= 2.0f * M_PI;
-        }
-        while (angle_error < -M_PI)
-        {
-            angle_error += 2.0f * M_PI;
-        }
-        if (fabs(angle_error) > 0.05f)
-        {
-            return;
-        }
-
-        square_turning = false;
-        square_start = pos_global_current;
-        vel_global_target = {0.35f * cos(square_heading), 0.35f * sin(square_heading), 0.0f};
-        return;
-    }
-
-    float dx = pos_global_current.x - square_start.x;
-    float dy = pos_global_current.y - square_start.y;
-    float distance = dx * cos(square_heading) + dy * sin(square_heading);
-    if (distance < 0.25f)
-    {
-        return;
-    }
-
-    square_side++;
-    vel_global_target = {0.0f, 0.0f, 0.0f};
-    if (square_side >= 4)
-    {
-        square_running = false;
-        play_mode = PLAY;
-        kinfo("Square test complete");
-        return;
-    }
-
-    square_turning = true;
-    square_heading += static_cast<float>(M_PI) / 2.0f;
-    pos_global_target.theta = square_heading;
-    kinfo("Square test: side %u/4 complete", square_side);
-}
-
 void Robot::plan()
 {
     if (linear_mode == VELOCITY_GLOBAL)
@@ -318,25 +232,6 @@ void Robot::plan()
     }
 
     // kicker_drv.set_target(100);
-    if (drivers::in_pins[drivers::BUTTON_ADDR_UP].read() ||
-        drivers::in_pins[drivers::BUTTON_ADDR_DOWN].read() ||
-        drivers::in_pins[drivers::BUTTON_SELECT].read())
-    {
-        if (play_mode == PLAY)
-        {
-            play_mode = TEST;
-            test_timer = drivers::system_clock::micros();
-            start_square_test();
-        }
-    }
-    if (play_mode == TEST)
-    {
-        update_square_test();
-        if (!square_running)
-        {
-            play_mode = PLAY;
-        }
-    }
 }
 
 void Robot::act()
