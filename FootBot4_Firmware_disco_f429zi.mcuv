@@ -222,325 +222,325 @@
     },
     {
       "name": "can_monitor_bus_load_rx_permille",
-      "address": "0x2000D528",
+      "address": "0x2000D514",
       "type": "u32",
       "color": "#FF3D3DFF"
     },
     {
       "name": "can_monitor_esr",
-      "address": "0x2000D52C",
+      "address": "0x2000D518",
       "type": "u32",
       "color": "#FF9F1CFF"
     },
     {
       "name": "can_monitor_hal_error_code",
-      "address": "0x2000D530",
+      "address": "0x2000D51C",
       "type": "u32",
       "color": "#FEE440FF"
     },
     {
       "name": "can_monitor_hal_state",
-      "address": "0x2000D534",
+      "address": "0x2000D520",
       "type": "u32",
       "color": "#00F5D4FF"
     },
     {
       "name": "can_monitor_last_rx_dlc",
-      "address": "0x2000D538",
+      "address": "0x2000D524",
       "type": "u32",
       "color": "#52FCDAFF"
     },
     {
       "name": "can_monitor_last_rx_id",
-      "address": "0x2000D53C",
+      "address": "0x2000D528",
       "type": "u32",
       "color": "#7CFC52FF"
     },
     {
       "name": "can_monitor_motor_register_frames[0]",
-      "address": "0x2000D540",
+      "address": "0x2000D52C",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
       "name": "can_monitor_motor_register_frames[10]",
-      "address": "0x2000D568",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[11]",
-      "address": "0x2000D56C",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[12]",
-      "address": "0x2000D570",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[13]",
-      "address": "0x2000D574",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[14]",
-      "address": "0x2000D578",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[15]",
-      "address": "0x2000D57C",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[1]",
-      "address": "0x2000D544",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[2]",
-      "address": "0x2000D548",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[3]",
-      "address": "0x2000D54C",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[4]",
-      "address": "0x2000D550",
-      "type": "u32",
-      "color": "#D16AFFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_frames[5]",
       "address": "0x2000D554",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
-      "name": "can_monitor_motor_register_frames[6]",
+      "name": "can_monitor_motor_register_frames[11]",
       "address": "0x2000D558",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
-      "name": "can_monitor_motor_register_frames[7]",
+      "name": "can_monitor_motor_register_frames[12]",
       "address": "0x2000D55C",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
-      "name": "can_monitor_motor_register_frames[8]",
+      "name": "can_monitor_motor_register_frames[13]",
       "address": "0x2000D560",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
-      "name": "can_monitor_motor_register_frames[9]",
+      "name": "can_monitor_motor_register_frames[14]",
       "address": "0x2000D564",
       "type": "u32",
       "color": "#D16AFFFF"
     },
     {
+      "name": "can_monitor_motor_register_frames[15]",
+      "address": "0x2000D568",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[1]",
+      "address": "0x2000D530",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[2]",
+      "address": "0x2000D534",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[3]",
+      "address": "0x2000D538",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[4]",
+      "address": "0x2000D53C",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[5]",
+      "address": "0x2000D540",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[6]",
+      "address": "0x2000D544",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[7]",
+      "address": "0x2000D548",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[8]",
+      "address": "0x2000D54C",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_frames[9]",
+      "address": "0x2000D550",
+      "type": "u32",
+      "color": "#D16AFFFF"
+    },
+    {
       "name": "can_monitor_motor_register_interval_us[0]",
-      "address": "0x2000D580",
+      "address": "0x2000D56C",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
       "name": "can_monitor_motor_register_interval_us[10]",
-      "address": "0x2000D5A8",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[11]",
-      "address": "0x2000D5AC",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[12]",
-      "address": "0x2000D5B0",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[13]",
-      "address": "0x2000D5B4",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[14]",
-      "address": "0x2000D5B8",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[15]",
-      "address": "0x2000D5BC",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[1]",
-      "address": "0x2000D584",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[2]",
-      "address": "0x2000D588",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[3]",
-      "address": "0x2000D58C",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[4]",
-      "address": "0x2000D590",
-      "type": "u32",
-      "color": "#6AD1FFFF"
-    },
-    {
-      "name": "can_monitor_motor_register_interval_us[5]",
       "address": "0x2000D594",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
-      "name": "can_monitor_motor_register_interval_us[6]",
+      "name": "can_monitor_motor_register_interval_us[11]",
       "address": "0x2000D598",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
-      "name": "can_monitor_motor_register_interval_us[7]",
+      "name": "can_monitor_motor_register_interval_us[12]",
       "address": "0x2000D59C",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
-      "name": "can_monitor_motor_register_interval_us[8]",
+      "name": "can_monitor_motor_register_interval_us[13]",
       "address": "0x2000D5A0",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
-      "name": "can_monitor_motor_register_interval_us[9]",
+      "name": "can_monitor_motor_register_interval_us[14]",
       "address": "0x2000D5A4",
       "type": "u32",
       "color": "#6AD1FFFF"
     },
     {
+      "name": "can_monitor_motor_register_interval_us[15]",
+      "address": "0x2000D5A8",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[1]",
+      "address": "0x2000D570",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[2]",
+      "address": "0x2000D574",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[3]",
+      "address": "0x2000D578",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[4]",
+      "address": "0x2000D57C",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[5]",
+      "address": "0x2000D580",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[6]",
+      "address": "0x2000D584",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[7]",
+      "address": "0x2000D588",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[8]",
+      "address": "0x2000D58C",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
+      "name": "can_monitor_motor_register_interval_us[9]",
+      "address": "0x2000D590",
+      "type": "u32",
+      "color": "#6AD1FFFF"
+    },
+    {
       "name": "can_monitor_msr",
-      "address": "0x2000D5C0",
+      "address": "0x2000D5AC",
       "type": "u32",
       "color": "#E71D36FF"
     },
     {
       "name": "can_monitor_rx_bits_estimate",
-      "address": "0x2000D5C4",
+      "address": "0x2000D5B0",
       "type": "u32",
       "color": "#FFB012FF"
     },
     {
       "name": "can_monitor_rx_fifo_overruns",
-      "address": "0x2000D5C8",
+      "address": "0x2000D5B4",
       "type": "u32",
       "color": "#FF32C8FF"
     },
     {
       "name": "can_monitor_rx_frames",
-      "address": "0x2000D5CC",
+      "address": "0x2000D5B8",
       "type": "u32",
       "color": "#12A4FFFF"
     },
     {
       "name": "can_monitor_rx_interval_max_us",
-      "address": "0x2000D5D0",
+      "address": "0x2000D5BC",
       "type": "u32",
       "color": "#E4D84AFF"
     },
     {
       "name": "can_monitor_rx_interval_us",
-      "address": "0x2000D5D4",
+      "address": "0x2000D5C0",
       "type": "u32",
       "color": "#45D9EFFF"
     },
     {
       "name": "can_monitor_rx_queue_drops",
-      "address": "0x2000D5D8",
+      "address": "0x2000D5C4",
       "type": "u32",
       "color": "#FF8A32FF"
     },
     {
       "name": "can_monitor_rx_rate_millihz",
-      "address": "0x2000D5DC",
+      "address": "0x2000D5C8",
       "type": "u32",
       "color": "#A36AFFFF"
     },
     {
       "name": "can_monitor_tsr",
-      "address": "0x2000D5E0",
+      "address": "0x2000D5CC",
       "type": "u32",
       "color": "#2EC4B6FF"
     },
     {
       "name": "can_monitor_tx_attempts",
-      "address": "0x2000D5E4",
+      "address": "0x2000D5D0",
       "type": "u32",
       "color": "#9B5DE5FF"
     },
     {
       "name": "can_monitor_tx_failures",
-      "address": "0x2000D5E8",
+      "address": "0x2000D5D4",
       "type": "u32",
       "color": "#F15BB5FF"
     },
     {
       "name": "can_monitor_tx_frames",
-      "address": "0x2000D5EC",
+      "address": "0x2000D5D8",
       "type": "u32",
       "color": "#12FF84FF"
     },
     {
       "name": "can_monitor_tx_free_mailboxes",
-      "address": "0x2000D5F0",
+      "address": "0x2000D5DC",
       "type": "u32",
       "color": "#80ED99FF"
     },
     {
       "name": "can_monitor_tx_last_status",
-      "address": "0x2000D5F4",
+      "address": "0x2000D5E0",
       "type": "u32",
       "color": "#00BBF9FF"
     },
     {
       "name": "can_monitor_tx_mailbox_busy",
-      "address": "0x2000D5F8",
+      "address": "0x2000D5E4",
       "type": "u32",
       "color": "#9BB88544"
     },
     {
       "name": "can_monitor_tx_rate_millihz",
-      "address": "0x2000D5FC",
+      "address": "0x2000D5E8",
       "type": "u32",
       "color": "#FF6A9EFF"
     },

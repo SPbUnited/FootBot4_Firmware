@@ -23,6 +23,7 @@ struct InitStatus
     bool can;
     bool spi;
     bool adc;
+    bool buzzer;
 };
 
 extern bootstrap::Bootstrap bootstrap_drv;

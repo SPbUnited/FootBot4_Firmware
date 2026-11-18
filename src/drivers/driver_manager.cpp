@@ -247,6 +247,19 @@ InitStatus init()
 
     status.can = drivers::can_drv.init();
     status.spi = drivers::spi2.init();
+    status.buzzer = drivers::buzzer_drv.init();
+    if (status.buzzer)
+    {
+        static constexpr buzzer::MelodyNote rzd_boot_jingle[] = {
+            {buzzer::Pitch::C, 5, buzzer::Length::QuarterDotted},
+            {buzzer::Pitch::G, 4, buzzer::Length::Eighth},
+            {buzzer::Pitch::C, 5, buzzer::Length::Eighth},
+            {buzzer::Pitch::G, 5, buzzer::Length::Eighth},
+            {buzzer::Pitch::D, 5, buzzer::Length::QuarterDotted},
+        };
+        drivers::buzzer_drv.play(rzd_boot_jingle,
+                                 sizeof(rzd_boot_jingle) / sizeof(rzd_boot_jingle[0]), 200);
+    }
     return status;
 }
 
