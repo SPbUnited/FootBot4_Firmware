@@ -51,6 +51,7 @@ bldc::BldcsConfig bldcs_config = {
     .drive_vel_i = NAN,
     .drive_vel_limit = NAN,
     .drive_vel_limit_idle = NAN,
+    .feedback_leds = {drivers::GPIO_OUT::LED_DRV1, drivers::GPIO_OUT::LED_DRV2, drivers::GPIO_OUT::LED_DRV3, drivers::GPIO_OUT::LED_DRV4},
 };
 
 bldc::BldcsDriver bldcs_drv(bldcs_config);

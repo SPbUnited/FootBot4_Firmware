@@ -185,7 +185,7 @@ void BldcsDriver::pollFeedback()
         {
             continue;
         }
-
+        drivers::out_pins[feedback_leds[motor_addr - 1]].toggle();
         const uint8_t offset = motor_addr - 1;
         if (register_addr == SUPPLY_VOLTAGE_R && response_len == sizeof(float))
         {
