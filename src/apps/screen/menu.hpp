@@ -25,7 +25,7 @@ struct Button {
         return Event::None;
     }
 };
-enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, Version, Reboot, Tests, Dribbler, Speed, Kicker, Voltage };
+enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, BootPage, Version, Reboot, Tests, Dribbler, Speed, Kicker, Voltage };
 enum class Effect { None, SaveId, Reboot, ToPlay, Kick };
 struct Menu {
     Page page = Page::Home;
@@ -49,6 +49,7 @@ struct Menu {
             case Page::Settings: go(Page::Root, 2); break;
             case Page::EditId: case Page::Saved: go(Page::Settings); break;
             case Page::System: go(Page::Root, 3); first = 1; break;
+            case Page::BootPage: go(Page::System, 2); break;
             case Page::Version: case Page::Reboot: go(Page::System); break;
             case Page::Tests: go(Page::Root, 4); first = 2; break;
             case Page::Dribbler: spinning = false; go(Page::Tests); break;
@@ -61,6 +62,7 @@ struct Menu {
         if (e == Event::Up || e == Event::Down) {
             int delta = e == Event::Up ? -1 : 1;
             if (page == Page::Home) home = 1 - home;
+            else if (page == Page::BootPage) selected = (selected + delta + 5) % 5;
             else if (page == Page::Telemetry) telemetry = (telemetry + delta + 3) % 3;
             else if (page == Page::EditId) editId = (editId + (e == Event::Up ? 1 : 15)) % 16;
             else if (page == Page::Speed || page == Page::Voltage)
@@ -69,9 +71,9 @@ struct Menu {
                 int count = 1;
                 switch (page) {
                 case Page::Root: count = 5; break;
-                case Page::Kicker: count = 3; break;
+                case Page::System: case Page::Kicker: count = 3; break;
                 case Page::Tests: case Page::Dribbler:
-                case Page::System: case Page::Reboot: count = 2; break;
+                case Page::Reboot: count = 2; break;
                 default: break;
                 }
                 selected += delta;
@@ -95,7 +97,7 @@ struct Menu {
                 if (editId == id) go(Page::Settings);
                 else { go(Page::Saved); savedAt = now; return Effect::SaveId; }
                 break;
-            case Page::System: go(selected == 0 ? Page::Version : Page::Reboot); break;
+            case Page::System: go(selected == 0 ? Page::Version : selected == 1 ? Page::Reboot : Page::BootPage); break;
             case Page::Reboot:
                 if (selected == 1) return Effect::Reboot;
                 go(Page::System, 1); break;

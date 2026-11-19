@@ -165,7 +165,8 @@ void init(drivers::InitStatus driver_status)
     kinfo("Shell initialized");
     kinfo("Logger initialized");
     bool oled_initialized = driver_status.i2c && oled_drv.init();
-    apps::screen::begin_boot_report(oled_initialized);
+    apps::screen::set_boot_status(apps::screen::BootComponent::OLED,
+        oled_initialized ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
     apps::screen::set_boot_status(
         apps::screen::BootComponent::CAN,
         driver_status.can ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
@@ -306,8 +307,6 @@ void init(drivers::InitStatus driver_status)
     nrf24_recv.recv_irq();
     kinfo("Devices initialized");
     apps::screen::init();
-    // apps::screen::finish_boot_report();
-    // apps::screen::screen();
 }
 
 }  // namespace devices

@@ -34,14 +34,8 @@ enum class BootState : uint8_t
     FAILED,
 };
 
-/** Starts boot reporting and records whether the OLED is available. */
-void begin_boot_report(bool display_ready);
-/** Updates one component and refreshes the current boot page. */
+/** Records the initialization result for the boot_page menu. */
 void set_boot_status(BootComponent component, BootState state, uint8_t detail = 0);
-/** Completes the report and keeps it visible while pages rotate. */
-void finish_boot_report();
-void screen();
-
 void init();
 void update();
 void suspendForShell();
