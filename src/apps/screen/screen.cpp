@@ -191,8 +191,28 @@ Frame render(uint32_t now) {
     switch (menu.page) {
     case Page::Root: list(f, "MENU", root, 5); break;
     case Page::Tests: {
-        const char *items[] = {"Dribbler", "Kicker"};
-        list(f, "TESTS", items, 2);
+        const char *items[] = {"Dribbler", "Kicker", "Square"};
+        list(f, "TESTS", items, 3);
+        break;
+    }
+    case Page::Square: {
+        using SquareStatus = devices::robot::Robot::SquareStatus;
+        const char *status = "Done";
+        switch (r.square_status) {
+        case SquareStatus::Idle: status = "Ready"; break;
+        case SquareStatus::Running: status = "Running"; break;
+        case SquareStatus::Done: break;
+        case SquareStatus::NoImu: status = "IMU unavailable"; break;
+        case SquareStatus::NoFeedback: status = "No wheel feedback"; break;
+        case SquareStatus::Timeout: status = "Test timed out"; break;
+        }
+        std::snprintf(f.lines[0], 22, "SQUARE 4 x 25 cm");
+        std::snprintf(f.lines[1], 22, "%s", status);
+        if (r.square_status == SquareStatus::Running)
+            std::snprintf(f.lines[2], 22, "Sides done: %u/4", r.square_side);
+        else
+            std::snprintf(f.lines[2], 22, "OK:start");
+        std::snprintf(f.lines[3], 22, "HOLD:back");
         break;
     }
     case Page::Dribbler: {
@@ -364,6 +384,7 @@ void update() {
     auto &robot = devices::robot_dev;
     const bool wasKicker = menu.kickerPage();
     const auto previousVoltage = menu.voltage;
+    const bool wasSquare = menu.page == Page::Square;
     Effect effect = menu.event(e, robot.robot_id, now);
     robot.test_dribbler = menu.spinning ? menu.speed : 0;
     robot.test_kicker = menu.kickerPage();
@@ -372,7 +393,11 @@ void update() {
         robot.test_kick = devices::robot::DISABLED;
         devices::kicker_drv.stop();
     }
+    if (wasSquare && menu.page != Page::Square)
+        robot.stop_square_test(devices::robot::Robot::SquareStatus::Idle);
     robot.set_control_locked(menu.locked());
+    if (effect == Effect::StartSquare)
+        robot.start_square_test();
     if (effect == Effect::Kick && robot.test_kick == devices::robot::DISABLED)
         robot.test_kick = menu.chip ? devices::robot::KICK_UP : devices::robot::KICK_FRONT;
     if (effect == Effect::SaveId) {
