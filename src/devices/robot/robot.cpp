@@ -11,6 +11,9 @@ namespace devices::robot
 Robot::Robot(RobotSettings &settings, RobotConfig &config) : RobotSettings(settings), RobotConfig(config)
 {
     play_mode = PLAY;
+    square_side = 0;
+    square_turning = false;
+    imu_heading_valid = false;
     CANFuocoRegisterMapNames = std::map<CANFuocoRegisterMap, uint8_t *>{
         {ANGLE_K, reinterpret_cast<uint8_t *>(&this->angle_k)},
         {ANGLE_B, reinterpret_cast<uint8_t *>(&this->angle_b)},
@@ -174,6 +177,8 @@ void Robot::sense()
     }
     if (has_position_delta)
     {
+        wheel_feedback_seen = true;
+        last_wheel_update_ms = HAL_GetTick();
         odom_dev.updateLocalDelta(local_position_delta, heading);
     }
     else
@@ -186,16 +191,33 @@ void Robot::sense()
     // kicker_drv.get_voltage();
 }
 
+namespace
+{
+constexpr uint32_t square_feedback_timeout_ms = 500;
+constexpr uint32_t square_timeout_ms = 20000;
+}
+
 void Robot::start_square_test()
 {
+    if (!control_locked_ || square_status == SquareStatus::Running)
+        return;
+
     if (!imu_heading_valid)
     {
-        kerror("Square test blocked: IMU heading unavailable");
+        square_status = SquareStatus::NoImu;
+        return;
+    }
+
+    const uint32_t now = HAL_GetTick();
+    if (!wheel_feedback_seen || now - last_wheel_update_ms >= square_feedback_timeout_ms)
+    {
+        square_status = SquareStatus::NoFeedback;
         return;
     }
 
     square_side = 0;
-    square_running = true;
+    square_status = SquareStatus::Running;
+    square_started_ms = now;
     linear_mode = VELOCITY_GLOBAL;
     angle_mode = ANGLEPOS;
     square_heading = pos_global_current.theta;
@@ -207,19 +229,34 @@ void Robot::start_square_test()
     kinfo("Square test started: side=0.25m, sides=4");
 }
 
+void Robot::stop_square_test(SquareStatus status)
+{
+    square_status = status;
+    clear_commands();
+}
+
 void Robot::update_square_test()
 {
-    if (!square_running)
+    if (square_status != SquareStatus::Running)
     {
         return;
     }
 
     if (!imu_heading_valid)
     {
-        vel_global_target = {0.0f, 0.0f, 0.0f};
-        square_running = false;
-        play_mode = PLAY;
-        kerror("Square test stopped: IMU heading lost");
+        stop_square_test(SquareStatus::NoImu);
+        return;
+    }
+
+    const uint32_t now = HAL_GetTick();
+    if (now - last_wheel_update_ms >= square_feedback_timeout_ms)
+    {
+        stop_square_test(SquareStatus::NoFeedback);
+        return;
+    }
+    if (now - square_started_ms >= square_timeout_ms)
+    {
+        stop_square_test(SquareStatus::Timeout);
         return;
     }
 
@@ -257,8 +294,7 @@ void Robot::update_square_test()
     vel_global_target = {0.0f, 0.0f, 0.0f};
     if (square_side >= 4)
     {
-        square_running = false;
-        play_mode = PLAY;
+        stop_square_test(SquareStatus::Done);
         kinfo("Square test complete");
         return;
     }
@@ -271,6 +307,8 @@ void Robot::update_square_test()
 
 void Robot::plan()
 {
+    update_square_test();
+
     if (linear_mode == VELOCITY_GLOBAL)
     {
         vel_local_output.x = vel_global_target.x;
@@ -320,9 +358,6 @@ void Robot::plan()
                                     angle_k);  // динамический коэф
     }
 
-    // kicker_drv.set_target(100);
-    update_square_test();
-
 }
 
 void Robot::clear_commands()
@@ -354,7 +389,7 @@ void Robot::set_control_locked(bool locked)
 
 void Robot::act()
 {
-    if (control_locked_) clear_commands();
+    if (control_locked_ && square_status != SquareStatus::Running) clear_commands();
     float vel_abs =
         sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y);
     if (vel_abs > max_linear_vel)

@@ -71,5 +71,14 @@ int main() {
     }
     m.event(Event::Back, 0, 0);
     assert(m.page == Page::System && m.selected == 2);
+    m.go(Page::Tests);
+    m.event(Event::Down, 0, 0);
+    m.event(Event::Down, 0, 0);
+    assert(m.selected == 2);
+    assert(m.event(Event::Select, 0, 0) == Effect::None);
+    assert(m.page == Page::Square && m.locked());
+    assert(m.event(Event::Select, 0, 0) == Effect::StartSquare);
+    assert(m.event(Event::Back, 0, 0) == Effect::None);
+    assert(m.page == Page::Tests && m.selected == 2 && m.locked());
     std::puts("menu/button tests passed");
 }

@@ -25,8 +25,8 @@ struct Button {
         return Event::None;
     }
 };
-enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, BootPage, Version, Reboot, Tests, Dribbler, Speed, Kicker, Voltage };
-enum class Effect { None, SaveId, Reboot, ToPlay, Kick };
+enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, BootPage, Version, Reboot, Tests, Square, Dribbler, Speed, Kicker, Voltage };
+enum class Effect { None, SaveId, Reboot, ToPlay, Kick, StartSquare };
 struct Menu {
     Page page = Page::Home;
     int selected = 0, first = 0, telemetry = 0, home = 0;
@@ -35,7 +35,7 @@ struct Menu {
     bool spinning = false, chip = false;
     uint32_t savedAt = 0;
     bool locked() const { return page == Page::Settings || page == Page::EditId || page == Page::Saved || page == Page::Reboot || page == Page::Tests ||
-        page == Page::Dribbler || page == Page::Speed || kickerPage(); }
+        page == Page::Square || page == Page::Dribbler || page == Page::Speed || kickerPage(); }
     bool kickerPage() const { return page == Page::Kicker || page == Page::Voltage; }
     void go(Page next, int selection = 0) { page = next; selected = selection; first = 0; }
     void tick(uint32_t now) { if (page == Page::Saved && uint32_t(now - savedAt) >= 800) go(Page::Settings); }
@@ -52,6 +52,7 @@ struct Menu {
             case Page::BootPage: go(Page::System, 2); break;
             case Page::Version: case Page::Reboot: go(Page::System); break;
             case Page::Tests: go(Page::Root, 4); first = 2; break;
+            case Page::Square: go(Page::Tests, 2); break;
             case Page::Dribbler: spinning = false; go(Page::Tests); break;
             case Page::Speed: go(Page::Dribbler); break;
             case Page::Kicker: voltage = 0; go(Page::Tests, 1); break;
@@ -71,8 +72,8 @@ struct Menu {
                 int count = 1;
                 switch (page) {
                 case Page::Root: count = 5; break;
-                case Page::System: case Page::Kicker: count = 3; break;
-                case Page::Tests: case Page::Dribbler:
+                case Page::System: case Page::Kicker: case Page::Tests: count = 3; break;
+                case Page::Dribbler:
                 case Page::Reboot: count = 2; break;
                 default: break;
                 }
@@ -101,7 +102,10 @@ struct Menu {
             case Page::Reboot:
                 if (selected == 1) return Effect::Reboot;
                 go(Page::System, 1); break;
-            case Page::Tests: go(selected == 0 ? Page::Dribbler : Page::Kicker); break;
+            case Page::Tests:
+                go(selected == 0 ? Page::Dribbler : selected == 1 ? Page::Kicker : Page::Square);
+                break;
+            case Page::Square: return Effect::StartSquare;
             case Page::Dribbler:
                 if (selected == 0) { draft = speed; go(Page::Speed); }
                 else spinning = !spinning;
