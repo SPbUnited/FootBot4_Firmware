@@ -142,6 +142,21 @@ struct Robot : RobotSettings, RobotConfig
 
     uint8_t play_mode;
 
+    enum class SquareStatus { Idle, Running, Done, NoImu, NoFeedback, Timeout };
+    SquareStatus square_status = SquareStatus::Idle;
+    uint32_t square_started_ms = 0;
+    uint32_t last_wheel_update_ms = 0;
+    bool wheel_feedback_seen = false;
+    uint8_t square_side;
+    devices::chassis::StateVector square_start;
+    float square_heading;
+    bool square_turning;
+    bool imu_heading_valid;
+
+    void start_square_test();
+    void update_square_test();
+    void stop_square_test(SquareStatus status);
+
     void nrfm_callback(uint32_t m_id, uint8_t *buf, size_t len);
     std::map<CANFuocoRegisterMap, uint8_t *> CANFuocoRegisterMapNames;
 
