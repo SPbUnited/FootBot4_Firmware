@@ -84,23 +84,6 @@ void Kicker::update()
                 state = KICK;
             }
         }
-        if (read_deep())
-        {
-            drivers::out_pins[drivers::LED_DRV2].write(true);
-        }
-        else
-        {
-            drivers::out_pins[drivers::LED_DRV2].write(false);
-        }
-
-        if (read_front())
-        {
-            drivers::out_pins[drivers::LED_DRV3].write(true);
-        }
-        else
-        {
-            drivers::out_pins[drivers::LED_DRV3].write(false);
-        }
     }
     else if (state == KICK)
     {

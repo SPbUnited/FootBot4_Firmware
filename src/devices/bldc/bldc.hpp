@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drivers/can/can.hpp"
+#include "drivers/driver_manager.hpp"
 
 /** Latest CAN-reported motor supply voltage, in volts. */
 extern "C" volatile float can_battery_voltage;
@@ -130,6 +131,7 @@ struct BldcsConfig
     float drive_vel_i;
     float drive_vel_limit;
     float drive_vel_limit_idle;
+    drivers::GPIO_OUT feedback_leds[4];
 };
 
 class BldcsDriver : public BldcsConfig
