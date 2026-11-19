@@ -320,6 +320,9 @@ void Robot::plan()
                                     angle_k);  // динамический коэф
     }
 
+    // kicker_drv.set_target(100);
+    update_square_test();
+
 }
 
 void Robot::clear_commands()
