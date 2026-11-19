@@ -1,5 +1,6 @@
 #include "nrf24.hpp"
 
+#include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 #include "devices/device_manager.hpp"
 
@@ -69,6 +70,13 @@ void Nrf24Recv::recv_irq()
     if (m_lenDbg < 6)
     {
         // Log error - could add logging here
+    }
+
+    if (m_lenDbg == 0 || m_lenDbg > m_incomePacketLen)
+    {
+        writeReg(0x07, 0x40);  // Clear RX_DR interrupt
+        spi_instance.flushRx();
+        return;
     }
 
     if (time_ms - m_prevTime_ms > 1000)

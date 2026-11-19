@@ -3,8 +3,10 @@
 #include "apps/mainloop/mainloop.hpp"
 #include "apps/screen/screen.hpp"
 #include "apps/setting_broadcaster/setting_broadcaster.hpp"
+#include "devices/device_manager.hpp"
 #include "devices/logger/logger.hpp"
 #include "devices/shell/shell.hpp"
+#include "drivers/driver_manager.hpp"
 #include "drivers/system_clock/system_clock.hpp"
 #include "devices/device_manager.hpp"
 
@@ -41,17 +43,18 @@ TaskDescriptor tasks[app_count] = {
      idle,
      {0},
      LOG_INFO},
+    {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
-     TPS(1),
+     TPS(2),
      ksperiodic,
      idle,
      {0},
      LOG_NONE},
     {"screen", apps::screen::update, 0, TPS(100), ksperiodic, idle, {0}, LOG_NONE},
-    {"monitor_reset", monitor_reset, 0, TPS(1), ksperiodic, idle, {0}, LOG_DEBUG},
     {"shell", devices::shell::my_shellLoop, 0, 0, kspersistent, idle, {0}, LOG_DEBUG},
+    {"monitor_reset", monitor_reset, 0, TPS(1), ksperiodic, idle, {0}, LOG_DEBUG},
 };
 
 void monitor_reset()
@@ -97,7 +100,9 @@ void yield()
         return;
     }
 
-    for (size_t app = 0; app < app_count; app++)
+    for (size_t app = 0;
+         app < (devices::robot_dev.play_mode == devices::robot::PLAY ? app_shell : app_count);
+         app++)
     {
         if (devices::robot_dev.play_mode == devices::robot::PLAY &&
             (app == app_shell || app == app_monitor_reset)) continue;
@@ -107,6 +112,9 @@ void yield()
             run(static_cast<Apps>(app));
         }
     }
+
+    devices::bldcs_drv.pollFeedback();
+    drivers::can_drv.updateMonitorWindow();
 }
 
 void init()

@@ -7,7 +7,7 @@ namespace drivers::i2c
 
 I2cDriver::I2cDriver(I2cConfig config) : I2cConfig(config) {}
 
-void I2cDriver::init()
+bool I2cDriver::init()
 {
     clk_enable();
 
@@ -41,7 +41,9 @@ void I2cDriver::init()
     if (status != HAL_OK)
     {
         kerror("I2C init error: %d %d\n", 42, int(status));
+        return false;
     }
+    return true;
 }
 
 }  // namespace drivers::i2c

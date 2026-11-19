@@ -2,6 +2,7 @@
 
 #include "bldc/bldc.hpp"
 #include "chassis/chassis.hpp"
+#include "drivers/driver_manager.hpp"
 #include "eeprom/eeprom.hpp"
 #include "imu/imu.hpp"
 #include "kicker/kicker.hpp"
@@ -26,7 +27,7 @@ extern kicker::Kicker kicker_drv;
 extern imu::BNO055 bno055_drv;
 extern nrfm_decoder::NRFMDecoder nrfm_decoder_dev;
 
-void init();
+void init(drivers::InitStatus driver_status);
 
 extern "C" void EXTI15_10_IRQHandler(void);
 

@@ -68,6 +68,7 @@ namespace drivers::uart
 
 void UartDriver::hal_msp_init()
 {
+    msp_init_ok_ = true;
     if (instance == UART4)
     {
         HAL_NVIC_SetPriority(UART4_IRQn, 7, 0);
@@ -104,8 +105,12 @@ void UartDriver::hal_msp_init()
     __HAL_LINKDMA(&handle, hdmarx, hdma_rx_);
     __HAL_LINKDMA(&handle, hdmatx, hdma_tx_);
 
-    HAL_DMA_Init(&hdma_rx_);
-    HAL_DMA_Init(&hdma_tx_);
+    if (HAL_DMA_Init(&hdma_rx_) != HAL_OK || HAL_DMA_Init(&hdma_tx_) != HAL_OK)
+    {
+        msp_init_ok_ = false;
+        kerror("UART DMA initialization failed");
+        return;
+    }
 
     HAL_NVIC_SetPriority(dma_rx_irqn, 6, 0);
     HAL_NVIC_EnableIRQ(dma_rx_irqn);
@@ -113,8 +118,9 @@ void UartDriver::hal_msp_init()
     HAL_NVIC_EnableIRQ(dma_tx_irqn);
 }
 
-void UartDriver::init()
+bool UartDriver::init()
 {
+    initialized_ = false;
     clk_enable();
 
     GPIO_InitTypeDef GPIO_InitStruct;
@@ -142,10 +148,23 @@ void UartDriver::init()
     handle.Init.Mode = mode;
     handle.Init.OverSampling = overSampling;
 
-    HAL_UART_Init(&handle);
+    msp_init_ok_ = true;
+    HAL_StatusTypeDef status = HAL_UART_Init(&handle);
+    if (status != HAL_OK || !msp_init_ok_)
+    {
+        kerror("UART init failed: status=%d", static_cast<int>(status));
+        return false;
+    }
 
     rx_dma_tail_ = 0;
-    (void)HAL_UART_Receive_DMA(&handle, rx_dma_buf_, kRxDmaBufSize);
+    status = HAL_UART_Receive_DMA(&handle, rx_dma_buf_, kRxDmaBufSize);
+    if (status != HAL_OK)
+    {
+        kerror("UART RX DMA start failed: status=%d", static_cast<int>(status));
+        return false;
+    }
+    initialized_ = true;
+    return true;
 }
 
 void UartDriver::irq()
@@ -213,7 +232,9 @@ HAL_StatusTypeDef UartDriver::read_dma_(uint8_t *out, uint16_t size, uint32_t ti
         uint32_t avail = (head + kRxDmaBufSize - rx_dma_tail_) % kRxDmaBufSize;
         if (avail > 0U)
         {
-            chunk = static_cast<uint16_t>((avail < static_cast<uint32_t>(size - got)) ? avail : static_cast<uint32_t>(size - got));
+            chunk = static_cast<uint16_t>((avail < static_cast<uint32_t>(size - got))
+                                              ? avail
+                                              : static_cast<uint32_t>(size - got));
             for (uint16_t i = 0; i < chunk; ++i)
             {
                 out[got++] = rx_dma_buf_[rx_dma_tail_];
@@ -295,6 +316,10 @@ void UartDriver::tx_push_bytes_(const uint8_t *data, uint16_t size)
 
 void UartDriver::flush_tx()
 {
+    if (!initialized_)
+    {
+        return;
+    }
     for (;;)
     {
         tx_try_start_();
@@ -310,12 +335,20 @@ void UartDriver::flush_tx()
 
 void UartDriver::putc(char c)
 {
+    if (!initialized_)
+    {
+        return;
+    }
     tx_push_bytes_(reinterpret_cast<const uint8_t *>(&c), 1);
     tx_try_start_();
 }
 
 void UartDriver::write(const char *data, uint16_t size)
 {
+    if (!initialized_ || data == nullptr || size == 0)
+    {
+        return;
+    }
     tx_push_bytes_(reinterpret_cast<const uint8_t *>(data), size);
     tx_try_start_();
     flush_tx();
@@ -344,6 +377,11 @@ HAL_StatusTypeDef UartDriver::getc(char *c)
 HAL_StatusTypeDef UartDriver::read(char *data, uint16_t size)
 {
     return read_dma_(reinterpret_cast<uint8_t *>(data), size, 250000U);
+}
+
+HAL_StatusTypeDef UartDriver::read(char *data, uint16_t size, uint32_t timeout_us)
+{
+    return read_dma_(reinterpret_cast<uint8_t *>(data), size, timeout_us);
 }
 
 }  // namespace drivers::uart

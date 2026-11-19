@@ -1,6 +1,24 @@
 #pragma once
 
 #include "drivers/can/can.hpp"
+#include "drivers/driver_manager.hpp"
+
+/** Latest CAN-reported motor supply voltage, in volts. */
+extern "C" volatile float can_battery_voltage;
+/** Latest CAN telemetry from each drive; temperature values are in degrees Celsius. */
+extern "C" volatile float can_drive_voltage[4];
+extern "C" volatile float can_drive_velocity[4];
+extern "C" volatile float can_drive_position[4];
+extern "C" volatile float can_driver_pcb_temperature[4];
+extern "C" volatile float can_motor_temperature[4];
+extern "C" volatile uint32_t bldc_monitor_target_tx_attempts;
+extern "C" volatile uint32_t bldc_monitor_target_tx_successes;
+extern "C" volatile uint32_t bldc_monitor_target_tx_failures;
+extern "C" volatile float bldc_monitor_target_velocity[4];
+/** Bit mask of drives that have returned encoder feedback; bits 0-3 map to drives 1-4. */
+extern "C" volatile uint8_t bldc_monitor_feedback_mask;
+/** Per-drive encoder feedback status: 1 after first feedback, otherwise 0. */
+extern "C" volatile uint8_t bldc_monitor_drive_feedback[4];
 
 namespace devices::bldc
 {
@@ -89,6 +107,8 @@ enum CANFuocoRegisterMap
     // Virtual registers
     MULTI_TARGET_W = 96,
     SHAFT_FEEDBACK_R = 102,
+    PCB_TEMPERATURE_R = 103,
+    MOTOR_TEMPERATURE_R = 104,
     SAVE_TO_EEPROM_W = 127,
 };
 
@@ -111,6 +131,7 @@ struct BldcsConfig
     float drive_vel_i;
     float drive_vel_limit;
     float drive_vel_limit_idle;
+    drivers::GPIO_OUT feedback_leds[4];
 };
 
 class BldcsDriver : public BldcsConfig
@@ -119,25 +140,35 @@ class BldcsDriver : public BldcsConfig
     BldcsVec current;
     BldcsVec current_vel;
     BldcsVec current_pos;
+    uint8_t position_feedback_mask = 0;
 
     BldcsVec target_vel;
+    uint8_t received_feedback_mask = 0;
+    uint8_t settings_broadcast_step = 0;
 
   public:
     BldcsDriver(BldcsConfig config) : BldcsConfig(config) {}
 
-    void init();
+    /** Initializes monitoring and returns mask of drives with encoder feedback. */
+    uint8_t init();
 
     void setDriveSettings(bool is_verbose = false, bool is_idle = false);
+    bool setMonitorSettings();
+    void broadcastNextSetting(bool is_idle);
 
     void setDriveVel(BldcsVec vel);
     void getDriveVel(BldcsVec *vel);
+    /** Gets shaft positions after fresh feedback from all four drives. */
+    bool getDrivePosition(BldcsVec *position, uint8_t *received_mask);
+    void pollFeedback();
+    bool getFeedback(BldcsVec *velocity, BldcsVec *angle, uint8_t *received_mask);
 
     void setDribblerVel(float vel);
     void getDribblerVel(float *vel);
 
     void setDriveRegisterFloat(uint8_t register_addr, float value);
 
-    void motorWrite(uint8_t motor_addr, uint8_t register_addr, uint8_t *data, uint8_t len);
+    bool motorWrite(uint8_t motor_addr, uint8_t register_addr, const uint8_t *data, uint8_t len);
 };
 
 }  // namespace devices::bldc

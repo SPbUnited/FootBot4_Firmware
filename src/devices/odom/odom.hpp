@@ -21,6 +21,8 @@ class Odometer : public OdometerConfig
     void init();
 
     void update(devices::chassis::StateVector vel);
+    /** Integrates a local displacement using IMU heading in radians. */
+    void updateLocalDelta(devices::chassis::StateVector delta, float heading);
     void getState(devices::chassis::StateVector *vel);
 
     devices::chassis::StateVector rotate(devices::chassis::StateVector vec, float angle);

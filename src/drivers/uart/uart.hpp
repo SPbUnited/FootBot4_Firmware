@@ -11,7 +11,8 @@
 namespace drivers::uart
 {
 
-/** STM32F429: UART4 RX DMA1 Stream2 Ch4, TX Stream4 Ch4; USART1 RX DMA2 Stream5 Ch4, TX Stream7 Ch4. */
+/** STM32F429: UART4 RX DMA1 Stream2 Ch4, TX Stream4 Ch4; USART1 RX DMA2 Stream5 Ch4, TX Stream7
+ * Ch4. */
 struct UartConfig
 {
     USART_TypeDef *instance;
@@ -61,6 +62,8 @@ class UartDriver : public UartConfig
     volatile uint32_t tx_tail_{0};
     uint8_t tx_dma_chunk_[kTxDmaChunk]{};
     volatile bool tx_dma_busy_{false};
+    bool msp_init_ok_{true};
+    bool initialized_{false};
 
     void tx_try_start_();
     void tx_push_bytes_(const uint8_t *data, uint16_t size);
@@ -71,7 +74,8 @@ class UartDriver : public UartConfig
   public:
     explicit UartDriver(UartConfig config) : UartConfig(config) {}
 
-    void init();
+    /** Configures UART and DMA RX; returns false if either setup fails. */
+    bool init();
 
     void hal_msp_init();
 
@@ -88,6 +92,8 @@ class UartDriver : public UartConfig
 
     HAL_StatusTypeDef getc(char *c);
     HAL_StatusTypeDef read(char *data, uint16_t size);
+    /** Reads a fixed byte count with a microsecond timeout. */
+    HAL_StatusTypeDef read(char *data, uint16_t size, uint32_t timeout_us);
 
     void hal_tx_cplt(UART_HandleTypeDef *huart);
     void hal_error(UART_HandleTypeDef *huart);

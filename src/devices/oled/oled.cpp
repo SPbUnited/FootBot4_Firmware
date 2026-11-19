@@ -14,15 +14,12 @@ OledDriver::OledDriver(oled_lib::OledConfig cfg, I2C_HandleTypeDef* hi2c)
 {
 }
 
-void OledDriver::init()
+bool OledDriver::init()
 {
     if (display.begin(oled_lib::OledConfig(*this)) != oled_lib::OledResult::Ok)
     {
-        while (1)
-        {
-            kerror("OLED init error: %d %s\n", display.getLastResult(), display.getLastError());
-            HAL_Delay(1000);
-        }
+        kerror("OLED init error: %d %s\n", display.getLastResult(), display.getLastError());
+        return false;
     }
     kinfo("OLED init ok\n");
     __HAL_RCC_DMA1_CLK_ENABLE();
@@ -66,6 +63,8 @@ void OledDriver::init()
         if (display.flush() != oled_lib::OledResult::Ok)
             break;
     }
+    
+    return true;
 }
 
 bool OledDriver::ready()
