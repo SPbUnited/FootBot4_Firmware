@@ -34,7 +34,7 @@ bool OledDriver::init()
     dma.Init.Mode = DMA_NORMAL;
     dma.Init.Priority = DMA_PRIORITY_LOW;
     dma.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-    if (HAL_DMA_Init(&dma) != HAL_OK) { kerror("OLED DMA init failed"); return; }
+    if (HAL_DMA_Init(&dma) != HAL_OK) { kerror("OLED DMA init failed"); return false; }
     __HAL_LINKDMA(bus_, hdmatx, dma);
     HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);

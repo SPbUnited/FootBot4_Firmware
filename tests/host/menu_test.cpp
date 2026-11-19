@@ -59,5 +59,17 @@ int main() {
     assert(m.event(Event::Select, 0, 0) == Effect::None && !m.locked());
     m.event(Event::Select, 0, 0); m.event(Event::Down, 0, 0);
     assert(m.event(Event::Select, 0, 0) == Effect::Reboot);
+    m.event(Event::Back, 0, 0); // System
+    m.event(Event::Down, 0, 0);
+    m.event(Event::Down, 0, 0);
+    m.event(Event::Select, 0, 0);
+    assert(m.page == Page::BootPage && m.selected == 0 && !m.locked());
+    m.event(Event::Up, 0, 0); assert(m.selected == 4);
+    for (int i = 0; i < 5; ++i) {
+        m.event(Event::Down, 0, 0);
+        assert(m.page == Page::BootPage && m.selected == i);
+    }
+    m.event(Event::Back, 0, 0);
+    assert(m.page == Page::System && m.selected == 2);
     std::puts("menu/button tests passed");
 }

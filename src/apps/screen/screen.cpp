@@ -34,12 +34,157 @@ void list(Frame &f, const char *title, const char *const *items, int count) {
         std::snprintf(f.lines[row + 1], 22, "%s", items[menu.first + row]);
     f.highlight = menu.selected - menu.first + 1;
 }
+struct BootStatus
+{
+    BootState state = BootState::PENDING;
+    uint8_t detail = 0;
+};
+
+BootStatus boot_status[static_cast<size_t>(BootComponent::COUNT)];
+uint8_t drive_count()
+{
+    uint8_t count = 0;
+    uint8_t mask = boot_status[static_cast<size_t>(BootComponent::DRIVES)].detail;
+    for (uint8_t index = 0; index < 4; ++index)
+    {
+        count += (mask >> index) & 1U;
+    }
+    return count;
+}
+
+void format_missing_drive_ids(uint8_t feedback_mask, char output[24])
+{
+    size_t length = 0;
+    const char prefix[] = "MISS IDs:";
+    for (size_t index = 0; index < sizeof(prefix) - 1; ++index)
+    {
+        output[length++] = prefix[index];
+    }
+
+    bool first = true;
+    for (uint8_t index = 0; index < 4; ++index)
+    {
+        if ((feedback_mask & (1U << index)) != 0)
+        {
+            continue;
+        }
+        if (!first)
+        {
+            output[length++] = ',';
+        }
+        output[length++] = 'M';
+        output[length++] = static_cast<char>('1' + index);
+        first = false;
+    }
+    output[length] = '\0';
+}
+
+const char *state_text(BootComponent component)
+{
+    switch (boot_status[static_cast<size_t>(component)].state)
+    {
+        case BootState::OK:
+            return "OK";
+        case BootState::READY:
+            return "READY";
+        case BootState::WARNING:
+            return "WARN";
+        case BootState::FAILED:
+            return "FAIL";
+        default:
+            return "WAIT";
+    }
+}
+
+uint8_t warning_count()
+{
+    uint8_t warnings = 0;
+    for (const BootStatus &status : boot_status)
+    {
+        if (status.state == BootState::WARNING || status.state == BootState::FAILED ||
+            status.state == BootState::PENDING)
+        {
+            warnings++;
+        }
+    }
+    return warnings;
+}
+
+void render_boot_page(Frame &frame, int page)
+{
+    if (page == 0)
+    {
+        std::snprintf(frame.lines[0], sizeof(frame.lines[0]), "BOOT 1/5 WARN:%u", warning_count());
+        std::snprintf(frame.lines[1], sizeof(frame.lines[1]), "DRIVES %u/4 IMU %s", drive_count(), state_text(BootComponent::IMU));
+        std::snprintf(frame.lines[2], sizeof(frame.lines[2]), "OLED %s NRF %s", state_text(BootComponent::OLED),
+                       state_text(BootComponent::RADIO));
+        std::snprintf(frame.lines[3], sizeof(frame.lines[3]), "CAN %s  I2C %s", state_text(BootComponent::CAN),
+                       state_text(BootComponent::I2C));
+    }
+    else if (page == 1)
+    {
+        std::snprintf(frame.lines[0], sizeof(frame.lines[0]), "MCU PERIPHERALS 2/5");
+        std::snprintf(frame.lines[1], sizeof(frame.lines[1]), "U1 %s U4 %s", state_text(BootComponent::IMU_UART),
+                       state_text(BootComponent::LOG_UART));
+        std::snprintf(frame.lines[2], sizeof(frame.lines[2]), "SPI %s  ADC %s", state_text(BootComponent::SPI),
+                       state_text(BootComponent::ANALOG_INPUT));
+        std::snprintf(frame.lines[3], sizeof(frame.lines[3]), "GPIO %s", state_text(BootComponent::GPIO));
+    }
+    else if (page == 2)
+    {
+        std::snprintf(frame.lines[0], sizeof(frame.lines[0]), "ROBOT SUBSYSTEMS 3/5");
+        std::snprintf(frame.lines[1], sizeof(frame.lines[1]), "KICKER %s", state_text(BootComponent::KICKER));
+        std::snprintf(frame.lines[2], sizeof(frame.lines[2]), "CHASSIS %s", state_text(BootComponent::CHASSIS));
+        std::snprintf(frame.lines[3], sizeof(frame.lines[3]), "ODOMETER %s", state_text(BootComponent::ODOMETER));
+    }
+    else if (page == 3)
+    {
+        std::snprintf(frame.lines[0], sizeof(frame.lines[0]), "BUS ERRORS 4/5");
+        std::snprintf(frame.lines[1], sizeof(frame.lines[1]), "CAN %s %s", state_text(BootComponent::CAN),
+            boot_status[static_cast<size_t>(BootComponent::CAN)].state == BootState::FAILED
+                ? "HAL/filter/RX"
+                : "");
+        std::snprintf(frame.lines[2], sizeof(frame.lines[2]), "I2C %s %s", state_text(BootComponent::I2C),
+            boot_status[static_cast<size_t>(BootComponent::I2C)].state == BootState::FAILED
+                ? "HAL init"
+                : "");
+        std::snprintf(frame.lines[3], sizeof(frame.lines[3]), "SPI %s U1 %s", state_text(BootComponent::SPI),
+                       state_text(BootComponent::IMU_UART));
+    }
+    else
+    {
+        std::snprintf(frame.lines[0], sizeof(frame.lines[0]), "DEVICE ERRORS 5/5");
+        BootState imu_state = boot_status[static_cast<size_t>(BootComponent::IMU)].state;
+        uint8_t imu_detail = boot_status[static_cast<size_t>(BootComponent::IMU)].detail;
+        const char *imu_error = imu_detail == 1   ? "UART1 init"
+                                : imu_detail == 2 ? "no reply"
+                                : imu_detail == 3 ? "config/mode"
+                                                  : "";
+        std::snprintf(frame.lines[1], sizeof(frame.lines[1]), "IMU %s %.12s", state_text(BootComponent::IMU),
+                       imu_state == BootState::FAILED ? imu_error : "");
+        uint8_t mask = boot_status[static_cast<size_t>(BootComponent::DRIVES)].detail;
+        std::snprintf(frame.lines[2], sizeof(frame.lines[2]), "DRIVES %u/4 mask:%X", drive_count(), mask);
+        if (drive_count() < 4)
+        {
+            char missing_ids[24];
+            format_missing_drive_ids(mask, missing_ids);
+            std::snprintf(frame.lines[3], sizeof(frame.lines[3]), "%s", missing_ids);
+        }
+        else
+        {
+            std::snprintf(frame.lines[3], sizeof(frame.lines[3]), "NRF %s ADC %s", state_text(BootComponent::RADIO),
+                           state_text(BootComponent::ANALOG_INPUT));
+        }
+    }
+
+}
+
 Frame render(uint32_t now) {
     Frame f;
     auto &r = devices::robot_dev;
     static const char *root[] = {"TO PLAY MODE", "Telemetry", "Settings", "System", "Tests"};
     static const char *settings[] = {"Robot ID"};
-    static const char *system[] = {"Firmware version", "Reboot"};
+    static const char *system[] = {"Firmware version", "Reboot", "boot_page"};
     static const char *reboot[] = {"Cancel", "Reboot"};
     switch (menu.page) {
     case Page::Root: list(f, "MENU", root, 5); break;
@@ -76,7 +221,8 @@ Frame render(uint32_t now) {
         std::snprintf(f.lines[3], 22, "OK:set HOLD:back");
         break;
     case Page::Settings: list(f, "SETTINGS", settings, 1); break;
-    case Page::System: list(f, "SYSTEM", system, 2); break;
+    case Page::System: list(f, "SYSTEM", system, 3); break;
+    case Page::BootPage: render_boot_page(f, menu.selected); break;
     case Page::Reboot: list(f, "REBOOT?", reboot, 2); break;
     case Page::EditId:
         std::snprintf(f.lines[0], 22, "ROBOT ID");
@@ -254,4 +400,10 @@ void update() {
         previous = frame; validFrame = true;
     }
 }
+
+void set_boot_status(BootComponent component, BootState state, uint8_t detail)
+{
+    if (component < BootComponent::COUNT)
+        boot_status[static_cast<size_t>(component)] = {state, detail};
 }
+}  // namespace apps::screen

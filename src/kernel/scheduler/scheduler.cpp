@@ -20,8 +20,8 @@ enum Apps
     app_mainloop,
     app_setting_broadcaster,
     app_screen,
-    app_monitor_reset,
     app_shell,
+    app_monitor_reset,
     app_count,
 };
 
@@ -43,7 +43,6 @@ TaskDescriptor tasks[app_count] = {
      idle,
      {0},
      LOG_INFO},
-    {"screen", apps::screen::screen, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
@@ -103,8 +102,6 @@ void yield()
 
     for (size_t app = 0; app < app_count; app++)
     {
-        if (devices::robot_dev.play_mode == devices::robot::PLAY &&
-            (app == app_shell || app == app_monitor_reset)) continue;
         uint32_t elapsed_time = drivers::system_clock::micros() - tasks[app].last_exec;
         if (tasks[app].is_pending(elapsed_time, tasks[app].period))
         {
