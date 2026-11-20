@@ -126,6 +126,7 @@ struct Robot : RobotSettings, RobotConfig
     bool control_locked() const { return control_locked_; }
     void set_control_locked(bool locked);
     void clear_commands();
+    int test_direction_deg = -1;  // Negative while the direction test is stopped.
     uint8_t test_dribbler = 0;
     bool test_kicker = false;
     uint8_t test_voltage = 0;

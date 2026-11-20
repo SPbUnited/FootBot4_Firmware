@@ -1,5 +1,6 @@
 #include "devices/robot/robot.hpp"
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 int main() {
     using namespace devices;
@@ -33,6 +34,12 @@ int main() {
     r.dribbler_setting = 9; r.kicker_mode = robot::KICK_FRONT;
     r.act();
     assert(chassis.output.x == 0 && chassis.output.theta == 0 && bldc.dribbler == 0);
+    r.test_direction_deg = 90;
+    r.plan(); r.act();
+    assert(std::fabs(chassis.output.x) < 1e-5 && chassis.output.y == 1 && chassis.output.theta == 0);
+    r.test_direction_deg = -1;
+    r.plan(); r.act();
+    assert(chassis.output.y == 0);
     r.set_control_locked(false);
     assert(!r.control_locked() && nrf24_recv.discards == 2);
     r.plan(); r.act();

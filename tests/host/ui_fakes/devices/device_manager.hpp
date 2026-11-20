@@ -18,9 +18,15 @@ enum { DISABLED, KICK_UP, KICK_FRONT };
 struct RobotSettings { float unrelated = 12.5f; uint8_t robot_id = 7, signature = 123; };
 struct Robot : RobotSettings {
     float dribbler_setting_to_vel = 37.5f;
+    int test_direction_deg = -1;  // Negative while the direction test is stopped.
     uint8_t test_dribbler = 0, test_voltage = 0;
     bool test_kicker = false;
     int test_kick = DISABLED;
+    enum class SquareStatus { Idle, Running, Done, NoImu, NoFeedback, Timeout };
+    SquareStatus square_status = SquareStatus::Idle;
+    unsigned square_side = 0;
+    void start_square_test() { square_status = SquareStatus::Running; }
+    void stop_square_test(SquareStatus status) { square_status = status; }
     bool locked = false;
     int play_mode = PLAY;
     struct Vec { float x = 0, y = 0, theta = 0; } pos_global_current, vel_global_current;
