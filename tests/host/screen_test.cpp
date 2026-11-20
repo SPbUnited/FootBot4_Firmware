@@ -87,7 +87,7 @@ int main() {
     advance(1000); assert(oled_drv.frames == frames);
     click(BUTTON_SELECT, true); assert(oled_drv.frames > frames);
     click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // Tests
-    assert(rows[0] == "TESTS 1/2" && robot_dev.locked);
+    assert(rows[0] == "TESTS 1/4" && robot_dev.locked);
     click(BUTTON_SELECT); click(BUTTON_SELECT); // speed editor
     click(BUTTON_ADDR_UP);
     assert(robot_dev.test_dribbler == 0);
@@ -106,6 +106,14 @@ int main() {
     click(BUTTON_SELECT, true);
     assert(!robot_dev.test_kicker && robot_dev.test_voltage == 0 &&
            robot_dev.test_kick == robot::DISABLED);
+    click(BUTTON_ADDR_DOWN); click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // Direction
+    assert(robot_dev.test_direction_deg == -1);
+    click(BUTTON_SELECT); click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // 0 -> 359 degrees
+    click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT);
+    assert(robot_dev.test_direction_deg == 359);
+    click(BUTTON_SELECT); assert(robot_dev.test_direction_deg == -1);
+    click(BUTTON_SELECT); click(BUTTON_SELECT, true);
+    assert(robot_dev.test_direction_deg == -1 && rows[0] == "TESTS 4/4");
     click(BUTTON_SELECT, true); assert(!robot_dev.locked);
     for (int i = 0; i < 4; ++i) click(BUTTON_ADDR_UP);
     assert(rows[0] == "MENU 1/5" && rows[1] == "TO PLAY MODE");

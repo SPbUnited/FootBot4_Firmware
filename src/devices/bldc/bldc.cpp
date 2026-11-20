@@ -159,9 +159,9 @@ void BldcsDriver::setDriveRegisterFloat(uint8_t register_addr, float value)
     motorWrite(0, register_addr, reinterpret_cast<const uint8_t *>(&value), 4);
 }
 
-void BldcsDriver::setDriveVel(BldcsVec vel)
+void BldcsDriver::setDriveVel(BldcsVec vel, bool direction_test)
 {
-    if (devices::robot_dev.control_locked()) vel = {{0, 0, 0, 0}};
+    if (devices::robot_dev.control_locked() && !direction_test) vel = {{0, 0, 0, 0}};
     uint8_t payload[8] = {0};
 
     for (size_t i = 0; i < 4; i++)
