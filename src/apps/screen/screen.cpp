@@ -189,8 +189,8 @@ Frame render(uint32_t now) {
     switch (menu.page) {
     case Page::Root: list(f, "MENU", root, 5); break;
     case Page::Tests: {
-        const char *items[] = {"Dribbler", "Kicker", "Square"};
-        list(f, "TESTS", items, 3);
+        const char *items[] = {"Dribbler", "Kicker", "Square", "Direction"};
+        list(f, "TESTS", items, 4);
         break;
     }
     case Page::Square: {
@@ -213,6 +213,18 @@ Frame render(uint32_t now) {
         std::snprintf(f.lines[3], 22, "HOLD:back");
         break;
     }
+    case Page::Direction: {
+        char angle[22];
+        std::snprintf(angle, sizeof(angle), "Set angle: %d deg", int(menu.direction));
+        const char *items[] = {angle, menu.driving ? "Stop motors" : "Start motors"};
+        list(f, "DIRECTION 10%", items, 2);
+        break;
+    }
+    case Page::Angle:
+        std::snprintf(f.lines[0], 22, "DIRECTION ANGLE");
+        std::snprintf(f.lines[1], 22, "Angle: %d deg", int(menu.draftAngle));
+        std::snprintf(f.lines[3], 22, "OK:set HOLD:back");
+        break;
     case Page::Dribbler: {
         char speed[22], value[16];
         number(value, sizeof(value), menu.speed * r.dribbler_setting_to_vel, 9, 1);
@@ -384,6 +396,7 @@ void update() {
     const auto previousVoltage = menu.voltage;
     const bool wasSquare = menu.page == Page::Square;
     Effect effect = menu.event(e, robot.robot_id, now);
+    robot.test_direction_deg = menu.driving ? menu.direction : -1;
     robot.test_dribbler = menu.spinning ? menu.speed : 0;
     robot.test_kicker = menu.kickerPage();
     robot.test_voltage = menu.voltage;

@@ -156,7 +156,7 @@ class BldcsDriver : public BldcsConfig
     bool setMonitorSettings();
     void broadcastNextSetting(bool is_idle);
 
-    void setDriveVel(BldcsVec vel);
+    void setDriveVel(BldcsVec vel, bool direction_test = false);
     void getDriveVel(BldcsVec *vel);
     /** Gets shaft positions after fresh feedback from all four drives. */
     bool getDrivePosition(BldcsVec *position, uint8_t *received_mask);

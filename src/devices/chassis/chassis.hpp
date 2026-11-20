@@ -37,7 +37,7 @@ class Chassis : public ChassisConfig
     Chassis(ChassisConfig config);
 
     void init();
-    void setVel(StateVector vel);
+    void setVel(StateVector vel, bool direction_test = false);
     void getVel(StateVector *vel);
     void getVel(StateVector *vel, bldc::BldcsVec wheel_vels);
     /** Converts fresh wheel encoder positions into one local chassis displacement. */

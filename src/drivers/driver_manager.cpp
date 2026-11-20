@@ -108,9 +108,9 @@ can::CanConfig can1_config = {
     .rxPort = GPIOD,
     .rxAlternate = GPIO_AF9_CAN1,
     // 250 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
-    // .prescaler = 12,
+    .prescaler = 12,
     // 500 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
-    .prescaler = 6,
+    // .prescaler = 6,
     // 1000 кбит/с при PCLK1=45 МГц; sample point = (1 + 12) / 15 = 86.7%.
     // .prescaler = 3,
     .mode = CAN_MODE_NORMAL,

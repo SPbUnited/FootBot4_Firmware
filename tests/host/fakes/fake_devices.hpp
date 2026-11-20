@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#define kinfo(...) ((void)0)
+inline uint32_t HAL_GetTick() { return 0; }
 namespace drivers {
 namespace system_clock { inline uint32_t micros() { return 0; } }
 enum { BUTTON_TURN_OFF };
@@ -24,17 +26,19 @@ namespace chassis {
 struct StateVector { float x, y, theta; };
 struct Chassis {
     StateVector output{};
-    void setVel(StateVector v) { output = v; }
+    void setVel(StateVector v, bool = false) { output = v; }
+    bool getPositionDelta(StateVector *) { return false; }
     void getVel(StateVector *v) { *v = output; }
 };
 }
 namespace imu {
-struct BNO055 { struct { float yaw = 0; } euler; void get_angles() {} };
+struct BNO055 { struct { float yaw = 0; } euler; bool get_angles() { return true; } };
 }
 namespace odom {
 struct Odometer {
     chassis::StateVector state{};
     chassis::StateVector rotate(chassis::StateVector v, float) { return v; }
+    void updateLocalDelta(chassis::StateVector, float) {}
     void update(chassis::StateVector) {}
     void thetaAntiWindup() {}
     void getState(chassis::StateVector *v) { *v = state; }

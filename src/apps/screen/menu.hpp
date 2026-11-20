@@ -25,17 +25,19 @@ struct Button {
         return Event::None;
     }
 };
-enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, BootPage, Version, Reboot, Tests, Square, Dribbler, Speed, Kicker, Voltage };
+enum class Page { Home, Root, Telemetry, Settings, EditId, Saved, System, BootPage, Version, Reboot, Tests, Square, Dribbler, Speed, Kicker, Voltage, Direction, Angle };
 enum class Effect { None, SaveId, Reboot, ToPlay, Kick, StartSquare };
 struct Menu {
     Page page = Page::Home;
     int selected = 0, first = 0, telemetry = 0, home = 0;
     uint8_t editId = 0;
     uint8_t speed = 0, voltage = 0, draft = 0;
+    uint16_t direction = 0, draftAngle = 0;
+    bool driving = false;
     bool spinning = false, chip = false;
     uint32_t savedAt = 0;
     bool locked() const { return page == Page::Settings || page == Page::EditId || page == Page::Saved || page == Page::Reboot || page == Page::Tests ||
-        page == Page::Square || page == Page::Dribbler || page == Page::Speed || kickerPage(); }
+        page == Page::Direction || page == Page::Angle || page == Page::Square || page == Page::Dribbler || page == Page::Speed || kickerPage(); }
     bool kickerPage() const { return page == Page::Kicker || page == Page::Voltage; }
     void go(Page next, int selection = 0) { page = next; selected = selection; first = 0; }
     void tick(uint32_t now) { if (page == Page::Saved && uint32_t(now - savedAt) >= 800) go(Page::Settings); }
@@ -52,6 +54,8 @@ struct Menu {
             case Page::BootPage: go(Page::System, 2); break;
             case Page::Version: case Page::Reboot: go(Page::System); break;
             case Page::Tests: go(Page::Root, 4); first = 2; break;
+            case Page::Direction: driving = false; go(Page::Tests, 3); first = 1; break;
+            case Page::Angle: go(Page::Direction); break;
             case Page::Square: go(Page::Tests, 2); break;
             case Page::Dribbler: spinning = false; go(Page::Tests); break;
             case Page::Speed: go(Page::Dribbler); break;
@@ -66,13 +70,16 @@ struct Menu {
             else if (page == Page::BootPage) selected = (selected + delta + 5) % 5;
             else if (page == Page::Telemetry) telemetry = (telemetry + delta + 3) % 3;
             else if (page == Page::EditId) editId = (editId + (e == Event::Up ? 1 : 15)) % 16;
+            else if (page == Page::Angle) draftAngle = (draftAngle + (e == Event::Up ? 1 : 359)) % 360;
             else if (page == Page::Speed || page == Page::Voltage)
                 draft = (draft + (e == Event::Up ? 1 : 15)) % 16;
             else {
                 int count = 1;
                 switch (page) {
                 case Page::Root: count = 5; break;
-                case Page::System: case Page::Kicker: case Page::Tests: count = 3; break;
+                case Page::Tests: count = 4; break;
+                case Page::Direction: count = 2; break;
+                case Page::System: case Page::Kicker: count = 3; break;
                 case Page::Dribbler:
                 case Page::Reboot: count = 2; break;
                 default: break;
@@ -103,8 +110,13 @@ struct Menu {
                 if (selected == 1) return Effect::Reboot;
                 go(Page::System, 1); break;
             case Page::Tests:
-                go(selected == 0 ? Page::Dribbler : selected == 1 ? Page::Kicker : Page::Square);
+                go(selected == 0 ? Page::Dribbler : selected == 1 ? Page::Kicker : selected == 2 ? Page::Square : Page::Direction);
                 break;
+            case Page::Direction:
+                if (selected == 0) { draftAngle = direction; go(Page::Angle); }
+                else driving = !driving;
+                break;
+            case Page::Angle: direction = draftAngle; go(Page::Direction); break;
             case Page::Square: return Effect::StartSquare;
             case Page::Dribbler:
                 if (selected == 0) { draft = speed; go(Page::Speed); }

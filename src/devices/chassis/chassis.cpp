@@ -54,7 +54,7 @@ void Chassis::init()
     print_matrix(Jinv);
 }
 
-void Chassis::setVel(StateVector vel)
+void Chassis::setVel(StateVector vel, bool direction_test)
 {
     kdebug("setVel: %f %f %f", vel.x, vel.y, vel.theta);
 
@@ -70,7 +70,7 @@ void Chassis::setVel(StateVector vel)
         wheel_vels.vec[i] = w[i];
     }
 
-    bldcs->setDriveVel(wheel_vels);
+    bldcs->setDriveVel(wheel_vels, direction_test);
 }
 
 void Chassis::getVel(StateVector *vel)

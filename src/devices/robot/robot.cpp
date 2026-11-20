@@ -379,6 +379,7 @@ void Robot::set_control_locked(bool locked)
     if (control_locked_ == locked) return;
     // Keep outputs inhibited while clearing both software and hardware RX queues.
     control_locked_ = true;
+    test_direction_deg = -1;
     clear_commands();
     bldcs_drv.setDriveVel({{0, 0, 0, 0}});
     bldcs_drv.setDribblerVel(0);
@@ -389,7 +390,14 @@ void Robot::set_control_locked(bool locked)
 
 void Robot::act()
 {
-    if (control_locked_ && square_status != SquareStatus::Running) clear_commands();
+    const bool direction_test = control_locked_ && test_direction_deg >= 0;
+    if (direction_test)
+    {
+        const float angle = test_direction_deg * (static_cast<float>(M_PI) / 180.0f);
+        const float speed = 0.1f * max_linear_vel;
+        vel_local_output = {speed * cosf(angle), speed * sinf(angle), 0};
+    }
+    else if (control_locked_ && square_status != SquareStatus::Running) clear_commands();
     float vel_abs =
         sqrt(vel_local_output.x * vel_local_output.x + vel_local_output.y * vel_local_output.y);
     if (vel_abs > max_linear_vel)
@@ -418,7 +426,7 @@ void Robot::act()
             max_angular_accel) *
         Ts_s;
 
-    chassis_drv.setVel(vel_local_output_smoothed);
+    chassis_drv.setVel(vel_local_output_smoothed, direction_test);
 
     is_idle = drivers::system_clock::micros() - nonidle_timer > 10000000;
 
