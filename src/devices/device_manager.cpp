@@ -302,7 +302,7 @@ void init(drivers::InitStatus driver_status)
                                   apps::screen::BootState::READY);
     kinfo("Kicker initialized");
     // kinfo("AUAUSDUASDUDevices initialized");
-
+    radio_initialized = driver_status.spi && !nrf24_recv.init();
     IRQ_Init();
     nrf24_recv.recv_irq();
     kinfo("Devices initialized");
