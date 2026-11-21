@@ -34,6 +34,12 @@ int main() {
     r.dribbler_setting = 9; r.kicker_mode = robot::KICK_FRONT;
     r.act();
     assert(chassis.output.x == 0 && chassis.output.theta == 0 && bldc.dribbler == 0);
+    r.test_dribbler = 2;
+    r.act();
+    assert(bldc.dribbler == 2);
+    r.test_dribbler = 0;
+    r.act();
+    assert(bldc.dribbler == 0);
     r.test_direction_deg = 90;
     r.plan(); r.act();
     assert(std::fabs(chassis.output.x) < 1e-5 && chassis.output.y == 1 && chassis.output.theta == 0);
