@@ -380,6 +380,7 @@ void Robot::set_control_locked(bool locked)
     // Keep outputs inhibited while clearing both software and hardware RX queues.
     control_locked_ = true;
     test_direction_deg = -1;
+    test_dribbler = 0;
     clear_commands();
     bldcs_drv.setDriveVel({{0, 0, 0, 0}});
     bldcs_drv.setDribblerVel(0);
@@ -432,7 +433,8 @@ void Robot::act()
 
     if (dribbler_update)
     {
-        bldcs_drv.setDribblerVel(dribbler_setting * dribbler_setting_to_vel);
+        const auto setting = control_locked_ ? test_dribbler : dribbler_setting;
+        bldcs_drv.setDribblerVel(setting * dribbler_setting_to_vel);
         dribbler_update = false;
     }
 
