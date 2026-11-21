@@ -282,8 +282,11 @@ Frame render(uint32_t now) {
             field(f, 1, "Vx:", r.vel_global_current.x);
             field(f, 2, "Vy:", r.vel_global_current.y);
             field(f, 3, "W:", r.vel_global_current.theta);
-        } else if (view == 2) field(f, 1, "Voltage:", devices::kicker_drv.actual_voltage);
-        else {
+        } else if (view == 2) {
+            field(f, 1, "Voltage:", devices::kicker_drv.actual_voltage);
+            std::snprintf(f.lines[2], 22, "Ball deep: %s", devices::kicker_drv.read_deep() ? "YES" : "NO");
+            std::snprintf(f.lines[3], 22, "Ball front: %s", devices::kicker_drv.read_front() ? "YES" : "NO");
+        } else {
             field(f, 1, "X:", r.pos_global_current.x);
             field(f, 2, "Y:", r.pos_global_current.y);
             char angle[32], voltage[32];
