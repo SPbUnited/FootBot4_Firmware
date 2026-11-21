@@ -67,6 +67,11 @@ struct Oled {
 };
 inline Oled oled_drv;
 namespace kicker { inline double voltageForLevel(uint8_t level) { return level ? 100 + (level - 1) * 230.0 / 14 : 0; } }
-struct Kicker { double actual_voltage = 120.5; void stop() {} };
+struct Kicker {
+    double actual_voltage = 120.5;
+    bool read_deep() { return false; }
+    bool read_front() { return false; }
+    void stop() {}
+};
 inline Kicker kicker_drv;
 }
