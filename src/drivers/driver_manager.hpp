@@ -22,6 +22,7 @@ struct InitStatus
     bool i2c;
     bool can;
     bool spi;
+    bool spi4;
     bool adc;
 };
 
@@ -33,6 +34,7 @@ extern i2c::I2cDriver i2c2;
 extern buzzer::Buzzer buzzer_drv;
 extern can::CanDriver can_drv;
 extern spi::SPIDriver spi2;
+extern spi::SPIDriver spi4;
 
 enum GPIO_OUT
 {

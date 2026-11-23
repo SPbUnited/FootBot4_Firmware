@@ -116,6 +116,11 @@ nrf24::Nrf24RecvConfig nrf24_recv_config = {
 
 nrf24::Nrf24Recv nrf24_recv(nrf24_recv_config);
 
+nrf24::Nrf24FeedbackConfig nrf_feedback_config = {
+    .spi_instance = drivers::spi4,
+};
+nrf24::Nrf24Feedback nrf_feedback(nrf_feedback_config);
+
 void init(drivers::InitStatus driver_status)
 {
     shell::my_shellInit();
@@ -273,6 +278,8 @@ void init(drivers::InitStatus driver_status)
     // kinfo("AUAUSDUASDUDevices initialized");
     radio_initialized = driver_status.spi && !nrf24_recv.init();
     nrf24_recv.recv_irq();
+    if (driver_status.spi4)
+        nrf_feedback.init();
     kinfo("Devices initialized");
     apps::screen::init();
 }

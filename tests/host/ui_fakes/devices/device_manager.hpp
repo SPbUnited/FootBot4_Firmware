@@ -12,6 +12,11 @@ struct Pin { bool value = false; bool read() const { return value; } };
 inline Pin in_pins[3];
 }
 namespace devices {
+struct Feedback {
+    struct Stats { bool ready; uint32_t completed, lastCompletedMs; };
+    Stats txStats() const { return {}; }
+};
+inline Feedback nrf_feedback;
 namespace robot {
 enum { PLAY, TEST };
 enum { DISABLED, KICK_UP, KICK_FRONT };

@@ -8,6 +8,7 @@
 #include "kicker/kicker.hpp"
 #include "logger/logger.hpp"
 #include "nrf24/nrf24.hpp"
+#include "nrf24/nrf24_feedback.hpp"
 #include "nrfm_decoder/nrfm_decoder.hpp"
 #include "odom/odom.hpp"
 #include "oled/oled.hpp"
@@ -23,6 +24,7 @@ extern chassis::Chassis chassis_drv;
 extern odom::Odometer odom_dev;
 extern robot::Robot robot_dev;
 extern nrf24::Nrf24Recv nrf24_recv;
+extern nrf24::Nrf24Feedback nrf_feedback;
 extern kicker::Kicker kicker_drv;
 extern imu::BNO055 bno055_drv;
 extern nrfm_decoder::NRFMDecoder nrfm_decoder_dev;

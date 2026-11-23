@@ -1,4 +1,3 @@
-#include "apps/nrf_feedback/nrf_feedback.hpp"
 #include "screen.hpp"
 #include "devices/oled/robot_icon.hpp"
 #include "devices/oled/wave.hpp"
@@ -277,7 +276,7 @@ Frame render(uint32_t now) {
     case Page::Telemetry: {
         int view = menu.page == Page::Home ? menu.home : menu.telemetry;
         if (view == 3) {
-            const auto &tx = apps::nrf_feedback::txStats();
+            const auto &tx = devices::nrf_feedback.txStats();
             std::snprintf(f.lines[0], 22, "Feedback TX");
             std::snprintf(f.lines[1], 22, "Radio: %s", tx.ready ? "READY" : "OFFLINE");
             std::snprintf(f.lines[2], 22, "Sent: %lu", static_cast<unsigned long>(tx.completed));
