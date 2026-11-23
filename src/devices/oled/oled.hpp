@@ -12,7 +12,7 @@ class OledDriver : public oled_lib::OledConfig
 
     OledDriver(oled_lib::OledConfig cfg, I2C_HandleTypeDef *hi2c);
 
-    void init();
+    bool init();
     bool ready();
     bool submit();
     void transferComplete(bool success);
