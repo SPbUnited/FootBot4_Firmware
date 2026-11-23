@@ -68,7 +68,7 @@ struct Menu {
             int delta = e == Event::Up ? -1 : 1;
             if (page == Page::Home) home = 1 - home;
             else if (page == Page::BootPage) selected = (selected + delta + 5) % 5;
-            else if (page == Page::Telemetry) telemetry = (telemetry + delta + 3) % 3;
+            else if (page == Page::Telemetry) telemetry = (telemetry + delta + 4) % 4;
             else if (page == Page::EditId) editId = (editId + (e == Event::Up ? 1 : 15)) % 16;
             else if (page == Page::Angle) draftAngle = (draftAngle + (e == Event::Up ? 1 : 359)) % 360;
             else if (page == Page::Speed || page == Page::Voltage)

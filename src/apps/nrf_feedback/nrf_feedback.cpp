@@ -25,7 +25,7 @@ drivers::spi::SPIDriver spi({
 
 constexpr uint8_t statusReg = 0x07, txDone = 0x20, maxRetries = 0x10;
 constexpr uint8_t flushTx = 0xE1, writePayload = 0xA0;
-bool ready = false;
+TxStats stats{};
 bool sending = false;
 
 bool writeReg(uint8_t reg, uint8_t value)
@@ -33,6 +33,8 @@ bool writeReg(uint8_t reg, uint8_t value)
     return spi.rawWrite(reg, &value, 1) == 0;
 }
 }
+
+const TxStats &txStats() { return stats; }
 
 void init()
 {
@@ -50,7 +52,7 @@ void init()
 
     uint8_t address[] = {0xAB, 0xAD, 0xAF};
     uint8_t config = 0;
-    ready = writeReg(0x00, 0x0E) &&  // Powered PTX, two-byte CRC
+    stats.ready = writeReg(0x00, 0x0E) &&  // Powered PTX, two-byte CRC
             writeReg(0x01, 0) &&     // No auto-ack
             writeReg(0x03, 1) &&     // Three-byte address
             writeReg(0x05, 76) &&
@@ -58,13 +60,13 @@ void init()
             spi.rawWrite(0x10, address, sizeof(address)) == 0 &&
             spi.rawWrite(flushTx, nullptr, 0) == 0 && writeReg(statusReg, 0x70) &&
             spi.rawRead(0x00, &config, 1) == 0 && config == 0x0E;
-    if (ready)
+    if (stats.ready)
         HAL_Delay(2);  // Power-up to standby before the first CE pulse.
 }
 
 void send()
 {
-    if (!ready)
+    if (!stats.ready)
         return;
     if (sending)
     {
@@ -75,6 +77,11 @@ void send()
             return;
         if (!writeReg(statusReg, txDone | maxRetries))
             return;
+        if ((status & txDone) && !(status & maxRetries))
+        {
+            ++stats.completed;
+            stats.lastCompletedMs = HAL_GetTick();
+        }
         sending = false;
     }
 
