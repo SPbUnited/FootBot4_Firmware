@@ -19,14 +19,16 @@ struct Nrf24FeedbackConfig
 
 class Nrf24Feedback : private Nrf24FeedbackConfig
 {
+    bool init();
     TxStats stats{};
     bool sending = false;
+    int readReg(uint8_t reg, uint8_t *value) { return spi_instance.rawRead(reg, value, 1); }
     bool writeReg(uint8_t reg, uint8_t value);
 
   public:
     explicit Nrf24Feedback(Nrf24FeedbackConfig &config) : Nrf24FeedbackConfig(config) {}
     const TxStats &txStats() const { return stats; }
-    void init();
+    void start();
     void send();
 };
 }
