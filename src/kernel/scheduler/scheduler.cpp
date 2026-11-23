@@ -1,6 +1,7 @@
 #include "scheduler.hpp"
 
 #include "apps/mainloop/mainloop.hpp"
+#include "apps/nrf_feedback/nrf_feedback.hpp"
 #include "apps/screen/screen.hpp"
 #include "apps/setting_broadcaster/setting_broadcaster.hpp"
 #include "devices/device_manager.hpp"
@@ -18,6 +19,7 @@ static bool is_init = false;
 enum Apps
 {
     app_mainloop,
+    app_nrf_feedback,
     app_setting_broadcaster,
     app_screen,
     app_shell,
@@ -43,6 +45,7 @@ TaskDescriptor tasks[app_count] = {
      idle,
      {0},
      LOG_INFO},
+    {"nrf_feedback", apps::nrf_feedback::send, 0, TPS(10), ksperiodic, idle, {0}, LOG_NONE},
     {"setting_broadcaster",
      apps::setting_broadcaster::broadcast_settings,
      0,
