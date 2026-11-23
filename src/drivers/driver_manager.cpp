@@ -167,6 +167,26 @@ system_clock::SystemClock system_clock_drv;
 
 // nrf24::Nrf24Recv nrf24_recv(nrf24_config);
 spi::SPIDriver spi2(nrf24_recv_config);
+
+spi::SPIConfig feedback_spi_config = {
+    .instance = SPI4,
+    .clk_enable = [] {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOD_CLK_ENABLE();
+        __HAL_RCC_GPIOE_CLK_ENABLE();
+        __HAL_RCC_SPI4_CLK_ENABLE();
+    },
+    .sckPin = GPIO_PIN_2, .sckPort = GPIOE,
+    .sckAlternate = GPIO_AF5_SPI4,
+    .misoPin = GPIO_PIN_5, .misoPort = GPIOE,
+    .misoAlternate = GPIO_AF5_SPI4,
+    .mosiPin = GPIO_PIN_6, .mosiPort = GPIOE,
+    .mosiAlternate = GPIO_AF5_SPI4,
+    .cePin = GPIO_PIN_8, .cePort = GPIOD,
+    .csPin = GPIO_PIN_12, .csPort = GPIOB,
+    .irqPin = GPIO_PIN_15, .irqPort = GPIOB,  // Завершение TX проверяем по STATUS.
+};
+spi::SPIDriver spi4(feedback_spi_config);
 gpio::GPIOOutputDriver out_pins[OUT_COUNT];
 gpio::GPIOInputDriver in_pins[INPUT_COUNT];
 // gpio::GPIOAnalogInputDriver analog_in_pins[1];
@@ -247,6 +267,7 @@ InitStatus init()
 
     status.can = drivers::can_drv.init();
     status.spi = drivers::spi2.init();
+    status.spi4 = drivers::spi4.init();
     return status;
 }
 
