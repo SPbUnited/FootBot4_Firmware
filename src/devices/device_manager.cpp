@@ -279,7 +279,7 @@ void init(drivers::InitStatus driver_status)
     radio_initialized = driver_status.spi && !nrf24_recv.init();
     nrf24_recv.recv_irq();
     if (driver_status.spi4)
-        nrf_feedback.init();
+        nrf_feedback.start();
     kinfo("Devices initialized");
     apps::screen::init();
 }
