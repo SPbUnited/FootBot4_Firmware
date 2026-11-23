@@ -29,6 +29,5 @@ extern nrfm_decoder::NRFMDecoder nrfm_decoder_dev;
 
 void init(drivers::InitStatus driver_status);
 
-extern "C" void EXTI15_10_IRQHandler(void);
 
 }  // namespace devices

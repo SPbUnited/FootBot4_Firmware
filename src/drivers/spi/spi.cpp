@@ -92,18 +92,18 @@ int SPIDriver::rawWrite(uint8_t reg_addr, uint8_t *value, uint8_t len)
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_RESET);
 
     // Transmit data
-    HAL_SPI_TransmitReceive(&handle, buffer_tx, buffer_rx, len + 1, 100);
+    auto status = HAL_SPI_TransmitReceive(&handle, buffer_tx, buffer_rx, len + 1, 100);
 
     // Deselect chip
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
 
-    return 0;
+    return status == HAL_OK ? 0 : -1;
 }
 
 int SPIDriver::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
 {
-    uint8_t buffer_tx[2] = {reg_addr, 0xFF};  // 0xFF is NOP command
-    uint8_t buffer_rx[32] = {0};
+    uint8_t buffer_tx[65] = {reg_addr, 0xFF};  // 0xFF is NOP command
+    uint8_t buffer_rx[65] = {0};
 
     if (len > 64)
     {
@@ -114,7 +114,7 @@ int SPIDriver::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_RESET);
 
     // Send register address
-    HAL_SPI_TransmitReceive(&handle, buffer_tx, buffer_rx, len + 1, 100);
+    auto status = HAL_SPI_TransmitReceive(&handle, buffer_tx, buffer_rx, len + 1, 100);
 
     // Deselect chip
     HAL_GPIO_WritePin(csPort, csPin, GPIO_PIN_SET);
@@ -132,7 +132,7 @@ int SPIDriver::rawRead(uint8_t reg_addr, uint8_t *value, uint8_t len)
     //     value_p++;
     // }
 
-    return 0;
+    return status == HAL_OK ? 0 : -1;
 }
 
 void SPIDriver::setCe()
