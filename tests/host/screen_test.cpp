@@ -1,7 +1,11 @@
+#include "apps/nrf_feedback/nrf_feedback.hpp"
 #include "apps/screen/screen.hpp"
 #include "devices/device_manager.hpp"
 #include "kernel/kernel.hpp"
 #include <cstdio>
+namespace apps::nrf_feedback {
+const TxStats &txStats() { static const TxStats stats{}; return stats; }
+}
 using namespace apps::screen;
 void advance(uint32_t ms) { fakeTick += ms; update(); }
 void click(int pin, bool longPress = false) {

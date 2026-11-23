@@ -36,7 +36,7 @@ int main() {
     m.event(Event::Down, 7, 0);
     m.event(Event::Select, 7, 0); // telemetry
     assert(!m.locked() && m.page == Page::Telemetry);
-    m.event(Event::Up, 7, 0); assert(m.telemetry == 2);
+    m.event(Event::Up, 7, 0); assert(m.telemetry == 3);
     m.event(Event::Back, 7, 0);
     m.event(Event::Down, 7, 0); m.event(Event::Select, 7, 0);
     assert(m.locked() && m.page == Page::Settings);

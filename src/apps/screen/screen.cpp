@@ -1,3 +1,4 @@
+#include "apps/nrf_feedback/nrf_feedback.hpp"
 #include "screen.hpp"
 #include "devices/oled/robot_icon.hpp"
 #include "devices/oled/wave.hpp"
@@ -275,6 +276,18 @@ Frame render(uint32_t now) {
     case Page::Home:
     case Page::Telemetry: {
         int view = menu.page == Page::Home ? menu.home : menu.telemetry;
+        if (view == 3) {
+            const auto &tx = apps::nrf_feedback::txStats();
+            std::snprintf(f.lines[0], 22, "Feedback TX");
+            std::snprintf(f.lines[1], 22, "Radio: %s", tx.ready ? "READY" : "OFFLINE");
+            std::snprintf(f.lines[2], 22, "Sent: %lu", static_cast<unsigned long>(tx.completed));
+            if (tx.completed)
+                std::snprintf(f.lines[3], 22, "Last TX: %lus ago",
+                              static_cast<unsigned long>((now - tx.lastCompletedMs) / 1000));
+            else
+                std::snprintf(f.lines[3], 22, "Last TX: --");
+            break;
+        }
         std::snprintf(f.lines[0], 22, "ID:%02u %s %s", r.robot_id, r.play_mode == devices::robot::PLAY ? "PLAY" : "TEST", view == 1 ? "VEL" : view == 2 ? "KICK" : "POS");
         if (view == 1) {
             field(f, 1, "Vx:", r.vel_global_current.x);
