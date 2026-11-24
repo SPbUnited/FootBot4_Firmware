@@ -58,7 +58,7 @@ void Nrf24Recv::recv_irq()
         return;
     }
 
-    dts_led.toggle();
+    // dts_led.toggle();
 
     uint32_t timeout_nrf_timer_recv = 0;            // HAL_GetTick();
     rc = spi_instance.rawRead(0x60, &m_lenDbg, 1);  // 0x60 = R_RX_PL_WID command

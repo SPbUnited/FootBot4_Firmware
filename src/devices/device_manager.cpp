@@ -110,7 +110,7 @@ nrfm_decoder::NRFMDecoder nrfm_decoder_dev(nrfm_decoder_config);
 
 nrf24::Nrf24RecvConfig nrf24_recv_config = {
     .spi_instance = drivers::spi2,
-    .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
+    // .dts_led = drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1],
     .nrfm_decoder = nrfm_decoder_dev,
 };
 

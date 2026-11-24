@@ -188,6 +188,7 @@ void Nrf24Feedback::send()
         {
             ++stats.completed;
             stats.lastCompletedMs = HAL_GetTick();
+            drivers::out_pins[drivers::LED_DATA_TRANSFER_STATUS_1].toggle();
         }
         sending = false;
     }

@@ -14,7 +14,7 @@ namespace devices::nrf24
 struct Nrf24RecvConfig
 {
     drivers::spi::SPIDriver &spi_instance;
-    drivers::gpio::GPIOOutputDriver &dts_led;
+    // drivers::gpio::GPIOOutputDriver &dts_led;
     devices::nrfm_decoder::NRFMDecoder &nrfm_decoder;
 };
 
