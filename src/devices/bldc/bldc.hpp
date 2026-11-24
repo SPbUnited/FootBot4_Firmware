@@ -163,7 +163,7 @@ class BldcsDriver : public BldcsConfig
     void pollFeedback();
     bool getFeedback(BldcsVec *velocity, BldcsVec *angle, uint8_t *received_mask);
 
-    void setDribblerVel(float vel);
+    bool setDribblerVel(float vel);
     void getDribblerVel(float *vel);
 
     void setDriveRegisterFloat(uint8_t register_addr, float value);

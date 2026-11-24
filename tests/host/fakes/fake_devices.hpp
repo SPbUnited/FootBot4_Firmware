@@ -18,7 +18,7 @@ struct BldcsVec { float vec[4]; };
 struct BldcsDriver {
     float dribbler = 0;
     BldcsVec drive{};
-    void setDribblerVel(float v) { dribbler = v; }
+    bool setDribblerVel(float v) { dribbler = v; return true; }
     void setDriveVel(BldcsVec v) { drive = v; }
 };
 }

@@ -103,7 +103,8 @@ struct Robot : RobotSettings, RobotConfig
     KickerMode kicker_mode;
     uint8_t kicker_setting;
     uint8_t dribbler_setting;
-    bool dribbler_update;
+    bool dribbler_update = true;
+    uint8_t last_dribbler_setting = 0;
 
     uint32_t nonidle_timer;
     bool is_idle;

@@ -431,12 +431,13 @@ void Robot::act()
 
     is_idle = drivers::system_clock::micros() - nonidle_timer > 10000000;
 
-    if (dribbler_update)
-    {
-        const auto setting = control_locked_ ? test_dribbler : dribbler_setting;
-        bldcs_drv.setDribblerVel(setting * dribbler_setting_to_vel);
-        dribbler_update = false;
-    }
+    const auto setting = control_locked_ ? test_dribbler : dribbler_setting;
+    bldcs_drv.setDribblerVel(setting * dribbler_setting_to_vel);
+    // if (dribbler_update || setting != last_dribbler_setting)
+    // {
+    //     dribbler_update = !
+    //     if (!dribbler_update) last_dribbler_setting = setting;
+    // }
 
     kicker_drv.update();
 

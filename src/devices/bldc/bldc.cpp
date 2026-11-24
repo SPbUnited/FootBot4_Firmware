@@ -148,8 +148,8 @@ bool BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, const ui
         data = stopped;
         if (len > sizeof(stopped)) return false;
     }
-    uint32_t id = motor_addr << 8 | register_addr;
-    can->write(id, data, len);
+    const uint32_t id = (static_cast<uint32_t>(motor_addr & 0x0F) << 7) | (register_addr & 0x7F);
+    return can->write(id, data, len);
 }
 
 void BldcsDriver::setDriveRegisterFloat(uint8_t register_addr, float value)
@@ -277,7 +277,7 @@ bool BldcsDriver::getDrivePosition(BldcsVec *position, uint8_t *received_mask)
     return true;
 }
 
-void BldcsDriver::setDribblerVel(float vel)
+bool BldcsDriver::setDribblerVel(float vel)
 {
     kdebug("setDribblerVel: %f", vel);
 
@@ -287,7 +287,7 @@ void BldcsDriver::setDribblerVel(float vel)
         uint8_t buffer[4];
     } target_speed;
     target_speed.value = vel;
-    motorWrite(7, TARGET_RW, target_speed.buffer, 4);
+    return motorWrite(7, TARGET_RW, target_speed.buffer, 4);
 }
 
 void BldcsDriver::getDribblerVel(float *vel)
