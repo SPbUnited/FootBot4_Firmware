@@ -29,6 +29,8 @@ extern "C"
 
 namespace devices::bldc
 {
+constexpr uint32_t feedback_timeout_ms = 3000;
+constexpr uint32_t low_voltage_duration_ms = 20000;
 
 uint8_t BldcsDriver::init()
 {
@@ -204,6 +206,9 @@ void BldcsDriver::pollFeedback()
     uint8_t response_len;
     const uint32_t now = HAL_GetTick();
 
+    if (now - last_voltage_ms >= feedback_timeout_ms)
+        low_voltage_pending = false;
+
     for (uint8_t frames_read = 0;
          frames_read < 8 && can->read(&response_id, response, &response_len); frames_read++)
     {
@@ -218,9 +223,12 @@ void BldcsDriver::pollFeedback()
         {
             float voltage;
             std::memcpy(&voltage, response, sizeof(voltage));
-            // A stopped drivetrain can cause the battery voltage to rebound.
-            // Keep the cutoff active until restart.
-            if (voltage > 0.0f && voltage < 19.2f)
+            last_voltage_ms = now;
+            const bool below_threshold = voltage > 0.0f && voltage < 19.2f;
+            if (below_threshold && !low_voltage_pending)
+                low_voltage_since_ms = now;
+            low_voltage_pending = below_threshold;
+            if (low_voltage_pending && now - low_voltage_since_ms >= low_voltage_duration_ms)
                 low_battery = true;
             can_battery_voltage = voltage;
             can_drive_voltage[offset] = voltage;
@@ -268,7 +276,7 @@ void BldcsDriver::pollFeedback()
     bldc_monitor_feedback_mask = position_feedback_mask;
     for (uint8_t drive = 0; drive < 4; ++drive)
     {
-        if (now - last_feedback_ms[drive] >= 3000U)
+        if (now - last_feedback_ms[drive] >= feedback_timeout_ms)
             can_drive_connected[drive] = false;
         bldc_monitor_drive_feedback[drive] = (position_feedback_mask >> drive) & 1U;
     }

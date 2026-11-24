@@ -141,6 +141,9 @@ class BldcsDriver : public BldcsConfig
   private:
     bool wheels_stop_queued = false;
     bool dribbler_stop_queued = false;
+    bool low_voltage_pending = false;
+    uint32_t low_voltage_since_ms = 0;
+    uint32_t last_voltage_ms = 0;
     BldcsVec current;
     BldcsVec current_vel;
     BldcsVec current_pos;
