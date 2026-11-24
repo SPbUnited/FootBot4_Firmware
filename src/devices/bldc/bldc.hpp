@@ -5,6 +5,7 @@
 
 /** Latest CAN-reported motor supply voltage, in volts. */
 extern "C" volatile float can_battery_voltage;
+extern "C" volatile bool can_drive_connected[4];
 /** Latest CAN telemetry from each drive; temperature values are in degrees Celsius. */
 extern "C" volatile float can_drive_voltage[4];
 extern "C" volatile float can_drive_velocity[4];

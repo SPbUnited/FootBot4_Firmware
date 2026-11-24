@@ -10,12 +10,13 @@
 
 extern "C"
 {
+    volatile bool can_drive_connected[4] = {};
     volatile float can_battery_voltage = 0.0f;
     volatile float can_drive_voltage[4] = {};
     volatile float can_drive_velocity[4] = {};
     volatile float can_drive_position[4] = {};
-    volatile float can_driver_pcb_temperature[4] = {};
-    volatile float can_motor_temperature[4] = {};
+    volatile float can_driver_pcb_temperature[4] = {NAN, NAN, NAN, NAN};
+    volatile float can_motor_temperature[4] = {NAN, NAN, NAN, NAN};
     volatile uint32_t bldc_monitor_target_tx_attempts = 0;
     volatile uint32_t bldc_monitor_target_tx_successes = 0;
     volatile uint32_t bldc_monitor_target_tx_failures = 0;
@@ -193,6 +194,7 @@ void BldcsDriver::pollFeedback()
     uint32_t response_id;
     uint8_t response[8];
     uint8_t response_len;
+    uint8_t fresh_feedback_mask = 0;
 
     for (uint8_t frames_read = 0;
          frames_read < 8 && can->read(&response_id, response, &response_len); frames_read++)
@@ -203,7 +205,6 @@ void BldcsDriver::pollFeedback()
         {
             continue;
         }
-        drivers::out_pins[feedback_leds[motor_addr - 1]].soft_pwm(50, true);
         const uint8_t offset = motor_addr - 1;
         if (register_addr == SUPPLY_VOLTAGE_R && response_len == sizeof(float))
         {
@@ -236,10 +237,18 @@ void BldcsDriver::pollFeedback()
                 can_motor_temperature[offset] = temperature;
             }
         }
+        else
+        {
+            continue;
+        }
+        fresh_feedback_mask |= 1U << offset;
     }
     bldc_monitor_feedback_mask = position_feedback_mask;
     for (uint8_t drive = 0; drive < 4; ++drive)
     {
+        can_drive_connected[drive] = drivers::out_pins[feedback_leds[drive]].led_indicator(
+            can_motor_temperature[drive], can_driver_pcb_temperature[drive],
+            (fresh_feedback_mask & (1U << drive)) != 0);
         bldc_monitor_drive_feedback[drive] = (position_feedback_mask >> drive) & 1U;
     }
 }

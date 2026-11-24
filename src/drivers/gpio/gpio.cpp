@@ -32,6 +32,40 @@ void GPIOOutputDriver::toggle()
     HAL_GPIO_TogglePin(this->GPIOx, this->GPIO_Pin);
 }
 
+bool GPIOOutputDriver::led_indicator(float temperature_motor, float temperature_board, bool feedback)
+{
+    constexpr uint32_t feedback_timeout_ms = 3000;
+    constexpr uint32_t flash_ms = 100;
+    constexpr uint32_t cycle_ms = 5 * flash_ms + 1000;
+    constexpr float overheat_c = 80.0f;
+    const uint32_t now = HAL_GetTick();
+    if (feedback)
+    {
+        last_feedback_ms = now;
+        connected = true;
+    }
+    else if (now - last_feedback_ms >= feedback_timeout_ms)
+    {
+        connected = false;
+    }
+
+    const bool hot = temperature_motor > overheat_c || temperature_board > overheat_c;
+    if (connected && hot)
+    {
+        if (!blinking)
+            blink_start_ms = now;
+        blinking = true;
+        const uint32_t phase = (now - blink_start_ms) % cycle_ms;
+        write(phase < 5 * flash_ms && (phase / flash_ms) % 2 == 0);
+    }
+    else
+    {
+        blinking = false;
+        write(connected);
+    }
+    return connected;
+}
+
 void GPIOOutputDriver::soft_pwm(uint8_t threshold, bool reverse)
 {
     write((pwm_counter < threshold) == reverse);

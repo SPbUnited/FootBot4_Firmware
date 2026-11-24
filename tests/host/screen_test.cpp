@@ -64,6 +64,15 @@ int main() {
     click(BUTTON_SELECT); // root
     assert(rows[0] == "MENU 1/5" && rows[1] == "TO PLAY MODE");
     click(BUTTON_ADDR_DOWN);
+    click(BUTTON_SELECT); // telemetry
+    click(BUTTON_ADDR_UP); // wrap to drive 4
+    assert(rows[0] == "Drive 4" && rows[1] == "Board: --- C" && rows[3] == "CAN feedback: NO");
+    can_drive_connected[3] = true;
+    can_driver_pcb_temperature[3] = 42.5f;
+    can_motor_temperature[3] = 81.0f;
+    advance(100);
+    assert(rows[1] == "Board: 42.5 C" && rows[2] == "Motor: 81.0 C" && rows[3] == "CAN feedback: YES");
+    click(BUTTON_SELECT, true);
     click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // settings
     assert(robot_dev.locked);
     robot_dev.unrelated = 99; // runtime override must not be persisted

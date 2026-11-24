@@ -275,6 +275,18 @@ Frame render(uint32_t now) {
     case Page::Home:
     case Page::Telemetry: {
         int view = menu.page == Page::Home ? menu.home : menu.telemetry;
+        if (view >= 4) {
+            const int drive = view - 4;
+            const bool connected = can_drive_connected[drive];
+            char board[8], motor[8];
+            number(board, sizeof(board), connected ? can_driver_pcb_temperature[drive] : NAN, 6, 1);
+            number(motor, sizeof(motor), connected ? can_motor_temperature[drive] : NAN, 6, 1);
+            std::snprintf(f.lines[0], 22, "Drive %d", drive + 1);
+            std::snprintf(f.lines[1], 22, "Board: %s C", board);
+            std::snprintf(f.lines[2], 22, "Motor: %s C", motor);
+            std::snprintf(f.lines[3], 22, "CAN feedback: %s", connected ? "YES" : "NO");
+            break;
+        }
         if (view == 3) {
             const auto &tx = devices::nrf_feedback.txStats();
             std::snprintf(f.lines[0], 22, "Feedback TX");

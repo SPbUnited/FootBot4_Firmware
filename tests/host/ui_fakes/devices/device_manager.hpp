@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+inline bool can_drive_connected[4] = {};
+inline float can_driver_pcb_temperature[4] = {}, can_motor_temperature[4] = {};
 inline uint32_t fakeTick = 0;
 inline uint32_t HAL_GetTick() { return fakeTick; }
 namespace drivers {
