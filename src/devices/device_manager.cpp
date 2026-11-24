@@ -167,17 +167,7 @@ void init(drivers::InitStatus driver_status)
     }
 
     bool radio_initialized = driver_status.spi && !nrf24_recv.init();
-    apps::screen::set_boot_status(
-        apps::screen::BootComponent::RADIO,
-        radio_initialized ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
-    if (!radio_initialized)
-    {
-        kerror("NRF24 initialization failed");
-    }
-    else
-    {
-        kinfo("NRF24 initialized");
-    }
+    
 
     bool bno055_initialized = false;
     uint8_t imu_failure_detail = driver_status.uart1 ? 2 : 1;
@@ -277,6 +267,19 @@ void init(drivers::InitStatus driver_status)
     kinfo("Kicker initialized");
     // kinfo("AUAUSDUASDUDevices initialized");
     radio_initialized = driver_status.spi && !nrf24_recv.init();
+
+    apps::screen::set_boot_status(
+        apps::screen::BootComponent::RADIO,
+        radio_initialized ? apps::screen::BootState::OK : apps::screen::BootState::FAILED);
+    if (!radio_initialized)
+    {
+        kerror("NRF24 initialization failed");
+    }
+    else
+    {
+        kinfo("NRF24 initialized");
+    }
+    
     nrf24_recv.recv_irq();
     if (driver_status.spi4)
         nrf_feedback.start();
