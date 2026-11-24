@@ -7,6 +7,14 @@ namespace drivers::buzzer
 void Buzzer::set_drive_alarm(bool active)
 {
     static bool playing = false;
+    static uint32_t last_fault_ms = 0;
+    constexpr uint32_t recovery_ms = 3000;
+    const uint32_t now = HAL_GetTick();
+    if (active)
+        last_fault_ms = now;
+    else if (playing && now - last_fault_ms < recovery_ms)
+        return;
+
     if (active == playing)
         return;
     playing = active;
