@@ -72,6 +72,11 @@ int main() {
     can_motor_temperature[3] = 81.0f;
     advance(100);
     assert(rows[1] == "Board: 42.5 C" && rows[2] == "Motor: 81.0 C" && rows[3] == "CAN feedback: YES");
+    click(BUTTON_ADDR_DOWN); click(BUTTON_ADDR_DOWN); click(BUTTON_ADDR_DOWN);
+    assert(rows[1] == "Battery: --- V");
+    can_battery_voltage = 23.45f;
+    advance(100);
+    assert(rows[1] == "Battery: 23.45 V" && rows[2] == "Kicker (V): 120.500");
     click(BUTTON_SELECT, true);
     click(BUTTON_ADDR_DOWN); click(BUTTON_SELECT); // settings
     assert(robot_dev.locked);
