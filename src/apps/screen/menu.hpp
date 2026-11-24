@@ -54,7 +54,7 @@ struct Menu {
             case Page::BootPage: go(Page::System, 2); break;
             case Page::Version: case Page::Reboot: go(Page::System); break;
             case Page::Tests: go(Page::Root, 4); first = 2; break;
-            case Page::Direction: driving = false; go(Page::Tests, 3); first = 1; break;
+            case Page::Direction: driving = false; go(Page::Tests, 2); break;
             case Page::Angle: go(Page::Direction); break;
             case Page::Square: go(Page::Tests, 2); break;
             case Page::Dribbler: spinning = false; go(Page::Tests); break;
@@ -77,9 +77,10 @@ struct Menu {
                 int count = 1;
                 switch (page) {
                 case Page::Root: count = 5; break;
-                case Page::Tests: count = 4; break;
+                case Page::Tests: count = 3; break;
                 case Page::Direction: count = 2; break;
-                case Page::System: case Page::Kicker: count = 3; break;
+                case Page::Kicker: count = 3; break;
+                case Page::System:
                 case Page::Dribbler:
                 case Page::Reboot: count = 2; break;
                 default: break;
@@ -105,12 +106,12 @@ struct Menu {
                 if (editId == id) go(Page::Settings);
                 else { go(Page::Saved); savedAt = now; return Effect::SaveId; }
                 break;
-            case Page::System: go(selected == 0 ? Page::Version : selected == 1 ? Page::Reboot : Page::BootPage); break;
+            case Page::System: go(selected == 0 ? Page::Version : Page::Reboot); break;
             case Page::Reboot:
                 if (selected == 1) return Effect::Reboot;
                 go(Page::System, 1); break;
             case Page::Tests:
-                go(selected == 0 ? Page::Dribbler : selected == 1 ? Page::Kicker : selected == 2 ? Page::Square : Page::Direction);
+                go(selected == 0 ? Page::Dribbler : selected == 1 ? Page::Kicker : Page::Direction);
                 break;
             case Page::Direction:
                 if (selected == 0) { draftAngle = direction; go(Page::Angle); }

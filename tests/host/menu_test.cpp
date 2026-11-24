@@ -62,22 +62,13 @@ int main() {
     m.event(Event::Back, 0, 0); // System
     m.event(Event::Down, 0, 0);
     m.event(Event::Down, 0, 0);
-    m.event(Event::Select, 0, 0);
-    assert(m.page == Page::BootPage && m.selected == 0 && !m.locked());
-    m.event(Event::Up, 0, 0); assert(m.selected == 4);
-    for (int i = 0; i < 5; ++i) {
-        m.event(Event::Down, 0, 0);
-        assert(m.page == Page::BootPage && m.selected == i);
-    }
-    m.event(Event::Back, 0, 0);
-    assert(m.page == Page::System && m.selected == 2);
+    assert(m.page == Page::System && m.selected == 1);
     m.go(Page::Tests);
     m.event(Event::Down, 0, 0);
     m.event(Event::Down, 0, 0);
     assert(m.selected == 2);
     assert(m.event(Event::Select, 0, 0) == Effect::None);
-    assert(m.page == Page::Square && m.locked());
-    assert(m.event(Event::Select, 0, 0) == Effect::StartSquare);
+    assert(m.page == Page::Direction && m.locked());
     assert(m.event(Event::Back, 0, 0) == Effect::None);
     assert(m.page == Page::Tests && m.selected == 2 && m.locked());
     std::puts("menu/button tests passed");

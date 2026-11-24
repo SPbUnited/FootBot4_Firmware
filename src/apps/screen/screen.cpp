@@ -184,13 +184,13 @@ Frame render(uint32_t now) {
     auto &r = devices::robot_dev;
     static const char *root[] = {"TO PLAY MODE", "Telemetry", "Settings", "System", "Tests"};
     static const char *settings[] = {"Robot ID"};
-    static const char *system[] = {"Firmware version", "Reboot", "boot_page"};
+    static const char *system[] = {"Firmware version", "Reboot"};
     static const char *reboot[] = {"Cancel", "Reboot"};
     switch (menu.page) {
     case Page::Root: list(f, "MENU", root, 5); break;
     case Page::Tests: {
-        const char *items[] = {"Dribbler", "Kicker", "Square", "Direction"};
-        list(f, "TESTS", items, 4);
+        const char *items[] = {"Dribbler", "Kicker", "Direction"};
+        list(f, "TESTS", items, 3);
         break;
     }
     case Page::Square: {
@@ -253,7 +253,7 @@ Frame render(uint32_t now) {
         std::snprintf(f.lines[3], 22, "OK:set HOLD:back");
         break;
     case Page::Settings: list(f, "SETTINGS", settings, 1); break;
-    case Page::System: list(f, "SYSTEM", system, 3); break;
+    case Page::System: list(f, "SYSTEM", system, 2); break;
     case Page::BootPage: render_boot_page(f, menu.selected); break;
     case Page::Reboot: list(f, "REBOOT?", reboot, 2); break;
     case Page::EditId:
