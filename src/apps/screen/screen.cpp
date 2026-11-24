@@ -371,10 +371,15 @@ void update() {
         auto &display = oled.display;
         display.clear();
         display.setTextColor(true);
-        for (int offset = 0; offset < 4; ++offset) {
-            display.line(67 + offset, 0, 57 + offset, 8, true);
-            display.line(57 + offset, 8, 65 + offset, 8, true);
-            display.line(65 + offset, 8, 59 + offset, 15, true);
+        // Inclusive horizontal spans of the lightning bolt, one per OLED row.
+        constexpr uint8_t bolt[][2] = {
+            {69,69}, {67,69}, {66,68}, {64,68}, {63,67},
+            {62,67}, {61,66}, {60,66}, {59,65}, {58,71},
+            {57,70}, {56,69}, {63,68}, {62,67}, {62,66},
+            {61,65}, {61,64}, {60,63}, {60,62}, {59,60}, {58,59},
+        };
+        for (unsigned y = 0; y < sizeof(bolt) / sizeof(bolt[0]); ++y) {
+            display.line(bolt[y][0], y, bolt[y][1], y, true);
         }
         display.setTextSize(1);
         display.setCursor(31, 22);

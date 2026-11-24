@@ -141,9 +141,12 @@ void BldcsDriver::setDriveSettings(bool is_verbose, bool is_idle)
 bool BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, const uint8_t *data,
                              uint8_t len)
 {
-    if (low_battery) return false;
     uint8_t stopped[8] = {};
-    if (devices::robot_dev.control_locked()) {
+    if (low_battery) {
+        if (register_addr != MULTI_TARGET_W && register_addr != TARGET_RW) return false;
+        if (len != (register_addr == MULTI_TARGET_W ? sizeof(stopped) : sizeof(float))) return false;
+        data = stopped;
+    } else if (devices::robot_dev.control_locked()) {
         if (register_addr != MULTI_TARGET_W && register_addr != TARGET_RW) return false;
         if (motor_addr == 7 && register_addr == TARGET_RW && len == sizeof(float)) {
             const float speed = devices::robot_dev.test_dribbler *
@@ -168,8 +171,8 @@ void BldcsDriver::setDriveRegisterFloat(uint8_t register_addr, float value)
 
 void BldcsDriver::setDriveVel(BldcsVec vel, bool direction_test)
 {
-    if (low_battery) return;
-    if (devices::robot_dev.control_locked() && !direction_test) vel = {{0, 0, 0, 0}};
+    if (low_battery || (devices::robot_dev.control_locked() && !direction_test))
+        vel = {{0, 0, 0, 0}};
     uint8_t payload[8] = {0};
 
     for (size_t i = 0; i < 4; i++)
@@ -324,7 +327,7 @@ bool BldcsDriver::getDrivePosition(BldcsVec *position, uint8_t *received_mask)
 
 bool BldcsDriver::setDribblerVel(float vel)
 {
-    if (low_battery) return false;
+    if (low_battery) vel = 0.0f;
     kdebug("setDribblerVel: %f", vel);
 
     union

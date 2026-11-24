@@ -25,7 +25,7 @@ float Kicker::get_voltage()
 
 void Kicker::set_target(uint16_t voltage)
 {
-    target = voltage;
+    target = low_battery ? 0 : voltage;
 }
 
 void Kicker::stop()
@@ -43,8 +43,12 @@ void Kicker::stop()
 void Kicker::update()
 {
     auto &robot = devices::robot_dev;
-    if (robot.control_locked() && !robot.test_kicker) { stop(); get_voltage(); return; }
     get_voltage();
+    if (low_battery || (robot.control_locked() && !robot.test_kicker))
+    {
+        stop();
+        return;
+    }
     const bool manual = robot.control_locked();
     const auto mode = manual ? robot.test_kick : robot.kicker_mode;
     target = voltageForLevel(manual ? robot.test_voltage : robot.kicker_setting);
