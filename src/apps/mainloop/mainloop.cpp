@@ -47,6 +47,12 @@ void loop()
     devices::robot_dev.act();
 
     ++mainloop_monitor_cycles;
+    static uint8_t led_cycles = 0;
+    if (++led_cycles == 10)
+    {
+        drivers::out_pins[drivers::LED_STM32].toggle();
+        led_cycles = 0;
+    }
     mainloop_monitor_stage = 0;
 }
 

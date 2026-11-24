@@ -19,6 +19,7 @@ void GPIOOutputDriver::init(GPIODescriptor pin)
     HAL_GPIO_Init(pin.GPIOx, &GPIO_InitStruct);
 
     static_cast<GPIODescriptor&>(*this) = pin;
+    pwm_counter = 0;
 }
 
 void GPIOOutputDriver::write(bool state)
@@ -29,6 +30,13 @@ void GPIOOutputDriver::write(bool state)
 void GPIOOutputDriver::toggle()
 {
     HAL_GPIO_TogglePin(this->GPIOx, this->GPIO_Pin);
+}
+
+void GPIOOutputDriver::soft_pwm(uint8_t threshold)
+{
+    write(pwm_counter < threshold);
+    if (++pwm_counter == 100)
+        pwm_counter = 0;
 }
 
 void GPIOInputDriver::init(GPIODescriptor pin)

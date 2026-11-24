@@ -230,6 +230,7 @@ InitStatus init()
     InitStatus status{};
     drivers::system_clock_drv.init();
     drivers::bootstrap_drv.init();
+    drivers::buzzer_drv.init();
 
     // HAL_Delay(5000);
 

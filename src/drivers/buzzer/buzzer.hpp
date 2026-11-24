@@ -22,6 +22,8 @@ class Buzzer
         HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
     }
 
+    void play_boot_melody();
+
     void buzz()
     {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_SET);

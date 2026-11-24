@@ -28,6 +28,8 @@ struct ADCDescriptor
 class GPIOOutputDriver : public GPIODescriptor
 {
   private:
+    uint8_t pwm_counter = 0;
+
   public:
     GPIOOutputDriver() {}
 
@@ -36,6 +38,9 @@ class GPIOOutputDriver : public GPIODescriptor
     void write(bool state);
 
     void toggle();
+
+    // Advance one of the 100 PWM steps. Call at regular intervals.
+    void soft_pwm(uint8_t threshold);
 };
 
 class GPIOInputDriver : public GPIODescriptor

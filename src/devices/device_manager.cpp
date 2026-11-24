@@ -281,6 +281,7 @@ void init(drivers::InitStatus driver_status)
     if (driver_status.spi4)
         nrf_feedback.start();
     kinfo("Devices initialized");
+    drivers::buzzer_drv.play_boot_melody();
     apps::screen::init();
 }
 
