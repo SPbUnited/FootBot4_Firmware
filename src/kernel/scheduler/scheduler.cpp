@@ -111,6 +111,7 @@ void yield()
     }
 
     devices::bldcs_drv.pollFeedback();
+    devices::bldcs_drv.updateDriveLeds();
     bool drive_alarm = false;
     for (unsigned drive = 0; drive < 4; ++drive)
     {

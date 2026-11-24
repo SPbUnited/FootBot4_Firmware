@@ -141,6 +141,7 @@ class BldcsDriver : public BldcsConfig
     BldcsVec current;
     BldcsVec current_vel;
     BldcsVec current_pos;
+    uint32_t last_feedback_ms[4] = {};
     uint8_t position_feedback_mask = 0;
 
     BldcsVec target_vel;
@@ -162,6 +163,7 @@ class BldcsDriver : public BldcsConfig
     /** Gets shaft positions after fresh feedback from all four drives. */
     bool getDrivePosition(BldcsVec *position, uint8_t *received_mask);
     void pollFeedback();
+    void updateDriveLeds();
     bool getFeedback(BldcsVec *velocity, BldcsVec *angle, uint8_t *received_mask);
 
     bool setDribblerVel(float vel);

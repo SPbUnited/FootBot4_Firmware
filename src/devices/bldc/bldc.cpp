@@ -42,6 +42,7 @@ uint8_t BldcsDriver::init()
     {
         broadcastNextSetting(true);
         pollFeedback();
+        updateDriveLeds();
         const uint32_t now_ms = HAL_GetTick();
         if (now_ms - last_progress_ms >= 100U)
         {
@@ -194,7 +195,7 @@ void BldcsDriver::pollFeedback()
     uint32_t response_id;
     uint8_t response[8];
     uint8_t response_len;
-    uint8_t fresh_feedback_mask = 0;
+    const uint32_t now = HAL_GetTick();
 
     for (uint8_t frames_read = 0;
          frames_read < 8 && can->read(&response_id, response, &response_len); frames_read++)
@@ -241,15 +242,29 @@ void BldcsDriver::pollFeedback()
         {
             continue;
         }
-        fresh_feedback_mask |= 1U << offset;
+        last_feedback_ms[offset] = now;
+        can_drive_connected[offset] = true;
     }
     bldc_monitor_feedback_mask = position_feedback_mask;
     for (uint8_t drive = 0; drive < 4; ++drive)
     {
-        can_drive_connected[drive] = drivers::out_pins[feedback_leds[drive]].led_indicator(
-            can_motor_temperature[drive], can_driver_pcb_temperature[drive],
-            (fresh_feedback_mask & (1U << drive)) != 0);
+        if (now - last_feedback_ms[drive] >= 3000U)
+            can_drive_connected[drive] = false;
         bldc_monitor_drive_feedback[drive] = (position_feedback_mask >> drive) & 1U;
+    }
+}
+
+void BldcsDriver::updateDriveLeds()
+{
+    constexpr uint32_t flash_ms = 100;
+    constexpr uint32_t cycle_ms = 5 * flash_ms + 1000;
+    const uint32_t phase = HAL_GetTick() % cycle_ms;
+    const bool flash_on = phase < 5 * flash_ms && (phase / flash_ms) % 2 == 0;
+    for (unsigned drive = 0; drive < 4; ++drive)
+    {
+        const bool hot = can_motor_temperature[drive] > drivers::gpio::drive_overheat_c ||
+                         can_driver_pcb_temperature[drive] > drivers::gpio::drive_overheat_c;
+        drivers::out_pins[feedback_leds[drive]].write(can_drive_connected[drive] && (!hot || flash_on));
     }
 }
 

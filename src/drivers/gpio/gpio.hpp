@@ -30,10 +30,6 @@ struct ADCDescriptor
 class GPIOOutputDriver : public GPIODescriptor
 {
   private:
-    uint32_t last_feedback_ms = 0;
-    uint32_t blink_start_ms = 0;
-    bool connected = false;
-    bool blinking = false;
     uint8_t pwm_counter = 0;
 
   public:
@@ -44,8 +40,6 @@ class GPIOOutputDriver : public GPIODescriptor
     void write(bool state);
 
     void toggle();
-
-    bool led_indicator(float temperature_motor, float temperature_board, bool feedback);
 
     // Advance one of the 100 PWM steps. Call at regular intervals.
     void soft_pwm(uint8_t threshold, bool reverse);
