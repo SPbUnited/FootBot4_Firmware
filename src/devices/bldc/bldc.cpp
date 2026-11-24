@@ -301,7 +301,7 @@ bool BldcsDriver::setDribblerVel(float vel)
     } target_speed;
     target_speed.value = vel;
     
-    drivers::out_pins[drivers::LED_DRV5].soft_pwm(50, true);
+    drivers::out_pins[drivers::LED_DRV5].write(true);
 
     return motorWrite(7, TARGET_RW, target_speed.buffer, 4);
 }
