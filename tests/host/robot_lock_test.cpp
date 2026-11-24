@@ -40,10 +40,10 @@ int main() {
     r.test_dribbler = 0;
     r.act();
     assert(bldc.dribbler == 0);
-    r.test_direction_deg = 90;
+    r.direction_test = 90;
     r.plan(); r.act();
     assert(std::fabs(chassis.output.x) < 1e-5 && chassis.output.y == 1 && chassis.output.theta == 0);
-    r.test_direction_deg = -1;
+    r.direction_test = -1;
     r.plan(); r.act();
     assert(chassis.output.y == 0);
     r.set_control_locked(false);

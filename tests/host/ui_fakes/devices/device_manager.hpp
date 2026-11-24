@@ -23,7 +23,7 @@ enum { DISABLED, KICK_UP, KICK_FRONT };
 struct RobotSettings { float unrelated = 12.5f; uint8_t robot_id = 7, signature = 123; };
 struct Robot : RobotSettings {
     float dribbler_setting_to_vel = 37.5f;
-    int test_direction_deg = -1;  // Negative while the direction test is stopped.
+    int direction_test = -1;  // Negative while the direction test is stopped.
     uint8_t test_dribbler = 0, test_voltage = 0;
     bool test_kicker = false;
     int test_kick = DISABLED;

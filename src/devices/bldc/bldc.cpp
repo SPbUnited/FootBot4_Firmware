@@ -145,8 +145,12 @@ bool BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, const ui
                                 devices::robot_dev.dribbler_setting_to_vel;
             std::memcpy(stopped, &speed, sizeof(speed));
         }
-        data = stopped;
         if (len > sizeof(stopped)) return false;
+        if (motor_addr == 0 && register_addr == MULTI_TARGET_W && len == sizeof(stopped) &&
+            devices::robot_dev.direction_test >= 0) {
+            std::memcpy(stopped, data, len);
+        }
+        data = stopped;
     }
     const uint32_t id = (static_cast<uint32_t>(motor_addr & 0x0F) << 7) | (register_addr & 0x7F);
     return can->write(id, data, len);
@@ -171,7 +175,7 @@ void BldcsDriver::setDriveVel(BldcsVec vel, bool direction_test)
     }
 
     ++bldc_monitor_target_tx_attempts;
-    if (motorWrite(0, MULTI_TARGET_W, payload, 8))
+    if (motorWrite(0, MULTI_TARGET_W, payload, sizeof(payload)))
     {
         ++bldc_monitor_target_tx_successes;
     }

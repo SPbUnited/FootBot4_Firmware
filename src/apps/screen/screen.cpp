@@ -411,7 +411,7 @@ void update() {
     const auto previousVoltage = menu.voltage;
     const bool wasSquare = menu.page == Page::Square;
     Effect effect = menu.event(e, robot.robot_id, now);
-    robot.test_direction_deg = menu.driving ? menu.direction : -1;
+    robot.direction_test = menu.driving ? menu.direction : -1;
     robot.test_dribbler = menu.spinning ? menu.speed : 0;
     robot.test_kicker = menu.kickerPage();
     robot.test_voltage = menu.voltage;
