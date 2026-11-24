@@ -6,6 +6,7 @@ namespace
 
 int oledPrint(int argc, char *argv[])
 {
+    if (low_battery) return -1;
     if (devices::robot_dev.play_mode != devices::robot::TEST) return -1;
     if (!devices::oled_drv.ready()) return -1;
     apps::screen::suspendForShell();

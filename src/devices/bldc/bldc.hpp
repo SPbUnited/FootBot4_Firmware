@@ -5,6 +5,7 @@
 
 /** Latest CAN-reported motor supply voltage, in volts. */
 extern "C" volatile float can_battery_voltage;
+extern bool low_battery;
 extern "C" volatile bool can_drive_connected[4];
 /** Latest CAN telemetry from each drive; temperature values are in degrees Celsius. */
 extern "C" volatile float can_drive_voltage[4];
@@ -138,6 +139,8 @@ struct BldcsConfig
 class BldcsDriver : public BldcsConfig
 {
   private:
+    bool wheels_stop_queued = false;
+    bool dribbler_stop_queued = false;
     BldcsVec current;
     BldcsVec current_vel;
     BldcsVec current_pos;

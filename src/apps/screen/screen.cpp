@@ -363,6 +363,25 @@ void init() {
 void suspendForShell() { shellView = true; validFrame = false; }
 void update() {
     uint32_t now = HAL_GetTick();
+    if (low_battery) {
+        static bool warningShown = false;
+        auto &oled = devices::oled_drv;
+        if (!oled.ready() || (warningShown && lastErrors == oled.transfer_errors)) return;
+        lastErrors = oled.transfer_errors;
+        auto &display = oled.display;
+        display.clear();
+        display.setTextColor(true);
+        for (int offset = 0; offset < 4; ++offset) {
+            display.line(67 + offset, 0, 57 + offset, 8, true);
+            display.line(57 + offset, 8, 65 + offset, 8, true);
+            display.line(65 + offset, 8, 59 + offset, 15, true);
+        }
+        display.setTextSize(1);
+        display.setCursor(31, 22);
+        display.print("Low Battery");
+        warningShown = oled.submit();
+        return;
+    }
     if (playFramePending) {
         if (uint32_t(now - lastFrame) < 100) return;
         lastFrame = now;

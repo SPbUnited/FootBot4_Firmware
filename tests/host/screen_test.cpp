@@ -135,4 +135,10 @@ int main() {
     advance(1000);
     assert(oled_drv.frames == frames + 1);
     std::puts("screen integration tests passed (mock OLED/storage)");
+    low_battery = true;
+    advance(100);
+    assert(rows[2] == "Low Battery");
+    frames = oled_drv.frames;
+    click(BUTTON_SELECT);
+    assert(oled_drv.frames == frames && rows[2] == "Low Battery");
 }

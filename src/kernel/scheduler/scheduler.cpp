@@ -122,7 +122,7 @@ void yield()
             break;
         }
     }
-    drivers::buzzer_drv.set_drive_alarm(drive_alarm);
+    drivers::buzzer_drv.set_drive_alarm(drive_alarm || low_battery);
     drivers::can_drv.updateMonitorWindow();
 }
 

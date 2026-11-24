@@ -8,6 +8,8 @@
 #include "kernel/kernel.hpp"
 #include "vt_linalg"
 
+bool low_battery = false;
+
 extern "C"
 {
     volatile bool can_drive_connected[4] = {};
@@ -139,6 +141,7 @@ void BldcsDriver::setDriveSettings(bool is_verbose, bool is_idle)
 bool BldcsDriver::motorWrite(uint8_t motor_addr, uint8_t register_addr, const uint8_t *data,
                              uint8_t len)
 {
+    if (low_battery) return false;
     uint8_t stopped[8] = {};
     if (devices::robot_dev.control_locked()) {
         if (register_addr != MULTI_TARGET_W && register_addr != TARGET_RW) return false;
@@ -165,6 +168,7 @@ void BldcsDriver::setDriveRegisterFloat(uint8_t register_addr, float value)
 
 void BldcsDriver::setDriveVel(BldcsVec vel, bool direction_test)
 {
+    if (low_battery) return;
     if (devices::robot_dev.control_locked() && !direction_test) vel = {{0, 0, 0, 0}};
     uint8_t payload[8] = {0};
 
@@ -211,6 +215,10 @@ void BldcsDriver::pollFeedback()
         {
             float voltage;
             std::memcpy(&voltage, response, sizeof(voltage));
+            // A stopped drivetrain can cause the battery voltage to rebound.
+            // Keep the cutoff active until restart.
+            if (voltage > 0.0f && voltage < 19.2f)
+                low_battery = true;
             can_battery_voltage = voltage;
             can_drive_voltage[offset] = voltage;
             received_feedback_mask |= 1U << offset;
@@ -244,6 +252,15 @@ void BldcsDriver::pollFeedback()
         }
         last_feedback_ms[offset] = now;
         can_drive_connected[offset] = true;
+    }
+    if (low_battery)
+    {
+        // Queue each stop once, retrying if all CAN mailboxes were busy.
+        const uint8_t zero[8] = {};
+        if (!wheels_stop_queued)
+            wheels_stop_queued = can->write(MULTI_TARGET_W, zero, sizeof(zero));
+        if (!dribbler_stop_queued)
+            dribbler_stop_queued = can->write((7U << 7) | TARGET_RW, zero, sizeof(float));
     }
     bldc_monitor_feedback_mask = position_feedback_mask;
     for (uint8_t drive = 0; drive < 4; ++drive)
@@ -307,6 +324,7 @@ bool BldcsDriver::getDrivePosition(BldcsVec *position, uint8_t *received_mask)
 
 bool BldcsDriver::setDribblerVel(float vel)
 {
+    if (low_battery) return false;
     kdebug("setDribblerVel: %f", vel);
 
     union
