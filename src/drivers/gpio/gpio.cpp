@@ -32,9 +32,9 @@ void GPIOOutputDriver::toggle()
     HAL_GPIO_TogglePin(this->GPIOx, this->GPIO_Pin);
 }
 
-void GPIOOutputDriver::soft_pwm(uint8_t threshold)
+void GPIOOutputDriver::soft_pwm(uint8_t threshold, bool reverse)
 {
-    write(pwm_counter < threshold);
+    write((pwm_counter < threshold) == reverse);
     if (++pwm_counter == 100)
         pwm_counter = 0;
 }

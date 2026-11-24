@@ -203,7 +203,7 @@ void BldcsDriver::pollFeedback()
         {
             continue;
         }
-        drivers::out_pins[feedback_leds[motor_addr - 1]].toggle();
+        drivers::out_pins[feedback_leds[motor_addr - 1]].soft_pwm(50, true);
         const uint8_t offset = motor_addr - 1;
         if (register_addr == SUPPLY_VOLTAGE_R && response_len == sizeof(float))
         {
@@ -291,6 +291,9 @@ bool BldcsDriver::setDribblerVel(float vel)
         uint8_t buffer[4];
     } target_speed;
     target_speed.value = vel;
+    
+    drivers::out_pins[drivers::LED_DRV5].soft_pwm(50, true);
+
     return motorWrite(7, TARGET_RW, target_speed.buffer, 4);
 }
 

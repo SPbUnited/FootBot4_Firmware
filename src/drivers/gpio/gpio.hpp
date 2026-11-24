@@ -40,7 +40,7 @@ class GPIOOutputDriver : public GPIODescriptor
     void toggle();
 
     // Advance one of the 100 PWM steps. Call at regular intervals.
-    void soft_pwm(uint8_t threshold);
+    void soft_pwm(uint8_t threshold, bool reverse);
 };
 
 class GPIOInputDriver : public GPIODescriptor
