@@ -37,7 +37,6 @@ bool GPIOOutputDriver::led_indicator(float temperature_motor, float temperature_
     constexpr uint32_t feedback_timeout_ms = 3000;
     constexpr uint32_t flash_ms = 100;
     constexpr uint32_t cycle_ms = 5 * flash_ms + 1000;
-    constexpr float overheat_c = 75.0f;
     const uint32_t now = HAL_GetTick();
     if (feedback)
     {
@@ -49,7 +48,7 @@ bool GPIOOutputDriver::led_indicator(float temperature_motor, float temperature_
         connected = false;
     }
 
-    const bool hot = temperature_motor > overheat_c || temperature_board > overheat_c;
+    const bool hot = temperature_motor > drive_overheat_c || temperature_board > drive_overheat_c;
     if (connected && hot)
     {
         // if (!blinking)

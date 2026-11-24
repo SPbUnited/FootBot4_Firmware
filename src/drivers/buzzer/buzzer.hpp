@@ -23,6 +23,7 @@ class Buzzer
     }
 
     void play_boot_melody();
+    void set_drive_alarm(bool active);
 
     void buzz()
     {

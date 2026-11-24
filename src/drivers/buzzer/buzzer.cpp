@@ -4,6 +4,42 @@
 
 namespace drivers::buzzer
 {
+void Buzzer::set_drive_alarm(bool active)
+{
+    static bool playing = false;
+    if (active == playing)
+        return;
+    playing = active;
+
+    if (active)
+    {
+        __HAL_RCC_TIM7_CLK_ENABLE();
+        // APB1 prescaler is 4, so TIM7 runs at twice PCLK1.
+        TIM7->PSC = 2U * HAL_RCC_GetPCLK1Freq() / 1000000U - 1U;
+        TIM7->ARR = 902U - 1U;  // Half-period of D-flat 5 (554.37 Hz).
+        TIM7->EGR = TIM_EGR_UG;
+        TIM7->SR = 0;
+        TIM7->DIER = TIM_DIER_UIE;
+        HAL_NVIC_SetPriority(TIM7_IRQn, 10, 0);
+        HAL_NVIC_ClearPendingIRQ(TIM7_IRQn);
+        HAL_NVIC_EnableIRQ(TIM7_IRQn);
+        TIM7->CR1 = TIM_CR1_CEN;
+    }
+    else
+    {
+        HAL_NVIC_DisableIRQ(TIM7_IRQn);
+        TIM7->CR1 = 0;
+        TIM7->DIER = 0;
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_RESET);
+    }
+}
+
+extern "C" void TIM7_IRQHandler()
+{
+    TIM7->SR = 0;
+    HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_13);
+}
+
 void Buzzer::play_boot_melody()
 {
     struct Note

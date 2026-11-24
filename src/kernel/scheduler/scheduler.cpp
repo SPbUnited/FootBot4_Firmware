@@ -111,6 +111,17 @@ void yield()
     }
 
     devices::bldcs_drv.pollFeedback();
+    bool drive_alarm = false;
+    for (unsigned drive = 0; drive < 4; ++drive)
+    {
+        if (!can_drive_connected[drive] ||
+            can_motor_temperature[drive] > drivers::gpio::drive_overheat_c)
+        {
+            drive_alarm = true;
+            break;
+        }
+    }
+    drivers::buzzer_drv.set_drive_alarm(drive_alarm);
     drivers::can_drv.updateMonitorWindow();
 }
 

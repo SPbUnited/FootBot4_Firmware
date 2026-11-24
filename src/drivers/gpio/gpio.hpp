@@ -5,6 +5,8 @@
 namespace drivers::gpio
 {
 
+inline constexpr float drive_overheat_c = 75.0f;
+
 struct GPIODescriptor
 {
     GPIO_TypeDef* GPIOx;
